@@ -1,3 +1,4 @@
+// app/layout.tsx
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
@@ -15,21 +16,60 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
+const SITE_NAME = "QKNOU";
+const SITE_URL = "https://www.qknou.kr";
+const SITE_DESC =
+  "QKNOU는 방송통신대학교(KNOU) 기출문제를 한곳에서 제공하는 문제 풀이 플랫폼입니다. 과목/연도별 문제 풀이와 학습을 지원합니다.";
+
+/**
+ * ✅ 검색 유입용 보조 타이틀 구조
+ * - 브랜드 고정: QKNOU
+ * - 키워드 보조: "방송통신대학교 기출문제"를 title 템플릿에 포함
+ *   (브랜드 검색 + 일반 검색(키워드) 둘 다 잡는 방식)
+ *
+ * 예)
+ * - 홈: QKNOU | 방송통신대학교 기출문제
+ * - 과목: 컴퓨터과학과 | 방송통신대학교 기출문제 | QKNOU
+ * - 풀이: 2024 기출 | 컴퓨터과학과 | 방송통신대학교 기출문제 | QKNOU
+ */
+const TITLE_SUFFIX = "방송통신대학교 기출문제";
+
 export const metadata: Metadata = {
+  metadataBase: new URL(SITE_URL),
+
   title: {
-    default: "문제다모아",
-    template: "%s | 문제다모아",
+    default: `${SITE_NAME} | ${TITLE_SUFFIX}`,
+    template: `%s | ${TITLE_SUFFIX} | ${SITE_NAME}`,
   },
-  description: "방송통신대학교 기출문제를 한곳에서 모아보세요. 효율적인 학습을 위한 문제 풀이 플랫폼입니다.",
+
+  description: SITE_DESC,
+
+  alternates: {
+    canonical: SITE_URL,
+  },
+
   icons: {
     icon: "/favicon.ico",
     shortcut: "/favicon.ico",
     apple: "/favicon.ico",
   },
-  keywords: ["방송통신대학교", "기출문제", "문제풀이", "학습", "시험", "방송대"],
-  authors: [{ name: "문제다모아" }],
-  creator: "문제다모아",
-  publisher: "문제다모아",
+
+  keywords: [
+    "QKNOU",
+    "방송통신대학교",
+    "KNOU",
+    "방송대",
+    "기출문제",
+    "기출",
+    "문제풀이",
+    "시험",
+    "학습",
+  ],
+
+  authors: [{ name: SITE_NAME }],
+  creator: SITE_NAME,
+  publisher: SITE_NAME,
+
   robots: {
     index: true,
     follow: true,
@@ -41,44 +81,41 @@ export const metadata: Metadata = {
       "max-snippet": -1,
     },
   },
+
   openGraph: {
     type: "website",
     locale: "ko_KR",
-    siteName: "문제다모아",
-    title: "문제다모아",
-    description: "방송통신대학교 기출문제를 한곳에서 모아보세요. 효율적인 학습을 위한 문제 풀이 플랫폼입니다.",
-    // url: "https://www.qknou.kr", // 실제 도메인으로 변경 필요
-    // images: [
-    //   {
-    //     url: "https://your-domain.com/og-image.png",
-    //     width: 1200,
-    //     height: 630,
-    //     alt: "문제다모아",
-    //   },
-    // ],
+    siteName: SITE_NAME,
+    title: `${SITE_NAME} | ${TITLE_SUFFIX}`,
+    description: SITE_DESC,
+    url: SITE_URL,
+    // images: [{ url: "/og.png", width: 1200, height: 630, alt: SITE_NAME }],
   },
+
   twitter: {
     card: "summary_large_image",
-    title: "문제다모아",
-    description: "방송통신대학교 기출문제를 한곳에서 모아보세요. 효율적인 학습을 위한 문제 풀이 플랫폼입니다.",
-    // images: ["https://your-domain.com/og-image.png"],
+    title: `${SITE_NAME} | ${TITLE_SUFFIX}`,
+    description: SITE_DESC,
+    // images: ["/og.png"],
   },
-  // verification: {
-  //   google: "your-google-verification-code",
-  //   naver: "your-naver-verification-code",
-  // },
+
+  /**
+   * ✅ 네이버/구글 서치콘솔 기준: 사이트 소유 확인(권장)
+   * - 실제 발급받은 verification code로 교체
+   * - Google Search Console / Naver Search Advisor 양쪽 모두 등록 권장
+   */
+  verification: {
+    // google: process.env.NEXT_PUBLIC_GSC_VERIFICATION,
+    // naver: process.env.NEXT_PUBLIC_NAVER_VERIFICATION,
+  },
 };
 
 export default function RootLayout({
   children,
-}: Readonly<{
-  children: React.ReactNode;
-}>) {
+}: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang="ko">
-      <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
-      >
+      <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
         <QueryProvider>
           <ExamProvider>
             <AppContent>{children}</AppContent>

@@ -8,4 +8,5 @@ export type {
   IQuestionWithAnswer,
   IExamQuestionsResponse,
   IExamQuestionsWithAnswersResponse,
-} from "@/routes/exam/test-mode/interface";
+} from
+"@/app/exam/[subjectId]/[yearId]/test-mode/interface";

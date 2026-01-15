@@ -28,7 +28,7 @@ const Header = React.forwardRef<HTMLElement, IHeaderProps>(
           <Link href="/" className="transition-opacity">
             <Image
               src="/logo.png"
-              alt="문제다모아 로고"
+              alt="큐노노 로고"
               width={30}
               height={30}
               className="h-12 w-12 object-contain"
