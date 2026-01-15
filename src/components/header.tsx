@@ -27,7 +27,7 @@ const Header = React.forwardRef<HTMLElement, IHeaderProps>(
         <div className="container mx-auto flex h-14 items-center justify-between px-4 md:h-16">
           <Link href="/" className="transition-opacity">
             <Image
-              src="/logo.png"
+              src="/logo.svg"
               alt="QKNOU LOGO"
               width={30}
               height={30}
