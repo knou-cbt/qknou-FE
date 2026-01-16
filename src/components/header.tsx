@@ -19,19 +19,18 @@ const Header = React.forwardRef<HTMLElement, IHeaderProps>(
         ref={ref}
         className={cn(
           "sticky top-0 z-50 border-b border-[#E5E7EB] bg-white",
-          isExamMode && "bg-blue-50",
           className
         )}
         {...props}
       >
-        <div className="container mx-auto flex h-14 items-center justify-between px-4 md:h-16">
+        <div className="container mx-auto flex items-center justify-between px-4">
           <Link href="/" className="transition-opacity">
             <Image
               src="/logo.svg"
               alt="QKNOU LOGO"
               width={30}
               height={30}
-              className="h-12 w-12 object-contain"
+              className="h-16 w-16 object-contain"
             />
           </Link>
 
