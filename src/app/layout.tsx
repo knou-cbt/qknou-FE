@@ -20,7 +20,7 @@ const SITE_NAME = "QKNOU";
 const SITE_URL = "https://www.qknou.kr";
 const SITE_DESC =
   "QKNOU는 방송통신대학교(KNOU) 기출문제를 한곳에서 제공하는 문제 풀이 플랫폼입니다. 과목/연도별 문제 풀이와 학습을 지원합니다.";
-const OG_IMAGE = "/mobile_preview.png";
+const OG_IMAGE = `${SITE_URL}/mobile_preview.png`;
 
 /**
  * ✅ 검색 유입용 보조 타이틀 구조
