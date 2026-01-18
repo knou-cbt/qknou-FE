@@ -1,14 +1,14 @@
 import { TestModePage } from "./components";
 
 type PageProps = {
-    params: Promise<{ subjectId: string; year: string }>;
+    params: Promise<{ subjectId: string; yearId: string }>;
   };
   
   export default async function Page({ params }: PageProps) {
-    const { subjectId, year } = await params;
+    const { subjectId, yearId } = await params;
   
     return (
-     <TestModePage subjectId={subjectId} year={year}/>
+     <TestModePage subjectId={subjectId} yearId={yearId}/>
     );
   }
   

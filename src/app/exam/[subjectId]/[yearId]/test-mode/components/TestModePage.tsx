@@ -17,14 +17,14 @@ import type { IQuestionResult } from "../interface";
 
 type Props = {
   subjectId?: string;
-  year?: string;
+  yearId?: string;
 };
 
 
-export const TestModePage = ({ subjectId, year }: Props) => {
+export const TestModePage = ({ subjectId, yearId }: Props) => {
   const router = useRouter();
 
-  const examId = year;
+  const examId = yearId;
 
   const isMobile = useIsMobile();
   const {

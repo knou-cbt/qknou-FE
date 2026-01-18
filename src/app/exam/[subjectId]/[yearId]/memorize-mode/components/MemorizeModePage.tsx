@@ -5,11 +5,11 @@ import { useExamQuestionsWithAnswersQuery } from "../hooks/service";
 
 type Props = {
   subjectId?: string;
-  year?: string;
+  yearId?: string;
 };
 
-export const MemorizeModePage = ({ subjectId, year }: Props) => {
-  const examId = year;
+export const MemorizeModePage = ({ subjectId, yearId }: Props) => {
+  const examId = yearId;
 
   const [currentIndex, setCurrentIndex] = useState(0);
   const [selectedAnswer, setSelectedAnswer] = useState<string | number | null>(
