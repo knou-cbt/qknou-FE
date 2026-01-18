@@ -24,6 +24,27 @@ export const getExamQuestions = async (
   return result.data;
 };
 
+/** API에서 반환하는 원본 문제 타입 */
+interface IApiQuestionWithAnswer {
+  id: number;
+  number: number;
+  text: string;
+  imageUrl?: string | null;
+  choices: { id: number; number: number; text: string }[];
+  correctAnswers?: number[]; // 복수 정답 지원
+  explanation?: string;
+}
+
+interface IApiExamQuestionsWithAnswersResponse {
+  exam: {
+    id: number;
+    subject: string;
+    title: string;
+    totalQuestions: number;
+  };
+  questions: IApiQuestionWithAnswer[];
+}
+
 /** 시험 문제 조회 (암기모드 - 정답 포함) */
 export const getExamQuestionsWithAnswers = async (
   examId: string
@@ -31,10 +52,33 @@ export const getExamQuestionsWithAnswers = async (
   const response = await fetch(ExamApiPaths.questions(examId, "study"));
   if (!response.ok) throw new Error("시험 문제 조회 실패");
 
-  const result: IApiResponse<IExamQuestionsWithAnswersResponse> =
+  const result: IApiResponse<IApiExamQuestionsWithAnswersResponse> =
     await response.json();
-  return result.data;
+
+  return {
+    ...result.data,
+    questions: result.data.questions.map((q) => ({
+      ...q,
+      correctAnswers: q.correctAnswers ?? [],
+    })),
+  };
 };
+
+/** API에서 반환하는 원본 결과 타입 */
+interface IApiQuestionResult {
+  questionId: number;
+  selectedAnswer: number | null;
+  correctAnswers?: number[]; // 복수 정답 지원
+  isCorrect: boolean;
+}
+
+interface IApiExamSubmitResponse {
+  examId: string;
+  totalQuestions: number;
+  correctCount: number;
+  score: number;
+  results: IApiQuestionResult[];
+}
 
 /** 시험 답안 제출 및 채점 */
 export const postExamSubmit = async (
@@ -50,6 +94,13 @@ export const postExamSubmit = async (
   });
   if (!response.ok) throw new Error("시험 제출 실패");
 
-  const result: IApiResponse<IExamSubmitResponse> = await response.json();
-  return result.data;
+  const result: IApiResponse<IApiExamSubmitResponse> = await response.json();
+
+  return {
+    ...result.data,
+    results: result.data.results.map((r) => ({
+      ...r,
+      correctAnswers: r.correctAnswers ?? [],
+    })),
+  };
 };

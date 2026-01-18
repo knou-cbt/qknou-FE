@@ -233,7 +233,7 @@ export interface IQuestionCardProps
   question?: string;
   answers?: IAnswerOption[];
   selectedAnswer?: string | number | null;
-  correctAnswer?: string | number | null;
+  correctAnswer?: (string | number)[]; // 복수 정답 지원 (배열)
   showResult?: boolean;
   onAnswerSelect?: (value: string | number) => void;
   actionButtonText?: string;
@@ -250,7 +250,7 @@ const QuestionCard = React.forwardRef<HTMLDivElement, IQuestionCardProps>(
       question,
       answers = [],
       selectedAnswer,
-      correctAnswer,
+      correctAnswer = [],
       showResult = false,
       onAnswerSelect,
       actionButtonText = "정답 확인",
@@ -265,9 +265,10 @@ const QuestionCard = React.forwardRef<HTMLDivElement, IQuestionCardProps>(
       value: string | number
     ): "default" | "selected" | "correct" | "incorrect" => {
       if (showResult) {
-        if (value === correctAnswer) return "correct";
-        if (value === selectedAnswer && value !== correctAnswer)
-          return "incorrect";
+        // 복수 정답 지원: 배열에 포함되어 있으면 정답
+        const isCorrect = correctAnswer.includes(value);
+        if (isCorrect) return "correct";
+        if (value === selectedAnswer && !isCorrect) return "incorrect";
       }
       if (value === selectedAnswer) return "selected";
       return "default";

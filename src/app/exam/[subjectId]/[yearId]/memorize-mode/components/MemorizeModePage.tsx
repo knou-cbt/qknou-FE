@@ -1,4 +1,4 @@
-"use client"
+"use client";
 import { useState, useCallback, useMemo } from "react";
 import { ExamNavButtons, QuestionCard } from "@/components/ui";
 import { useExamQuestionsWithAnswersQuery } from "../hooks/service";
@@ -103,7 +103,7 @@ export const MemorizeModePage = ({ subjectId, yearId }: Props) => {
               question={currentQuestion.text}
               answers={formattedAnswers}
               selectedAnswer={selectedAnswer}
-              correctAnswer={currentQuestion.correctAnswer}
+              correctAnswer={currentQuestion.correctAnswers}
               showResult={showResult}
               onAnswerSelect={handleAnswerSelect}
               actionButtonText=""

@@ -26,7 +26,7 @@ export interface IQuestion {
 
 /** 문제 정보 (암기모드 - 정답 포함) */
 export interface IQuestionWithAnswer extends IQuestion {
-  correctAnswer: number;
+  correctAnswers: number[]; // 복수 정답 지원 (배열)
   explanation?: string;
 }
 
@@ -46,7 +46,7 @@ export interface IExamQuestionsWithAnswersResponse {
 export interface IQuestionResult {
   questionId: number;
   selectedAnswer: number | null;
-  correctAnswer: number;
+  correctAnswers: number[]; // 복수 정답 지원 (배열)
   isCorrect: boolean;
 }
 
