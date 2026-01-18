@@ -83,11 +83,8 @@ export const TestModePage = ({ subjectId, yearId }: Props) => {
       })),
     };
 
-    console.log("submitData", submitData);
-
     try {
       const response = await submitMutation.mutateAsync(submitData);
-      console.log("API 응답 결과:", response.results); // 디버깅용
       setResults(response.results);
       setIsSubmitted(true);
       setContextIsSubmitted(true); // Context 상태도 업데이트
@@ -213,16 +210,6 @@ export const TestModePage = ({ subjectId, yearId }: Props) => {
   const currentResult = results.find(
     (r) => r.questionId === currentQuestion?.id
   );
-
-  // 디버깅용
-  if (isSubmitted && currentQuestion) {
-    console.log(
-      "현재 문제:",
-      currentQuestion.id,
-      "정답:",
-      currentResult?.correctAnswers
-    );
-  }
 
   if (isLoading) {
     return (
