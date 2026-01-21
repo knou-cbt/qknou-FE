@@ -5,10 +5,8 @@ type PageProps = {
   };
   
   export default async function Page({ params }: PageProps) {
-    const { subjectId, yearId } = await params;
-  
+    const { yearId } = await params;
     return (
-     <TestModePage subjectId={subjectId} yearId={yearId}/>
+     <TestModePage yearId={yearId}/>
     );
   }
-  

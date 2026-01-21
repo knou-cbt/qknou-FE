@@ -8,7 +8,7 @@ import { cn } from "@/lib/utils";
 // ============================================
 
 const tagVariants = cva(
-  "inline-flex items-center justify-center px-3 h-7 rounded-full font-normal text-sm leading-5",
+  "inline-flex items-center justify-center px-2 sm:px-3 h-6 sm:h-7 rounded-full font-normal text-xs sm:text-sm leading-4 sm:leading-5 wrap-break-word",
   {
     variants: {
       variant: {
@@ -45,7 +45,7 @@ QuestionTag.displayName = "QuestionTag";
 // ============================================
 
 const answerChoiceVariants = cva(
-  "box-border flex flex-row items-center px-4 gap-4 w-full h-[60px] bg-white border-2 rounded-[14px] cursor-pointer transition-all duration-200",
+  "box-border flex flex-row items-start sm:items-center px-3 sm:px-4 py-3 sm:py-0 gap-3 sm:gap-4 w-full min-h-[60px] sm:h-[60px] bg-white border-2 rounded-[14px] cursor-pointer transition-all duration-200",
   {
     variants: {
       state: {
@@ -141,7 +141,7 @@ const AnswerChoice = React.forwardRef<HTMLDivElement, IAnswerChoiceProps>(
         )}
 
         {/* Answer Text */}
-        <span className="flex-1 font-normal text-base leading-6 text-[#101828]">
+        <span className="flex-1 font-normal text-sm sm:text-base leading-5 sm:leading-6 text-[#101828] wrap-break-word">
           {children}
         </span>
       </div>
@@ -155,7 +155,7 @@ AnswerChoice.displayName = "AnswerChoice";
 // ============================================
 
 const actionButtonVariants = cva(
-  "w-full h-12 flex items-center justify-center rounded-[14px] font-normal text-base leading-6 transition-all duration-200 cursor-pointer",
+  "w-full h-11 sm:h-12 flex items-center justify-center rounded-[14px] font-normal text-sm sm:text-base leading-5 sm:leading-6 transition-all duration-200 cursor-pointer break-words px-4",
   {
     variants: {
       variant: {
@@ -200,14 +200,14 @@ QuestionActionButton.displayName = "QuestionActionButton";
 // ============================================
 
 const questionCardVariants = cva(
-  "flex flex-col items-start bg-white rounded-[16px]",
+  "flex flex-col items-start bg-white rounded-[16px] w-full",
   {
     variants: {
       size: {
-        default: "w-[1066px] pt-8 pb-0 gap-6",
-        sm: "w-full max-w-[600px] pt-6 pb-0 gap-4",
-        lg: "w-full max-w-[1200px] pt-10 pb-0 gap-6",
-        full: "w-full pt-8 pb-0 gap-6",
+        default: "max-w-[1066px] pt-6 sm:pt-8 pb-0 gap-4 sm:gap-6 px-4 sm:px-0",
+        sm: "w-full max-w-[600px] pt-4 sm:pt-6 pb-0 gap-3 sm:gap-4 px-4 sm:px-0",
+        lg: "w-full max-w-[1200px] pt-6 sm:pt-10 pb-0 gap-4 sm:gap-6 px-4 sm:px-0",
+        full: "w-full pt-6 sm:pt-8 pb-0 gap-4 sm:gap-6 px-4 sm:px-0",
       },
     },
     defaultVariants: {
@@ -275,7 +275,7 @@ const QuestionCard = React.forwardRef<HTMLDivElement, IQuestionCardProps>(
     };
 
     return (
-      <div className="flex flex-col items-start gap-6 w-full">
+      <div className="flex flex-col items-start gap-4 sm:gap-6 w-full px-4 sm:px-0">
         {/* Question Card Section */}
         <div
           ref={ref}
@@ -284,7 +284,7 @@ const QuestionCard = React.forwardRef<HTMLDivElement, IQuestionCardProps>(
         >
           {/* Tags */}
           {tags.length > 0 && (
-            <div className="flex flex-row items-start gap-2 w-full">
+            <div className="flex flex-row flex-wrap items-start gap-2 w-full">
               {tags.map((tag, index) => (
                 <QuestionTag key={index} variant={tag.variant}>
                   {tag.label}
@@ -295,7 +295,7 @@ const QuestionCard = React.forwardRef<HTMLDivElement, IQuestionCardProps>(
 
           {/* Question Text */}
           {question && (
-            <p className="font-normal text-[19px] leading-[31px] text-[#101828] w-full">
+            <p className="font-normal text-base sm:text-[19px] leading-6 sm:leading-[31px] text-[#101828] w-full wrap-break-word">
               {question}
             </p>
           )}
@@ -306,7 +306,7 @@ const QuestionCard = React.forwardRef<HTMLDivElement, IQuestionCardProps>(
 
         {/* Answer Choices */}
         {answers.length > 0 && (
-          <div className="flex flex-col items-start gap-3 w-full">
+          <div className="flex flex-col items-start gap-2 sm:gap-3 w-full">
             {answers.map((answer) => (
               <AnswerChoice
                 key={answer.value}
@@ -339,8 +339,7 @@ QuestionCard.displayName = "QuestionCard";
 // Question Container Component
 // ============================================
 
-export interface IQuestionContainerProps
-  extends React.HTMLAttributes<HTMLDivElement> {}
+export type IQuestionContainerProps = React.HTMLAttributes<HTMLDivElement>
 
 const QuestionContainer = React.forwardRef<
   HTMLDivElement,
@@ -349,7 +348,7 @@ const QuestionContainer = React.forwardRef<
   <div
     ref={ref}
     className={cn(
-      "flex flex-col items-start px-6 pt-8 pb-0 gap-6 w-full max-w-[896px]",
+      "flex flex-col items-start px-4 sm:px-6 pt-6 sm:pt-8 pb-0 gap-4 sm:gap-6 w-full max-w-[896px]",
       className
     )}
     {...props}

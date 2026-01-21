@@ -16,11 +16,10 @@ import { useExamQuestionsQuery, useExamSubmitMutation } from "../hooks/service";
 import type { IQuestionResult } from "../interface";
 
 type Props = {
-  subjectId?: string;
   yearId?: string;
 };
 
-export const TestModePage = ({ subjectId, yearId }: Props) => {
+export const TestModePage = ({ yearId }: Props) => {
   const router = useRouter();
 
   const examId = yearId;
@@ -44,7 +43,9 @@ export const TestModePage = ({ subjectId, yearId }: Props) => {
   const [startTime] = useState<number>(() => Date.now());
 
   // API 호출
-  const { data, isLoading, isError } = useExamQuestionsQuery(examId ?? "");
+  const { data, isLoading, isError } = useExamQuestionsQuery(
+    examId ?? ""
+  );
   const submitMutation = useExamSubmitMutation(examId ?? "");
 
   const exam = data?.exam;
@@ -90,6 +91,8 @@ export const TestModePage = ({ subjectId, yearId }: Props) => {
       setContextIsSubmitted(true); // Context 상태도 업데이트
       // 소요 시간 계산
       setElapsedTime(Math.floor((Date.now() - startTime) / 1000));
+      // 결과 화면에서 첫 번째 문제로 포커스
+      setCurrentIndex(0);
     } catch (error) {
       console.error("시험 제출 실패:", error);
     }
@@ -200,16 +203,35 @@ export const TestModePage = ({ subjectId, yearId }: Props) => {
     return `${mins}분 ${secs}초`;
   };
 
-  // 통계 계산
-  const correctCount = results.filter((r) => r.isCorrect).length;
-  const wrongCount = results.length - correctCount;
-  const correctRate =
-    results.length > 0 ? Math.round((correctCount / results.length) * 100) : 0;
+  // 통계 계산 (제출 후에만 계산)
+  const correctCount = useMemo(
+    () => results.filter((r) => r.isCorrect).length,
+    [results]
+  );
+  const wrongCount = useMemo(
+    () => results.length - correctCount,
+    [results.length, correctCount]
+  );
+  const correctRate = useMemo(
+    () =>
+      results.length > 0
+        ? Math.round((correctCount / results.length) * 100)
+        : 0,
+    [results.length, correctCount]
+  );
 
   // 제출 후 정답 정보 (결과에서 가져옴)
   const currentResult = results.find(
     (r) => r.questionId === currentQuestion?.id
   );
+
+  if (!examId) {
+    return (
+      <div className="min-h-screen bg-white flex items-center justify-center">
+        <p className="text-red-500">시험 정보가 올바르지 않습니다.</p>
+      </div>
+    );
+  }
 
   if (isLoading) {
     return (

@@ -65,12 +65,12 @@ export const MainContainer = () => {
       <section className="flex flex-col items-center px-4 md:px-8 lg:px-16 pt-16 md:pt-24 pb-8 md:pb-12 w-full bg-gradient-to-br from-[#EFF6FF] to-white">
         <div className="flex flex-col items-center gap-3 md:gap-4 w-full max-w-[768px]">
           {/* Heading */}
-          <h1 className="text-lg md:text-xl lg:text-2xl font-semibold leading-7 text-center text-[#101828]">
-            오늘도 문제 다모아와 함께
+          <h1 className="text-xl md:text-2xl font-bold leading-7 text-center text-[#0F172A]">
+            오늘도 큐노와 함께
           </h1>
 
           {/* Subtitle */}
-          <p className="text-sm md:text-base leading-6 text-center text-[#4A5565]">
+          <p className="text-sm md:text-base font-semibold leading-6 text-center text-[#1E293B]">
             틀린 문제 위주로, 필요한 것만 정확하게 복습하세요.
           </p>
         </div>
@@ -80,11 +80,11 @@ export const MainContainer = () => {
       <main className="flex-1 flex flex-col items-center px-4 py-8 md:py-12 bg-white">
         {/* Preview Title */}
         <div className="flex flex-col items-center gap-2 mb-6 md:mb-8">
-          <h2 className="text-xl md:text-2xl font-semibold text-[#101828]">
-            간편한 문제 관리
+          <h2 className="text-xl md:text-2xl font-semibold text-center text-[#101828]">
+            문제 풀이 및 연습
           </h2>
-          <p className="text-sm md:text-base text-[#6B7280]">
-            직관적인 인터페이스로 문제를 쉽게 관리하세요
+          <p className="text-sm md:text-base text-center text-[#6B7280]">
+            과목명을 클릭하면 연도별 문제를 선택하여 풀이하고 연습할 수 있습니다.
           </p>
         </div>
 
