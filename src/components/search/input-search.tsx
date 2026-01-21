@@ -3,7 +3,6 @@
 import { useState, useCallback, KeyboardEvent } from "react";
 import { Search, X } from "lucide-react";
 import { Input } from "@/components/ui/input";
-import { useIsMobile } from "@/lib/useIsMobile";
 import { cn } from "@/lib/utils";
 
 export interface IInputSearchProps {
@@ -33,7 +32,6 @@ export const InputSearch = ({
   disabled = false,
 }: IInputSearchProps) => {
   const [value, setValue] = useState(defaultValue);
-  const isMobile = useIsMobile();
 
   const handleClear = useCallback(() => {
     setValue("");
@@ -84,12 +82,14 @@ export const InputSearch = ({
           placeholder={placeholder}
           disabled={disabled}
           variant="default"
-          inputSize={isMobile ? "lg" : "xl"}
+          inputSize="xl"
           className={cn(
             "w-full bg-white pr-20",
             leftLogo && "pl-12",
             !leftLogo && "pl-4",
-            "text-slate-600 rounded-lg border border-[#E5E7EB] focus:border-slate-600 focus:ring-1 focus:ring-slate-600"
+            "text-slate-600 rounded-lg border border-[#E5E7EB] focus:border-slate-600 focus:ring-1 focus:ring-slate-600",
+            // 모바일에서 높이와 패딩 조정 (xl: h-12 px-4 py-3 text-base -> lg: h-11 px-4 py-2)
+            "max-[767px]:h-11 max-[767px]:py-2 max-[767px]:text-sm"
           )}
         />
 
