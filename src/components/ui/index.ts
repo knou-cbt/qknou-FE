@@ -8,4 +8,4 @@ export * from "./table"
 export * from "./exam-nav-buttons"
 export * from "./modal"
 export * from "./alert"
-
+export * from "./breadcrumb"
