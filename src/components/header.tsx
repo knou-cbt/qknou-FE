@@ -7,6 +7,8 @@ import { useRouter } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { useExamContext } from "@/contexts";
 import { Button, ConfirmModal, AlertModal } from "@/components/ui";
+import Link from "next/link";
+import Image from "next/image";
 
 export interface IHeaderProps extends React.HTMLAttributes<HTMLElement> {
   variant?: "default" | "exam";
@@ -102,19 +104,15 @@ const Header = React.forwardRef<HTMLElement, IHeaderProps>(
           {/* Container */}
           <div className="flex flex-row justify-between items-center w-full max-w-[1392px] h-11 mx-auto">
             {/* Logo Container */}
-            <div
-              className="flex flex-row items-center gap-3 cursor-pointer"
-              onClick={() => router.push("/")}
-            >
-              {/* Logo Icon */}
-              <div className="flex justify-center items-center w-8 h-8 bg-[#155DFC] rounded-[10px]">
-                <BookOpen className="w-5 h-5 text-white" strokeWidth={2.5} />
-              </div>
-              {/* Logo Text */}
-              <span className="font-normal text-base leading-6 text-[#101828]">
-                문제다모아
-              </span>
-            </div>
+            <Link href="/" className="transition-opacity">
+            <Image
+              src="/logo.svg"
+              alt="QKNOU LOGO"
+              width={30}
+              height={30}
+              className="h-16 w-16 object-contain"
+            />
+          </Link>
 
             {/* 시험 모드 */}
             {variant === "exam" && (

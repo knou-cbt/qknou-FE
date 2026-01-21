@@ -1,7 +1,16 @@
 "use client";
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Button, Table, type ColumnDef } from "@/components/ui";
+import {
+  Button,
+  Table,
+  Modal,
+  ModalContent,
+  ModalHeader,
+  ModalBody,
+  ModalFooter,
+  type ColumnDef,
+} from "@/components/ui";
 
 import {
   useExamListBySubjectQuery,
@@ -15,6 +24,8 @@ type Props = {
 
 export const ExamYearPage = ({ subjectId }: Props) => {
   const router = useRouter();
+  const [isTestModeModalOpen, setIsTestModeModalOpen] = useState(false);
+  const [selectedExamId, setSelectedExamId] = useState<string | null>(null);
 
   // API 호출
   const { data: subjectData } = useSubjectDetailQuery(subjectId ?? "");
@@ -61,9 +72,10 @@ export const ExamYearPage = ({ subjectId }: Props) => {
               </Button>
               <Button
                 size="sm"
-                onClick={() =>
-                  router.push(`/exam/${subjectId}/${examId}/test-mode`)
-                }
+                onClick={() => {
+                  setSelectedExamId(examId);
+                  setIsTestModeModalOpen(true);
+                }}
                 className="cursor-pointer"
               >
                 시험모드
@@ -123,6 +135,43 @@ export const ExamYearPage = ({ subjectId }: Props) => {
           />
         </div>
       </main>
+
+      {/* Test Mode Guidance Modal */}
+      <Modal
+        open={isTestModeModalOpen}
+        onClose={() => setIsTestModeModalOpen(false)}
+      >
+        <ModalContent size="md" className="max-w-[400px]">
+          <ModalHeader>안내사항</ModalHeader>
+          <ModalBody className="space-y-4">
+            <div className="space-y-2 text-sm leading-6 text-[#101828]">
+              <p>- 시험모드는 실제 시험장과 비슷한 환경을 제공해 드려요.</p>
+              <p>
+                - 제한 시간이 있으며 시험을 제출하면 시험 결과와 다시 보기를
+                진행할 수 있어요.
+              </p>
+            </div>
+            <div className="pt-2">
+              <p className="text-lg font-bold text-[#101828]">
+                제한 시간: 150분
+              </p>
+            </div>
+          </ModalBody>
+          <ModalFooter className="flex-col gap-2">
+            <Button
+              onClick={() => {
+                if (selectedExamId) {
+                  router.push(`/exam/${subjectId}/${selectedExamId}/test-mode`);
+                }
+                setIsTestModeModalOpen(false);
+              }}
+              className="w-full bg-black hover:bg-[#1F2937] text-white"
+            >
+              시험 응시하기
+            </Button>
+          </ModalFooter>
+        </ModalContent>
+      </Modal>
     </>
   );
 };

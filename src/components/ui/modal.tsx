@@ -17,7 +17,10 @@ const ModalOverlay = React.forwardRef<HTMLDivElement, IModalOverlayProps>(
     return (
       <div
         ref={ref}
-        className={cn("absolute inset-0 bg-black/50", className)}
+        className={cn(
+          "absolute inset-0 bg-black/50 backdrop-blur-sm",
+          className
+        )}
         onClick={onClose}
         {...props}
       />
