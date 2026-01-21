@@ -1,6 +1,6 @@
 "use client";
-import { useState, useCallback, useMemo } from "react";
-import { ExamNavButtons, QuestionCard } from "@/components/ui";
+import { useState, useCallback, useMemo, useEffect } from "react";
+import { ExamNavButtons, QuestionCard, Button } from "@/components/ui";
 import { useExamQuestionsWithAnswersQuery } from "../hooks/service";
 
 type Props = {
@@ -16,6 +16,13 @@ export const MemorizeModePage = ({ subjectId, yearId }: Props) => {
     null
   );
   const [showResult, setShowResult] = useState(false);
+  // 정답 기억하기 상태 (questionId -> { showResult, selectedAnswer })
+  const [rememberedAnswers, setRememberedAnswers] = useState<
+    Record<
+      number,
+      { showResult: boolean; selectedAnswer: string | number | null }
+    >
+  >({});
 
   // API 호출
   const { data, isLoading, isError } = useExamQuestionsWithAnswersQuery(
@@ -51,21 +58,77 @@ export const MemorizeModePage = ({ subjectId, yearId }: Props) => {
     setShowResult(true);
   }, []);
 
-  const handlePrev = useCallback(() => {
-    if (!isFirstQuestion) {
-      setCurrentIndex((prev) => prev - 1);
-      setSelectedAnswer(null);
-      setShowResult(false);
+  // 문제 이동 시 저장된 정답 상태 복원
+  useEffect(() => {
+    if (currentQuestion?.id) {
+      const remembered = rememberedAnswers[currentQuestion.id];
+      if (remembered) {
+        setShowResult(remembered.showResult);
+        setSelectedAnswer(remembered.selectedAnswer);
+      } else {
+        setShowResult(false);
+        setSelectedAnswer(null);
+      }
     }
-  }, [isFirstQuestion]);
+  }, [currentIndex, currentQuestion?.id, rememberedAnswers]);
+
+  const handlePrev = useCallback(() => {
+    if (!isFirstQuestion && currentQuestion?.id) {
+      // 현재 문제의 정답 상태와 선택한 답안 저장
+      setRememberedAnswers((prev) => {
+        const newState: Record<
+          number,
+          { showResult: boolean; selectedAnswer: string | number | null }
+        > = {
+          ...prev,
+          [currentQuestion.id]: {
+            showResult,
+            selectedAnswer,
+          },
+        };
+        return newState;
+      });
+
+      setCurrentIndex((prev) => prev - 1);
+      // showResult와 selectedAnswer는 useEffect에서 복원됨
+    }
+  }, [isFirstQuestion, currentQuestion?.id, showResult, selectedAnswer]);
 
   const handleNext = useCallback(() => {
-    if (!isLastQuestion) {
+    if (!isLastQuestion && currentQuestion?.id) {
+      // 현재 문제의 정답 상태와 선택한 답안 저장
+      setRememberedAnswers((prev) => {
+        const newState: Record<
+          number,
+          { showResult: boolean; selectedAnswer: string | number | null }
+        > = {
+          ...prev,
+          [currentQuestion.id]: {
+            showResult,
+            selectedAnswer,
+          },
+        };
+        return newState;
+      });
+
       setCurrentIndex((prev) => prev + 1);
-      setSelectedAnswer(null);
-      setShowResult(false);
+      // showResult와 selectedAnswer는 useEffect에서 복원됨
     }
-  }, [isLastQuestion]);
+  }, [isLastQuestion, currentQuestion?.id, showResult, selectedAnswer]);
+
+  // 문제 다시 풀기 핸들러
+  const handleResetQuestion = useCallback(() => {
+    if (currentQuestion?.id) {
+      setShowResult(false);
+      setSelectedAnswer(null);
+      // rememberedAnswers에서 해당 문제 제거
+      setRememberedAnswers((prev) => {
+        const newState = { ...prev };
+        delete newState[currentQuestion.id];
+        return newState;
+      });
+    }
+  }, [currentQuestion?.id]);
 
   if (isLoading) {
     return (
@@ -115,13 +178,34 @@ export const MemorizeModePage = ({ subjectId, yearId }: Props) => {
         {showResult && currentQuestion?.explanation && (
           <div className="w-full max-w-[1066px] mt-6">
             <div className="bg-[#F9FAFB] border border-[#E5E7EB] rounded-[16px] p-6">
-              <div className="flex items-center gap-2 mb-3">
+              <div className="flex items-center justify-between mb-3">
                 <h3 className="font-semibold text-[#101828]">해설</h3>
+                {/* 문제 다시 풀기 버튼 */}
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={handleResetQuestion}
+                >
+                  문제 다시 풀기
+                </Button>
               </div>
               <p className="text-[#364153] leading-7">
                 {currentQuestion.explanation}
               </p>
             </div>
+          </div>
+        )}
+
+        {/* 문제 다시 풀기 버튼 - 해설이 없지만 정답이 보일 때 */}
+        {showResult && !currentQuestion?.explanation && (
+          <div className="w-full max-w-[1066px] mt-6 flex justify-end">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleResetQuestion}
+            >
+              문제 다시 풀기
+            </Button>
           </div>
         )}
 
