@@ -3,17 +3,20 @@
 import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 
-import { Table, type ColumnDef } from "../ui";
-import { TableSkeleton } from "../ui/skeleton";
+import { Table, type ColumnDef } from "../../../components/ui";
+import { TableSkeleton } from "../../../components/ui/skeleton";
 import { useSubjectListQuery } from "@/app/exam/[subjectId]/year/hooks/service";
 import type { ISubject } from "@/app/exam/[subjectId]/year/interface";
+import { InputSearch } from "@/components/search";
 
 export const MainContainer = () => {
   const router = useRouter();
   const [pagination, setPagination] = useState({ pageIndex: 0, pageSize: 10 });
+  const [searchQuery, setSearchQuery] = useState("");
 
   // API 호출
   const { data, isLoading, isError } = useSubjectListQuery({
+    search: searchQuery || undefined,
     page: pagination.pageIndex + 1,
     limit: pagination.pageSize,
   });
@@ -21,6 +24,20 @@ export const MainContainer = () => {
 
   const handleClick = (subjectId: string) => {
     router.push(`/exam/${subjectId}/year`);
+  };
+
+  const handleSearch = (value: string) => {
+    setSearchQuery(value);
+    // 검색 시 첫 페이지로 리셋
+    setPagination({ pageIndex: 0, pageSize: pagination.pageSize });
+  };
+
+  const handleSearchChange = (value: string) => {
+    setSearchQuery(value);
+    // 검색어가 비어있으면 첫 페이지로 리셋
+    if (!value.trim()) {
+      setPagination({ pageIndex: 0, pageSize: pagination.pageSize });
+    }
   };
 
   const columns = useMemo<ColumnDef<ISubject, unknown>[]>(
@@ -73,6 +90,16 @@ export const MainContainer = () => {
 
         {/* Subject Table */}
         <div className="relative w-full max-w-[1100px] mx-auto">
+          {/* Search Input */}
+          <div className="mb-6">
+            <InputSearch
+              onSearch={handleSearch}
+              onChange={handleSearchChange}
+              placeholder="과목명으로 검색하세요"
+              defaultValue={searchQuery}
+            />
+          </div>
+
           {isLoading ? (
             <TableSkeleton columnCount={columns.length} rowCount={pagination.pageSize} />
           ) : (
