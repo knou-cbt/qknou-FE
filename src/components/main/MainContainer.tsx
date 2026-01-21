@@ -1,17 +1,22 @@
 "use client";
 
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 
 import { Table, type ColumnDef } from "../ui";
+import { TableSkeleton } from "../ui/skeleton";
 import { useSubjectListQuery } from "@/app/exam/[subjectId]/year/hooks/service";
 import type { ISubject } from "@/app/exam/[subjectId]/year/interface";
 
 export const MainContainer = () => {
   const router = useRouter();
+  const [pagination, setPagination] = useState({ pageIndex: 0, pageSize: 10 });
 
   // API 호출
-  const { data, isLoading, isError } = useSubjectListQuery();
+  const { data, isLoading, isError } = useSubjectListQuery({
+    page: pagination.pageIndex + 1,
+    limit: pagination.pageSize,
+  });
   const subjects = data?.subjects ?? [];
 
   const handleClick = (subjectId: string) => {
@@ -25,7 +30,7 @@ export const MainContainer = () => {
         header: "번호",
         enableSorting: false,
         cell: ({ row }) => {
-          const index = row.index + 1;
+          const index = pagination.pageIndex * pagination.pageSize + row.index + 1;
           return index;
         },
       },
@@ -34,24 +39,8 @@ export const MainContainer = () => {
         header: "과목명",
       },
     ],
-    []
+    [pagination.pageIndex, pagination.pageSize]
   );
-
-  if (isLoading) {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <p className="text-[#6B7280]">과목 목록을 불러오는 중...</p>
-      </div>
-    );
-  }
-
-  if (isError) {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <p className="text-red-500">과목 목록을 불러오는데 실패했습니다.</p>
-      </div>
-    );
-  }
 
   return (
     <>
@@ -84,12 +73,19 @@ export const MainContainer = () => {
 
         {/* Subject Table */}
         <div className="relative w-full max-w-[1100px] mx-auto">
-          <Table
-            data={subjects}
-            columns={columns}
-            enablePagination={false}
-            onRowClick={(row) => handleClick(String(row.original.id))}
-          />
+          {isLoading ? (
+            <TableSkeleton columnCount={columns.length} rowCount={pagination.pageSize} />
+          ) : (
+            <Table
+              data={subjects}
+              columns={columns}
+              enablePagination
+              pagination={pagination}
+              onPaginationChange={setPagination}
+              rowCount={data?.pagination.total}
+              onRowClick={(row) => handleClick(String(row.original.id))}
+            />
+          )}
         </div>
       </main>
     </>

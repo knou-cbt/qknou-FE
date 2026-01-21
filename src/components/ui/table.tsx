@@ -290,22 +290,13 @@ function Pagination<TData>({ table, pageSizeOptions }: IPaginationProps<TData>) 
 
       {/* Page Info */}
       <div className="flex items-center gap-6">
-        <span className="text-sm text-[#6B7280]">
-          {totalRows > 0
-            ? `${pageIndex * pageSize + 1}-${Math.min(
-                (pageIndex + 1) * pageSize,
-                totalRows
-              )} / ${totalRows}개`
-            : "0개"}
-        </span>
-
         {/* Page Navigation */}
         <div className="flex items-center gap-1">
           <button
             type="button"
             onClick={() => table.setPageIndex(0)}
             disabled={!table.getCanPreviousPage()}
-            className="p-1.5 rounded hover:bg-[#F3F4F6] disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+            className="p-1.5 rounded hover:bg-[#F3F4F6] disabled:opacity-50 disabled:cursor-not-allowed transition-colors cursor-pointer"
             aria-label="첫 페이지"
           >
             <ChevronsLeft className="w-4 h-4 text-[#6B7280]" />
@@ -314,7 +305,7 @@ function Pagination<TData>({ table, pageSizeOptions }: IPaginationProps<TData>) 
             type="button"
             onClick={() => table.previousPage()}
             disabled={!table.getCanPreviousPage()}
-            className="p-1.5 rounded hover:bg-[#F3F4F6] disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+            className="p-1.5 rounded hover:bg-[#F3F4F6] disabled:opacity-50 disabled:cursor-not-allowed transition-colors cursor-pointer"
             aria-label="이전 페이지"
           >
             <ChevronLeft className="w-4 h-4 text-[#6B7280]" />
@@ -328,7 +319,7 @@ function Pagination<TData>({ table, pageSizeOptions }: IPaginationProps<TData>) 
             type="button"
             onClick={() => table.nextPage()}
             disabled={!table.getCanNextPage()}
-            className="p-1.5 rounded hover:bg-[#F3F4F6] disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+            className="p-1.5 rounded hover:bg-[#F3F4F6] disabled:opacity-50 disabled:cursor-not-allowed transition-colors cursor-pointer"
             aria-label="다음 페이지"
           >
             <ChevronRight className="w-4 h-4 text-[#6B7280]" />
@@ -337,7 +328,7 @@ function Pagination<TData>({ table, pageSizeOptions }: IPaginationProps<TData>) 
             type="button"
             onClick={() => table.setPageIndex(pageCount - 1)}
             disabled={!table.getCanNextPage()}
-            className="p-1.5 rounded hover:bg-[#F3F4F6] disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+            className="p-1.5 rounded hover:bg-[#F3F4F6] disabled:opacity-50 disabled:cursor-not-allowed transition-colors cursor-pointer"
             aria-label="마지막 페이지"
           >
             <ChevronsRight className="w-4 h-4 text-[#6B7280]" />
@@ -465,7 +456,7 @@ function Table<TData>({
     onColumnFiltersChange: onColumnFiltersChange ?? setInternalColumnFilters,
     getCoreRowModel: getCoreRowModel(),
     getSortedRowModel: getSortedRowModel(),
-    getPaginationRowModel: enablePagination ? getPaginationRowModel() : undefined,
+    getPaginationRowModel: enablePagination && rowCount === undefined ? getPaginationRowModel() : undefined,
     getFilteredRowModel: getFilteredRowModel(),
     manualPagination: rowCount !== undefined,
     rowCount,
