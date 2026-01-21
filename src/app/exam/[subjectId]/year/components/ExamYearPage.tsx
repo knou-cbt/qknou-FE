@@ -9,6 +9,7 @@ import {
   ModalHeader,
   ModalBody,
   ModalFooter,
+  Breadcrumb,
   type ColumnDef,
 } from "@/components/ui";
 
@@ -45,14 +46,14 @@ export const ExamYearPage = ({ subjectId }: Props) => {
           return year ? `${year}년` : "-";
         },
       },
-      {
-        accessorKey: "title",
-        header: "제목",
-        cell: ({ row }) => {
-          const title = row.original.title;
-          return title ?? "-";
-        },
-      },
+      // {
+      //   accessorKey: "title",
+      //   header: "제목",
+      //   cell: ({ row }) => {
+      //     const title = row.original.title;
+      //     return title ?? "-";
+      //   },
+      // },
       {
         accessorKey: "action",
         header: "기타",
@@ -107,7 +108,15 @@ export const ExamYearPage = ({ subjectId }: Props) => {
   return (
     <>
       {/* Hero Section */}
-      <section className="flex flex-col items-center px-4 md:px-8 lg:px-16 pt-16 md:pt-24 pb-8 md:pb-12 w-full bg-gradient-to-br from-[#EFF6FF] to-white">
+      <section className="flex flex-col items-center px-4 md:px-8 lg:px-16 pt-4 md:pt-4 pb-8 md:pb-12 w-full bg-gradient-to-br from-[#EFF6FF] to-white">
+        {/* Breadcrumb */}
+        <div className="w-full max-w-[1100px] pb-12">
+          <Breadcrumb
+            subject={subjectData?.name}
+            subjectHref={`/exam/${subjectId}/year`}
+          />
+        </div>
+        
         <div className="flex flex-col items-center gap-3 md:gap-4 w-full max-w-[768px]">
           <h1 className="text-lg md:text-xl lg:text-2xl font-semibold leading-7 text-center text-[#101828]">
             {subjectData?.name ?? "과목"}
@@ -119,13 +128,7 @@ export const ExamYearPage = ({ subjectId }: Props) => {
       </section>
 
       {/* Main Content */}
-      <main className="flex-1 flex flex-col items-center px-4 py-8 md:py-12 bg-white">
-        <div className="flex flex-col items-center gap-2 mb-6 md:mb-8">
-          <h2 className="text-xl md:text-2xl font-semibold text-[#101828]">
-            연도별 시험 문제
-          </h2>
-        </div>
-
+      <main className="flex-1 flex flex-col items-center px-4 pb-8  md:pt-4 md:pb-8 bg-white">
         {/* Year Table */}
         <div className="relative w-full max-w-[1100px] mx-auto">
           <Table
