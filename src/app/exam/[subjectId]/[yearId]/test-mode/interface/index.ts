@@ -21,6 +21,7 @@ export interface IQuestion {
   number: number;
   text: string;
   imageUrl?: string | null;
+  example?: string | null;
   choices: IChoice[];
 }
 

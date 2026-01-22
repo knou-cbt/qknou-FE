@@ -231,6 +231,7 @@ export interface IQuestionCardProps
     VariantProps<typeof questionCardVariants> {
   tags?: IQuestionTag[];
   question?: string;
+  example?: string | null;
   answers?: IAnswerOption[];
   selectedAnswer?: string | number | null;
   correctAnswer?: (string | number)[]; // 복수 정답 지원 (배열)
@@ -248,6 +249,7 @@ const QuestionCard = React.forwardRef<HTMLDivElement, IQuestionCardProps>(
       size,
       tags = [],
       question,
+      example,
       answers = [],
       selectedAnswer,
       correctAnswer = [],
@@ -298,6 +300,16 @@ const QuestionCard = React.forwardRef<HTMLDivElement, IQuestionCardProps>(
             <p className="font-normal text-base sm:text-[19px] leading-6 sm:leading-[31px] text-[#101828] w-full wrap-break-word">
               {question}
             </p>
+          )}
+
+          {/* Example (보기) */}
+          {example && (
+            <div className="w-full mt-4 p-4 bg-[#F9FAFB] border border-[#E5E7EB] rounded-[12px]">
+              <p className="text-xs font-medium text-[#6B7280] mb-2">보기</p>
+              <p className="font-normal text-sm sm:text-base leading-6 text-[#364153] break-words">
+                {example}
+              </p>
+            </div>
           )}
 
           {/* Custom Content */}

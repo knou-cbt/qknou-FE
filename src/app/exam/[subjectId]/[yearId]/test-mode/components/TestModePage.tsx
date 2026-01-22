@@ -367,6 +367,7 @@ export const TestModePage = ({ yearId }: Props) => {
               <QuestionCard
                 size="full"
                 question={currentQuestion.text}
+                example={currentQuestion.example}
                 answers={formattedAnswers}
                 selectedAnswer={
                   answers[currentIndex] !== undefined
@@ -439,6 +440,7 @@ export const TestModePage = ({ yearId }: Props) => {
             <QuestionCard
               size="full"
               question={currentQuestion.text}
+              example={currentQuestion.example}
               answers={formattedAnswers}
               selectedAnswer={selectedAnswer}
               correctAnswer={[]}
