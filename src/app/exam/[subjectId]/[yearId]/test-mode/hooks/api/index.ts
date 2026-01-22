@@ -41,6 +41,7 @@ interface IApiExamQuestionsWithAnswersResponse {
     subject: string;
     title: string;
     totalQuestions: number;
+    year: number;
   };
   questions: IApiQuestionWithAnswer[];
 }
