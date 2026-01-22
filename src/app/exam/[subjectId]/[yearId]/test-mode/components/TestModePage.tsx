@@ -410,9 +410,9 @@ export const TestModePage = ({ yearId }: Props) => {
   return (
     <div className="min-h-screen bg-white flex flex-col">
       {/* Main Content */}
-      <main className="flex-1 flex flex-col items-center px-4 py-8">
+      <main className="flex-1 flex flex-col items-center px-4 py-6">
         {/* Question Info */}
-        <div className="w-full max-w-[1104px] mb-4">
+        <div className="w-full max-w-[1100px]">
           <p className="text-sm text-[#6B7280]">
             {exam?.title ?? "-"} | 시험모드 | {currentIndex + 1} /{" "}
             {questions.length}
@@ -436,7 +436,7 @@ export const TestModePage = ({ yearId }: Props) => {
 
         {/* Question Card */}
         {currentQuestion && (
-          <div className="w-full max-w-[1066px]">
+          <div className="w-full max-w-[1100px]">
             <QuestionCard
               size="full"
               question={currentQuestion.text}

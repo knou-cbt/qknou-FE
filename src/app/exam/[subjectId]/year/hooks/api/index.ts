@@ -59,14 +59,9 @@ export const getSubjectDetail = async (id: string): Promise<ISubject> => {
 
 /** 특정 과목의 시험지 목록 조회 */
 export const getExamListBySubject = async (
-  subjectId: string,
-  year?: number
+  subjectId: string
 ): Promise<IExam[]> => {
-  let url = SubjectApiPaths.exams(subjectId);
-  if (year) {
-    url += `?year=${year}`;
-  }
-  const response = await fetch(url);
+  const response = await fetch(SubjectApiPaths.exams(subjectId));
   if (!response.ok) throw new Error("시험지 목록 조회 실패");
 
   const result: IApiResponse<IExam[]> = await response.json();

@@ -204,10 +204,10 @@ const questionCardVariants = cva(
   {
     variants: {
       size: {
-        default: "max-w-[1066px] pt-6 sm:pt-8 pb-0 gap-4 sm:gap-6 px-4 sm:px-0",
-        sm: "w-full max-w-[600px] pt-4 sm:pt-6 pb-0 gap-3 sm:gap-4 px-4 sm:px-0",
-        lg: "w-full max-w-[1200px] pt-6 sm:pt-10 pb-0 gap-4 sm:gap-6 px-4 sm:px-0",
-        full: "w-full pt-6 sm:pt-8 pb-0 gap-4 sm:gap-6 px-4 sm:px-0",
+        default: "max-w-[1066px] pt-6 sm:pt-8 pb-0 gap-4 sm:gap-6",
+        sm: "w-full max-w-[600px] pt-4 sm:pt-6 pb-0 gap-3 sm:gap-4",
+        lg: "w-full max-w-[1200px] pt-6 sm:pt-10 pb-0 gap-4 sm:gap-6",
+        full: "w-full pt-6 sm:pt-8 pb-0 gap-4 sm:gap-6",
       },
     },
     defaultVariants: {
@@ -277,7 +277,7 @@ const QuestionCard = React.forwardRef<HTMLDivElement, IQuestionCardProps>(
     };
 
     return (
-      <div className="flex flex-col items-start gap-4 sm:gap-6 w-full px-4 sm:px-0">
+      <div className="flex flex-col items-start gap-4 sm:gap-6 w-full ">
         {/* Question Card Section */}
         <div
           ref={ref}
@@ -286,7 +286,7 @@ const QuestionCard = React.forwardRef<HTMLDivElement, IQuestionCardProps>(
         >
           {/* Tags */}
           {tags.length > 0 && (
-            <div className="flex flex-row flex-wrap items-start gap-2 w-full">
+            <div className="flex flex-row flex-wrap items-start gap-2 w-full px-4 sm:px-0">
               {tags.map((tag, index) => (
                 <QuestionTag key={index} variant={tag.variant}>
                   {tag.label}
@@ -304,11 +304,13 @@ const QuestionCard = React.forwardRef<HTMLDivElement, IQuestionCardProps>(
 
           {/* Example (보기) */}
           {example && (
-            <div className="w-full mt-4 p-4 bg-[#F9FAFB] border border-[#E5E7EB] rounded-[12px]">
-              <p className="text-xs font-medium text-[#6B7280] mb-2">보기</p>
-              <p className="font-normal text-sm sm:text-base leading-6 text-[#364153] break-words">
-                {example}
-              </p>
+            <div className="w-full mt-4 px-4 sm:px-0">
+              <div className="p-4 bg-[#F9FAFB] border border-[#E5E7EB] rounded-[12px]">
+                <p className="text-xs font-medium text-[#6B7280] mb-2">보기</p>
+                <p className="font-normal text-sm sm:text-base leading-6 text-[#364153] break-words">
+                  {example}
+                </p>
+              </div>
             </div>
           )}
 
