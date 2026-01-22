@@ -252,37 +252,33 @@ export const TestModePage = ({ yearId }: Props) => {
   if (isSubmitted) {
     return (
       <div className="min-h-screen bg-[#F9FAFB] flex flex-col">
-        <main className="flex-1 flex flex-col items-center px-4 py-8">
+        <main className="flex-1 flex flex-col items-center px-4 py-4 sm:py-8">
           {/* 페이지 제목 */}
-          <div className="w-full max-w-[1104px] mb-6">
-            <h1 className="text-2xl font-bold text-[#101828] mb-2">
+          <div className="w-full max-w-[1104px] mb-4 sm:mb-6">
+            <h1 className="text-xl sm:text-2xl font-bold text-[#101828] mb-2">
               시험 결과
             </h1>
-            <div className="flex items-center gap-4 text-sm text-[#6B7280]">
+            <div className="flex items-center gap-2 sm:gap-4 text-xs sm:text-sm text-[#6B7280]">
               <div className="flex items-center gap-1">
-                <BookOpen className="w-4 h-4" />
+                <BookOpen className="w-3 h-3 sm:w-4 sm:h-4" />
                 <span>{exam?.subject ?? "-"}</span>
-              </div>
-              <div className="flex items-center gap-1">
-                <Calendar className="w-4 h-4" />
-                <span>{exam?.title ?? "-"}</span>
               </div>
             </div>
           </div>
 
           {/* 점수 카드 */}
-          <div className="w-full max-w-[1104px] bg-white border border-[#E5E7EB] rounded-xl p-6 mb-4">
-            <div className="flex items-center justify-between">
+          <div className="w-full max-w-[1104px] bg-white border border-[#E5E7EB] rounded-xl p-4 sm:p-6 mb-4">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
               {/* 왼쪽: 획득 점수 */}
-              <div className="flex items-center gap-4">
-                <div className="flex items-center justify-center w-12 h-12 bg-[#EFF6FF] rounded-full">
-                  <CheckCircle className="w-6 h-6 text-[#155DFC]" />
+              <div className="flex items-center gap-3 sm:gap-4">
+                <div className="flex items-center justify-center w-10 h-10 sm:w-12 sm:h-12 bg-[#EFF6FF] rounded-full shrink-0">
+                  <CheckCircle className="w-5 h-5 sm:w-6 sm:h-6 text-[#155DFC]" />
                 </div>
                 <div>
-                  <p className="text-sm text-[#6B7280]">획득 점수</p>
-                  <p className="text-3xl font-bold text-[#101828]">
+                  <p className="text-xs sm:text-sm text-[#6B7280]">획득 점수</p>
+                  <p className="text-2xl sm:text-3xl font-bold text-[#101828]">
                     {correctCount}
-                    <span className="text-lg font-normal text-[#9CA3AF]">
+                    <span className="text-base sm:text-lg font-normal text-[#9CA3AF]">
                       /{questions.length}
                     </span>
                   </p>
@@ -290,16 +286,16 @@ export const TestModePage = ({ yearId }: Props) => {
               </div>
 
               {/* 오른쪽: 정답률 */}
-              <div className="text-right">
-                <p className="text-sm text-[#6B7280]">정답률</p>
-                <p className="text-3xl font-bold text-[#155DFC]">
+              <div className="text-left sm:text-right">
+                <p className="text-xs sm:text-sm text-[#6B7280]">정답률</p>
+                <p className="text-2xl sm:text-3xl font-bold text-[#155DFC]">
                   {correctRate}%
                 </p>
               </div>
             </div>
 
             {/* 프로그레스 바 */}
-            <div className="mt-4 h-3 bg-[#E5E7EB] rounded-full overflow-hidden">
+            <div className="mt-4 h-2 sm:h-3 bg-[#E5E7EB] rounded-full overflow-hidden">
               <div
                 className="h-full rounded-full transition-all duration-500"
                 style={{
@@ -311,41 +307,41 @@ export const TestModePage = ({ yearId }: Props) => {
           </div>
 
           {/* 통계 카드들 */}
-          <div className="w-full max-w-[1104px] grid grid-cols-3 gap-4 mb-6">
+          <div className="w-full max-w-[1104px] grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4 mb-4 sm:mb-6">
             {/* 총 소요 시간 */}
-            <div className="bg-white border border-[#E5E7EB] rounded-xl p-4 flex items-center gap-3">
-              <div className="flex items-center justify-center w-10 h-10 bg-[#F3F4F6] rounded-full">
-                <Clock className="w-5 h-5 text-[#6B7280]" />
+            <div className="bg-white border border-[#E5E7EB] rounded-xl p-3 sm:p-4 flex items-center gap-2 sm:gap-3">
+              <div className="flex items-center justify-center w-8 h-8 sm:w-10 sm:h-10 bg-[#F3F4F6] rounded-full shrink-0">
+                <Clock className="w-4 h-4 sm:w-5 sm:h-5 text-[#6B7280]" />
               </div>
-              <div>
+              <div className="min-w-0">
                 <p className="text-xs text-[#6B7280]">총 소요 시간</p>
-                <p className="text-lg font-semibold text-[#101828]">
+                <p className="text-base sm:text-lg font-semibold text-[#101828] truncate">
                   {formatTime(elapsedTime)}
                 </p>
               </div>
             </div>
 
             {/* 정답 */}
-            <div className="bg-white border border-[#E5E7EB] rounded-xl p-4 flex items-center gap-3">
-              <div className="flex items-center justify-center w-10 h-10 bg-[#DCFCE7] rounded-full">
-                <CheckCircle className="w-5 h-5 text-[#22C55E]" />
+            <div className="bg-white border border-[#E5E7EB] rounded-xl p-3 sm:p-4 flex items-center gap-2 sm:gap-3">
+              <div className="flex items-center justify-center w-8 h-8 sm:w-10 sm:h-10 bg-[#DCFCE7] rounded-full shrink-0">
+                <CheckCircle className="w-4 h-4 sm:w-5 sm:h-5 text-[#22C55E]" />
               </div>
-              <div>
+              <div className="min-w-0">
                 <p className="text-xs text-[#6B7280]">정답</p>
-                <p className="text-lg font-semibold text-[#101828]">
+                <p className="text-base sm:text-lg font-semibold text-[#101828]">
                   {correctCount}개
                 </p>
               </div>
             </div>
 
             {/* 오답 */}
-            <div className="bg-white border border-[#E5E7EB] rounded-xl p-4 flex items-center gap-3">
-              <div className="flex items-center justify-center w-10 h-10 bg-[#FEE2E2] rounded-full">
-                <XCircle className="w-5 h-5 text-[#EF4444]" />
+            <div className="bg-white border border-[#E5E7EB] rounded-xl p-3 sm:p-4 flex items-center gap-2 sm:gap-3">
+              <div className="flex items-center justify-center w-8 h-8 sm:w-10 sm:h-10 bg-[#FEE2E2] rounded-full shrink-0">
+                <XCircle className="w-4 h-4 sm:w-5 sm:h-5 text-[#EF4444]" />
               </div>
-              <div>
+              <div className="min-w-0">
                 <p className="text-xs text-[#6B7280]">오답</p>
-                <p className="text-lg font-semibold text-[#101828]">
+                <p className="text-base sm:text-lg font-semibold text-[#101828]">
                   {wrongCount}개
                 </p>
               </div>
@@ -353,7 +349,7 @@ export const TestModePage = ({ yearId }: Props) => {
           </div>
 
           {/* Question Navigator */}
-          <div className="w-full max-w-[1104px] mb-6">
+          <div className="w-full max-w-[1104px] mb-4 sm:mb-6">
             <QuestionNavigator
               size="full"
               totalQuestions={questions.length}
@@ -366,7 +362,7 @@ export const TestModePage = ({ yearId }: Props) => {
           </div>
 
           {/* 문제 카드 */}
-          <div className="w-full max-w-[1104px] bg-white border border-[#E5E7EB] rounded-xl p-6 mb-6">
+          <div className="w-full max-w-[1104px] bg-white border border-[#E5E7EB] rounded-xl p-4 sm:p-6 mb-4 sm:mb-6">
             {currentQuestion && (
               <QuestionCard
                 size="full"
@@ -396,10 +392,10 @@ export const TestModePage = ({ yearId }: Props) => {
           </div>
 
           {/* 홈으로 돌아가기 버튼 */}
-          <div className="w-full max-w-[896px] mt-4">
+          <div className="w-full max-w-[896px] mt-3 sm:mt-4">
             <Button
               onClick={() => router.push("/")}
-              className="w-full py-3 rounded-xl cursor-pointer"
+              className="w-full cursor-pointer text-sm sm:text-base h-12"
             >
               홈으로 돌아가기
             </Button>

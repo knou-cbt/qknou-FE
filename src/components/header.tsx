@@ -96,34 +96,34 @@ const Header = React.forwardRef<HTMLElement, IHeaderProps>(
         <header
           ref={ref}
           className={cn(
-            "box-border flex flex-col items-start px-6 py-4 pb-px w-full h-[77px] bg-white border-b border-[#E5E7EB]",
+            "box-border flex flex-col items-start px-4 sm:px-6 py-3 sm:py-4 pb-px w-full min-h-[77px] bg-white border-b border-[#E5E7EB]",
             className
           )}
           {...props}
         >
           {/* Container */}
-          <div className="flex flex-row justify-between items-center w-full max-w-[1392px] h-11 mx-auto">
+          <div className="flex flex-row justify-between items-center w-full max-w-[1392px] h-11 mx-auto gap-2 sm:gap-4">
             {/* Logo Container */}
-            <Link href="/" className="transition-opacity">
+            <Link href="/" className="transition-opacity shrink-0">
             <Image
               src="/logo.svg"
               alt="QKNOU LOGO"
               width={30}
               height={30}
-              className="h-16 w-16 object-contain"
+              className="h-12 w-12 sm:h-16 sm:w-16 object-contain"
             />
           </Link>
 
             {/* 시험 모드 */}
             {variant === "exam" && (
-              <div className="flex flex-row items-center gap-3">
+              <div className="flex flex-row items-center gap-2 sm:gap-3 shrink-0">
                 {/* Timer */}
-                <div className="flex flex-row items-center px-4 gap-2 h-11 bg-[#EFF6FF] rounded-[10px]">
+                <div className="flex flex-row items-center px-2 sm:px-4 gap-1.5 sm:gap-2 h-9 sm:h-11 bg-[#EFF6FF] rounded-[10px]">
                   <Clock
-                    className="w-5 h-5 text-[#155DFC]"
+                    className="w-4 h-4 sm:w-5 sm:h-5 text-[#155DFC] shrink-0"
                     strokeWidth={1.67}
                   />
-                  <span className="font-normal text-sm leading-7 text-[#155DFC]">
+                  <span className="font-normal text-xs sm:text-sm leading-7 text-[#155DFC] whitespace-nowrap">
                     {formatTime(remainingTime)}
                   </span>
                 </div>
@@ -131,10 +131,10 @@ const Header = React.forwardRef<HTMLElement, IHeaderProps>(
                 <Button
                   variant="outline"
                   onClick={handleExamEndClick}
-                  className="bg-[#FEF2F2] border-[#FFC9C9] text-xs text-[#E7000B] hover:bg-[#FEE2E2] hover:text-[#E7000B]"
+                  className="bg-[#FEF2F2] border-[#FFC9C9] text-xs sm:text-sm text-[#E7000B] hover:bg-[#FEE2E2] hover:text-[#E7000B] h-9 sm:h-9 px-2 sm:px-3 gap-1.5 sm:gap-2 whitespace-nowrap"
                 >
-                  <LogOut className="w-4 h-4" strokeWidth={1.33} />
-                  시험 종료
+                  <LogOut className="w-3.5 h-3.5 sm:w-4 sm:h-4 shrink-0" strokeWidth={1.33} />
+                  <span className="sm:hidden">시험 종료</span>
                 </Button>
               </div>
             )}

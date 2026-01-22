@@ -8,7 +8,7 @@ import { cn } from "@/lib/utils";
 // ============================================
 
 const tagVariants = cva(
-  "inline-flex items-center justify-center px-2 sm:px-3 h-6 sm:h-7 rounded-full font-normal text-xs sm:text-sm leading-4 sm:leading-5 wrap-break-word",
+  "inline-flex items-center justify-center px-3 h-7 rounded-full font-normal text-sm leading-5",
   {
     variants: {
       variant: {
@@ -45,7 +45,7 @@ QuestionTag.displayName = "QuestionTag";
 // ============================================
 
 const answerChoiceVariants = cva(
-  "box-border flex flex-row items-start sm:items-center px-3 sm:px-4 py-3 sm:py-0 gap-3 sm:gap-4 w-full min-h-[60px] sm:h-[60px] bg-white border-2 rounded-[14px] cursor-pointer transition-all duration-200",
+  "box-border flex flex-row items-start px-4 py-3 gap-4 w-full min-h-[60px] bg-white border-2 rounded-[14px] cursor-pointer transition-all duration-200",
   {
     variants: {
       state: {
@@ -110,7 +110,7 @@ const AnswerChoice = React.forwardRef<HTMLDivElement, IAnswerChoiceProps>(
       >
         {/* Correct Checkmark or Radio Circle */}
         {state === "correct" ? (
-          <div className="flex items-center justify-center w-6 h-6 bg-[#059669] rounded-full">
+          <div className="flex items-center justify-center w-6 h-6 bg-[#059669] rounded-full shrink-0 mt-0.5">
             <svg
               width="14"
               height="14"
@@ -128,7 +128,7 @@ const AnswerChoice = React.forwardRef<HTMLDivElement, IAnswerChoiceProps>(
             </svg>
           </div>
         ) : (
-          <div className={cn(radioVariants({ state }))}>
+          <div className={cn(radioVariants({ state }), "shrink-0 mt-0.5")}>
             {(state === "selected" || state === "incorrect") && (
               <div
                 className={cn("w-2.5 h-2.5 rounded-full", {
@@ -141,7 +141,7 @@ const AnswerChoice = React.forwardRef<HTMLDivElement, IAnswerChoiceProps>(
         )}
 
         {/* Answer Text */}
-        <span className="flex-1 font-normal text-sm sm:text-base leading-5 sm:leading-6 text-[#101828] wrap-break-word">
+        <span className="flex-1 min-w-0 font-normal text-sm sm:text-base leading-5 sm:leading-6 text-[#101828] break-words">
           {children}
         </span>
       </div>

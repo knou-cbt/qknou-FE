@@ -1,6 +1,6 @@
 "use client";
 import { useState, useCallback, useMemo, useEffect } from "react";
-import { ExamNavButtons, QuestionCard, Button } from "@/components/ui";
+import { ExamNavButtons, QuestionCard, Button, Breadcrumb } from "@/components/ui";
 import { useExamQuestionsWithAnswersQuery } from "../hooks/service";
 
 type Props = {
@@ -148,12 +148,23 @@ export const MemorizeModePage = ({ subjectId, yearId }: Props) => {
 
   return (
     <div className="min-h-screen bg-white flex flex-col">
+      {/* Breadcrumb */}
+      <div className="w-full px-4 pt-4 pb-4">
+        <div className="w-full max-w-[1100px] mx-auto">
+          <Breadcrumb
+            subject={exam?.subject}
+            // year={exam?.year ?? ""}
+            subjectHref={`/exam/${subjectId}/year`}
+          />
+        </div>
+      </div>
+
       {/* Main Content */}
       <main className="flex-1 flex flex-col items-center px-4 py-8">
         {/* Question Info */}
         <div className="w-full max-w-[1066px] mb-4">
           <p className="text-sm text-[#6B7280]">
-            {exam?.title ?? "-"} | 암기모드 | {currentIndex + 1} /{" "}
+             암기모드 | {currentIndex + 1} /{" "}
             {questions.length}
           </p>
         </div>

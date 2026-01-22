@@ -8,7 +8,7 @@ import { cn } from "@/lib/utils"
 // ============================================
 
 const examNavButtonVariants = cva(
-    "box-border flex flex-row justify-center items-center gap-2 h-[52px] rounded-[14px] font-normal text-base leading-6 text-center transition-all duration-200 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed",
+    "box-border flex flex-row justify-center items-center gap-2 h-12 rounded-[14px] font-normal text-base leading-6 text-center transition-all duration-200 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed",
     {
         variants: {
             variant: {
