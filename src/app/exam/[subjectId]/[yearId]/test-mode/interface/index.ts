@@ -6,6 +6,7 @@ export interface IExamInfo {
   subject: string;
   title: string;
   totalQuestions: number;
+  year: number;
 }
 
 /** 답안 선택지 */

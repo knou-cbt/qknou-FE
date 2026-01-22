@@ -154,7 +154,7 @@ export const MemorizeModePage = ({ subjectId, yearId }: Props) => {
         <div className="w-full max-w-[1100px] mx-auto">
           <Breadcrumb
             subject={exam?.subject}
-            // year={exam?.year ?? ""}
+            year={exam?.year.toString() ?? ""}
             subjectHref={`/exam/${subjectId}/year`}
           />
         </div>
