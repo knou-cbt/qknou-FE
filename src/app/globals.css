@@ -1,26 +1,128 @@
 @import "tailwindcss";
 
+/* ==========================================================================
+   Base Theme Tokens
+   - primary: UI 기준 컬러 (기본 버튼/주요 UI)
+   - brand: 포인트 컬러 (CTA/링크/강조)
+   ========================================================================== */
+
 :root {
   --background: #ffffff;
-  --foreground: #171717;
+  --foreground: #111827;
+
+  /* ✅ Primary: UI 기준 컬러 */
+  --primary: #334155;
+  --primary-foreground: #ffffff;
+
+  /* ✅ Brand / Point 컬러 */
+  --brand: #155DFC;
+  --brand-foreground: #ffffff;
+
+  --secondary: #374151;
+  --secondary-foreground: #ffffff;
+
+  --destructive: #DC2626;
+  --destructive-foreground: #ffffff;
+
+  --accent: #F3F4F6;
+  --accent-foreground: #111827;
+
+  --muted: #F9FAFB;
+  --muted-foreground: #6B7280;
+
+  --border: #E5E7EB;
+  --input: #E5E7EB;
+
+  /* focus ring은 포인트 컬러로 */
+  --ring: var(--brand);
+
+  /* (선택) radius 등도 같이 쓰고 있으면 유지 */
+  /* --radius: 0.75rem; */
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
+
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+
+  /* 🔵 포인트 컬러 분리 */
+  --color-brand: var(--brand);
+  --color-brand-foreground: var(--brand-foreground);
+
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
 }
+
+/* ==========================================================================
+   Dark Mode Tokens
+   - prefers-color-scheme 기반 자동 전환
+   ========================================================================== */
 
 @media (prefers-color-scheme: dark) {
   :root {
     --background: #0a0a0a;
     --foreground: #ededed;
+
+    /* ✅ Primary: 다크에서도 기준 UI 컬러 (너무 밝지 않게) */
+    --primary: #334155;
+    --primary-foreground: #111827;
+
+    /* ✅ Brand / Point 컬러는 유지 (필요시 명도만 조정 가능) */
+    --brand: #155DFC;
+    --brand-foreground: #ffffff;
+
+    --secondary: #4b5563;
+    --secondary-foreground: #ffffff;
+
+    --destructive: #dc2626;
+    --destructive-foreground: #ffffff;
+
+    --accent: #1f2937;
+    --accent-foreground: #ededed;
+
+    --muted: #111827;
+    --muted-foreground: #9ca3af;
+
+    --border: #374151;
+    --input: #374151;
+
+    --ring: var(--brand);
   }
 }
+
+/* ==========================================================================
+   Base Styles
+   ========================================================================== */
 
 body {
   background: var(--background);
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
 }
+
+/* ==========================================================================
+   (선택) Tailwind v4에서 토큰 기반 유틸이 바로 안 잡히는 경우를 대비한 예시
+   - 필요 없으면 삭제해도 됨
+   ========================================================================== */
+
+/* 예: 포인트 버튼 클래스가 필요하면
+.btn-brand { background: var(--brand); color: var(--brand-foreground); }
+*/

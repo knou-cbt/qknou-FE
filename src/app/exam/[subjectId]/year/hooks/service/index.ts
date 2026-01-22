@@ -27,10 +27,13 @@ export const useSubjectDetailQuery = (id: string) => {
 };
 
 /** 특정 과목의 시험지 목록 조회 훅 */
-export const useExamListBySubjectQuery = (subjectId: string) => {
+export const useExamListBySubjectQuery = (
+  subjectId: string,
+  year?: number
+) => {
   return useQuery({
     queryKey: SubjectQueryKeys.exams(subjectId),
-    queryFn: () => getExamListBySubject(subjectId),
+    queryFn: () => getExamListBySubject(subjectId, year),
     enabled: !!subjectId,
   });
 };

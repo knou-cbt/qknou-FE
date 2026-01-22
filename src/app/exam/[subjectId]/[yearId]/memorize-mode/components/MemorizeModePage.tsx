@@ -15,6 +15,7 @@ export const MemorizeModePage = ({ subjectId, yearId }: Props) => {
   const [selectedAnswer, setSelectedAnswer] = useState<string | number | null>(
     null
   );
+  const [selectedSubject, setSelectedSubject] = useState<string | null>(null);
   const [showResult, setShowResult] = useState(false);
   // 정답 기억하기 상태 (questionId -> { showResult, selectedAnswer })
   const [rememberedAnswers, setRememberedAnswers] = useState<
