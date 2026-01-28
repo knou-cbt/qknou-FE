@@ -113,7 +113,7 @@ export const metadata: Metadata = {
    * - Google Search Console / Naver Search Advisor 양쪽 모두 등록 권장
    */
   verification: {
-    // google: process.env.NEXT_PUBLIC_GSC_VERIFICATION,
+    google: "eP1MM8pNKrPdUc8zSu25dccVy4zJH2yY1ik4DRJ01Ks",
     // naver: process.env.NEXT_PUBLIC_NAVER_VERIFICATION,
   },
 };
