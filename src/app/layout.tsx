@@ -5,6 +5,7 @@ import "./globals.css";
 import { QueryProvider } from "@/providers/QueryProvider";
 import { ExamProvider } from "@/contexts";
 import { AppContent } from "@/components";
+import { Analytics } from '@vercel/analytics/react';
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -128,6 +129,7 @@ export default function RootLayout({
             <AppContent>{children}</AppContent>
           </ExamProvider>
         </QueryProvider>
+        <Analytics />
       </body>
     </html>
   );
