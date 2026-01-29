@@ -1,4 +1,4 @@
-import { MemorizeModePage } from "./components";
+import { MemorizeModePage } from "@/modules/exam";
 
 type PageProps = {
   params: Promise<{ subjectId: string; yearId: string }>;

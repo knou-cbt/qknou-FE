@@ -1,7 +1,7 @@
 "use client";
 import { useState, useCallback, useMemo, useEffect } from "react";
-import { ExamNavButtons, QuestionCard, Button, Breadcrumb } from "@/components/ui";
-import { useExamQuestionsWithAnswersQuery } from "../hooks/service";
+import { ExamNavButtons, QuestionCard, Button, Breadcrumb } from "@/shared/ui";
+import { useExamQuestionsWithAnswersQuery } from "../model";
 
 type Props = {
   subjectId?: string;

@@ -11,13 +11,13 @@ import {
   ModalFooter,
   Breadcrumb,
   type ColumnDef,
-} from "@/components/ui";
+} from "@/shared/ui";
 
 import {
   useExamListBySubjectQuery,
   useSubjectDetailQuery,
-} from "../hooks/service";
-import type { IExam } from "../interface";
+} from "../model";
+import type { IExam } from "../lib";
 
 type Props = {
   subjectId: string;

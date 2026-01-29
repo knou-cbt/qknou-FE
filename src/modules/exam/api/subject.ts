@@ -1,6 +1,11 @@
-import { SubjectApiPaths } from "@/constants";
+import { SubjectApiPaths } from "@/shared/config";
 
-import type { IExam, ISubject } from "../../interface";
+import type {
+  ISubject,
+  IExam,
+  IGetSubjectListParams,
+  IGetSubjectListResponse,
+} from "../lib";
 
 /** API 응답 공통 형식 */
 interface IApiResponse<T> {
@@ -9,24 +14,6 @@ interface IApiResponse<T> {
 }
 
 /** 과목 목록 조회 */
-export interface IGetSubjectListParams {
-  search?: string;
-  page?: number;
-  limit?: number;
-}
-
-export interface IPagination {
-  page: number;
-  limit: number;
-  total: number;
-  totalPages: number;
-}
-
-export interface IGetSubjectListResponse {
-  pagination: IPagination;
-  subjects: ISubject[];
-}
-
 export const getSubjectList = async (
   params?: IGetSubjectListParams
 ): Promise<IGetSubjectListResponse> => {

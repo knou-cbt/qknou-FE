@@ -9,11 +9,11 @@ import {
   ExamNavButtons,
   type TQuestionState,
   Button,
-} from "@/components/ui";
-import { useExamContext } from "@/contexts";
-import { useIsMobile } from "@/lib/useIsMobile";
-import { useExamQuestionsQuery, useExamSubmitMutation } from "../hooks/service";
-import type { IQuestionResult } from "../interface";
+} from "@/shared/ui";
+import { useExamContext } from "../model";
+import { useIsMobile } from "@/shared/lib";
+import { useExamQuestionsQuery, useExamSubmitMutation } from "../model";
+import type { IQuestionResult } from "../lib";
 
 type Props = {
   yearId?: string;

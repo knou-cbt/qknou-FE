@@ -1,4 +1,4 @@
-import { ExamYearPage } from "./components";
+import { ExamYearPage } from "@/modules/exam";
 
 type PageProps = {
   params: Promise<{ subjectId : string }>;

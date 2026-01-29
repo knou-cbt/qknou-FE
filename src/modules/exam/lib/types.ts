@@ -1,4 +1,28 @@
-// 시험모드 관련 인터페이스 정의
+// Exam domain 타입 정의
+
+/** 과목 정보 */
+export interface ISubject {
+  id: number;
+  name: string;
+  examCount?: number;
+  createdAt?: string;
+}
+
+/** 시험지 정보 */
+export interface IExam {
+  id: string;
+  year: number;
+  title?: string;
+  subjectId: string;
+  subjectName?: string;
+}
+
+/** @deprecated IExam으로 대체 */
+export interface IExamYear {
+  id: string;
+  year: number;
+  subjectId: string;
+}
 
 /** 시험 정보 */
 export interface IExamInfo {
@@ -64,4 +88,25 @@ export interface IExamSubmitResponse {
   correctCount: number;
   score: number;
   results: IQuestionResult[];
+}
+
+/** 과목 목록 조회 파라미터 */
+export interface IGetSubjectListParams {
+  search?: string;
+  page?: number;
+  limit?: number;
+}
+
+/** 페이지네이션 정보 */
+export interface IPagination {
+  page: number;
+  limit: number;
+  total: number;
+  totalPages: number;
+}
+
+/** 과목 목록 조회 응답 */
+export interface IGetSubjectListResponse {
+  pagination: IPagination;
+  subjects: ISubject[];
 }

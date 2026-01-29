@@ -1,11 +1,11 @@
-import { ExamApiPaths } from "@/constants";
+import { ExamApiPaths } from "@/shared/config";
 
 import type {
   IExamQuestionsResponse,
   IExamQuestionsWithAnswersResponse,
   IExamSubmitRequest,
   IExamSubmitResponse,
-} from "../../interface";
+} from "../lib";
 
 /** API 응답 공통 형식 */
 interface IApiResponse<T> {
