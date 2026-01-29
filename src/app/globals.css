@@ -128,13 +128,106 @@ body {
   font-family: Arial, Helvetica, sans-serif;
 }
 
-/* OS 차이 제거 - appearance 제거 */
+/* OS 차이 제거 - appearance 제거 및 모바일 브라우저 기본 스타일 제거 */
 button,
 input,
 select {
   appearance: none;
   -webkit-appearance: none;
   -moz-appearance: none;
+  /* 모바일 브라우저(특히 삼성 인터넷, 갤럭시) 기본 스타일 제거 */
+  -webkit-tap-highlight-color: transparent;
+  /* 삼성 인터넷 브라우저 기본 버튼 스타일 제거 */
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  user-select: none;
+}
+
+/* ==========================================================================
+   Animation Utilities
+   ========================================================================== */
+
+@keyframes pulse-slow {
+  0%, 100% {
+    opacity: 0.4;
+  }
+  50% {
+    opacity: 0.8;
+  }
+}
+
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+@keyframes sparkle {
+  0%, 100% {
+    opacity: 0;
+    transform: scale(0);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.animate-pulse-slow {
+  animation: pulse-slow 3s ease-in-out infinite;
+}
+
+.animate-float {
+  animation: float 3s ease-in-out infinite;
+}
+
+.animate-sparkle {
+  animation: sparkle 2s ease-in-out infinite;
+}
+
+.delay-300 {
+  animation-delay: 300ms;
+}
+
+.delay-700 {
+  animation-delay: 700ms;
+}
+
+.delay-1000 {
+  animation-delay: 1000ms;
+}
+
+/* ==========================================================================
+   Mobile Responsive Enhancements
+   ========================================================================== */
+
+@media (max-width: 640px) {
+  /* Ensure text is readable on mobile */
+  h1 {
+    font-size: clamp(1.5rem, 8vw, 2rem);
+  }
+  
+  h2 {
+    font-size: clamp(1.25rem, 6vw, 1.75rem);
+  }
+  
+  /* Better touch targets */
+  button,
+  a {
+    min-height: 44px;
+    min-width: 44px;
+  }
+}
+
+/* ==========================================================================
+   Smooth Scrolling
+   ========================================================================== */
+
+html {
+  scroll-behavior: smooth;
 }
 
 /* ==========================================================================

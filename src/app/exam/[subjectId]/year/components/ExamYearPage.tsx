@@ -78,6 +78,7 @@ export const ExamYearPage = ({ subjectId }: Props) => {
                   setIsTestModeModalOpen(true);
                 }}
                 className="cursor-pointer"
+                variant="black"
               >
                 시험모드
               </Button>
@@ -168,7 +169,8 @@ export const ExamYearPage = ({ subjectId }: Props) => {
                 }
                 setIsTestModeModalOpen(false);
               }}
-              className="w-full bg-black hover:bg-[#1F2937] text-white"
+              variant="black"
+              className="w-full"
             >
               시험 응시하기
             </Button>

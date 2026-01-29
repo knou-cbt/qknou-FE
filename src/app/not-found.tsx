@@ -21,7 +21,7 @@ export default function NotFound() {
         {/* 홈으로 돌아가기 버튼 */}
         <Link
           href="/"
-          className="mt-4 inline-flex h-12 items-center justify-center rounded-full bg-[#3B82F6] px-8 text-sm font-medium text-white transition-colors hover:bg-[#2563EB] md:text-base"
+          className="mt-4 inline-flex h-12 items-center justify-center rounded-full bg-black px-8 text-sm font-medium text-white transition-colors hover:bg-[#1F2937] md:text-base"
         >
           홈으로 돌아가기
         </Link>

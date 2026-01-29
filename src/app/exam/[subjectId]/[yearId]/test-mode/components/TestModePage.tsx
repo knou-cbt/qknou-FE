@@ -397,6 +397,7 @@ export const TestModePage = ({ yearId }: Props) => {
             <Button
               onClick={() => router.push("/")}
               className="w-full cursor-pointer text-sm sm:text-base h-12"
+              variant="black"
             >
               홈으로 돌아가기
             </Button>
