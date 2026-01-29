@@ -2,8 +2,8 @@
 
 import { useState, useCallback, KeyboardEvent } from "react";
 import { Search, X } from "lucide-react";
-import { Input } from "@/components/ui/input";
-import { cn } from "@/lib/utils";
+import { Input } from "@/shared/ui/input";
+import { cn } from "@/shared/lib/utils";
 
 export interface IInputSearchProps {
   /** 검색 실행 시 호출되는 콜백 함수 */

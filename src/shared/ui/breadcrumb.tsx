@@ -3,7 +3,7 @@
 import * as React from "react";
 import Link from "next/link";
 import { Home, ChevronRight } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { cn } from "@/shared/lib/utils";
 
 export interface IBreadcrumbProps
   extends React.HTMLAttributes<HTMLDivElement> {

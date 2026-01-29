@@ -1,5 +1,5 @@
 import { MetadataRoute } from "next";
-import { SubjectApiPaths } from "@/constants";
+import { SubjectApiPaths } from "@/shared/config";
 
 const SITE_URL = "https://www.qknou.kr";
 

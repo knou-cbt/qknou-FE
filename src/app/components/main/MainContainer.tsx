@@ -4,11 +4,12 @@ import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 
-import { Table, type ColumnDef } from "../../../components/ui";
-import { TableSkeleton } from "../../../components/ui/skeleton";
-import { useSubjectListQuery } from "@/app/exam/[subjectId]/year/hooks/service";
-import type { ISubject } from "@/app/exam/[subjectId]/year/interface";
-import { InputSearch } from "@/components/search";
+import { Table } from "@/shared/ui/table";
+import type { ColumnDef } from "@tanstack/react-table";
+import { TableSkeleton } from "@/shared/ui/skeleton";
+import { useSubjectListQuery } from "@/modules/exam";
+import type { ISubject } from "@/modules/exam";
+import { InputSearch } from "@/shared/ui/search";
 
 export const MainContainer = () => {
   const router = useRouter();

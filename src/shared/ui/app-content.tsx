@@ -4,7 +4,7 @@ import { usePathname } from "next/navigation";
 
 import { Header } from "./header";
 import { Footer } from "./footer";
-import { useExamContext } from "@/contexts";
+import { useExamContext } from "@/modules/exam";
 
 interface AppContentProps {
   children: React.ReactNode;

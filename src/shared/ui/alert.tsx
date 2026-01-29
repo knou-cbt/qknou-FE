@@ -1,7 +1,7 @@
 import * as React from "react";
 import { CheckCircle, AlertCircle, AlertTriangle, Info, X } from "lucide-react";
 
-import { cn } from "@/lib/utils";
+import { cn } from "@/shared/lib/utils";
 import { Button } from "./button";
 import { Modal, ModalContent } from "./modal";
 
@@ -178,4 +178,3 @@ const InlineAlert = React.forwardRef<HTMLDivElement, IInlineAlertProps>(
 InlineAlert.displayName = "InlineAlert";
 
 export { AlertModal, InlineAlert, type TAlertType };
-

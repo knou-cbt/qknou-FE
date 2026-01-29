@@ -1,6 +1,6 @@
 import * as React from "react"
 
-import { cn } from "@/lib/utils"
+import { cn } from "@/shared/lib/utils"
 
 export interface IFooterProps extends React.HTMLAttributes<HTMLElement> { }
 
@@ -37,4 +37,3 @@ const Footer = React.forwardRef<HTMLElement, IFooterProps>(
 Footer.displayName = "Footer"
 
 export { Footer }
-

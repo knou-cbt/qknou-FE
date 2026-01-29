@@ -17,7 +17,7 @@ import {
 import { cva, type VariantProps } from "class-variance-authority"
 import { ChevronUp, ChevronDown, ChevronsUpDown, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight } from "lucide-react"
 
-import { cn } from "@/lib/utils"
+import { cn } from "@/shared/lib/utils"
 
 // ============================================================================
 // Table Container Variants
@@ -587,4 +587,3 @@ export {
 }
 
 export type { ColumnDef, SortingState, PaginationState, RowSelectionState, Row }
-

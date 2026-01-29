@@ -4,9 +4,9 @@ import { useState, useEffect, useCallback, useRef } from "react";
 import { BookOpen, Clock, LogOut } from "lucide-react";
 import { useRouter } from "next/navigation";
 
-import { cn } from "@/lib/utils";
-import { useExamContext } from "@/contexts";
-import { Button, ConfirmModal, AlertModal } from "@/components/ui";
+import { cn } from "@/shared/lib/utils";
+import { useExamContext } from "@/modules/exam";
+import { Button, ConfirmModal, AlertModal } from "@/shared/ui";
 import Link from "next/link";
 import Image from "next/image";
 

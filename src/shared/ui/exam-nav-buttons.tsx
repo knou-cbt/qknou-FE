@@ -1,7 +1,7 @@
 import * as React from "react"
 import { cva, type VariantProps } from "class-variance-authority"
 
-import { cn } from "@/lib/utils"
+import { cn } from "@/shared/lib/utils"
 
 // ============================================
 // ExamNavButton Variants
@@ -185,4 +185,3 @@ const ExamNavButtons = React.forwardRef<HTMLDivElement, IExamNavButtonsProps>(
 ExamNavButtons.displayName = "ExamNavButtons"
 
 export { ExamNavButton, ExamNavButtons, examNavButtonVariants }
-

@@ -2,9 +2,9 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
-import { QueryProvider } from "@/providers/QueryProvider";
-import { ExamProvider } from "@/contexts";
-import { AppContent } from "@/components";
+import { QueryProvider } from "@/shared/providers";
+import { ExamProvider } from "@/modules/exam";
+import { AppContent } from "@/shared/ui/app-content";
 import { Analytics } from '@vercel/analytics/react';
 
 const geistSans = Geist({
