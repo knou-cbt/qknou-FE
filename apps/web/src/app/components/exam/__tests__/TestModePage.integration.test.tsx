@@ -1,9 +1,20 @@
 /**
- * TestModePage – integration tests
+ * 시험 모드(TestModePage) 통합 테스트
+ * - GWT(Given-When-Then) 구조, 비즈니스 행위 중심 명세
+ * - 제출 → 결과 화면 전환 등 사용자 시나리오 검증
  */
+
 import React from "react";
-import { render, screen, fireEvent, act } from "@testing-library/react";
-import { TestModePage } from "../TestModePage";
+import { screen } from "@testing-library/react";
+import {
+  givenExamDataIsReady,
+  givenTestModeMocksAllowExamEnd,
+  renderTestModePage,
+  whenUserClicksAnswer,
+  whenUserClicksNext,
+  whenUserEndsExam,
+  thenUserSeesResultScreen,
+} from "./fixtures/exam-test-fixture";
 
 jest.mock("next/navigation", () => ({
   useRouter: () => ({ push: jest.fn() }),
@@ -15,58 +26,39 @@ jest.mock("@/shared/lib", () => ({
 
 jest.mock("@/modules/exam", () => require("../__mocks__/exam"));
 
-describe("TestModePage – integration", () => {
+describe("시험 모드 – 통합 (TestModePage)", () => {
   beforeEach(() => {
     jest.clearAllMocks();
-    const { useExamQuestionsQuery, useExamContext, useExamSubmitMutation } =
-      require("../__mocks__/exam");
-    useExamQuestionsQuery.mockReturnValue({
-      data: require("../__mocks__/exam").mockExamData,
-      isLoading: false,
-      isError: false,
-    });
-    const setOnExamEnd = jest.fn((fn: () => void) => {
-      (window as unknown as { __onExamEnd?: () => void }).__onExamEnd = fn;
-    });
-    useExamContext.mockReturnValue({
-      setOnExamEnd,
-      setUnansweredCount: jest.fn(),
-      setTotalQuestions: jest.fn(),
-      setIsSubmitted: jest.fn(),
-    });
-    useExamSubmitMutation.mockReturnValue({
-      mutateAsync: jest.fn().mockResolvedValue({
-        results: [
-          { questionId: 1, isCorrect: true, selectedAnswer: 1, correctAnswers: [2] },
-          { questionId: 2, isCorrect: true, selectedAnswer: 2, correctAnswers: [2] },
-        ],
-      }),
-    });
+    givenExamDataIsReady();
+    givenTestModeMocksAllowExamEnd();
   });
 
-  test("submitting exam shows result screen", async () => {
-    render(<TestModePage yearId="2023" />);
-    fireEvent.click(screen.getByTestId("answer-2"));
-    fireEvent.click(screen.getByTestId("next-button"));
-    fireEvent.click(screen.getByTestId("answer-2"));
-    const onExamEnd = (window as unknown as { __onExamEnd?: () => void }).__onExamEnd;
-    await act(async () => {
-      await onExamEnd?.();
-    });
-    expect(screen.getByText(/시험 결과/)).toBeInTheDocument();
-    expect(screen.getByText(/획득 점수/)).toBeInTheDocument();
+  test("사용자가 여러 문제에 답을 선택한 뒤 시험을 종료하면 시험 결과 화면과 획득 점수가 보인다", async () => {
+    // Given: 시험 데이터가 준비된 상태
+    renderTestModePage({ yearId: "2023" });
+
+    // When: 첫 번째 문제에 답을 선택하고 다음으로 이동한 뒤, 두 번째 문제에도 답을 선택하고 시험 종료(제출)를 한다
+    whenUserClicksAnswer(2);
+    whenUserClicksNext();
+    whenUserClicksAnswer(2);
+    await whenUserEndsExam();
+
+    // Then: "시험 결과"와 "획득 점수"가 보인다
+    thenUserSeesResultScreen();
   });
 
-  test("question navigator reflects current state after submit", async () => {
-    render(<TestModePage yearId="2023" />);
-    fireEvent.click(screen.getByTestId("answer-1"));
-    fireEvent.click(screen.getByTestId("next-button"));
-    fireEvent.click(screen.getByTestId("answer-2"));
-    const onExamEnd = (window as unknown as { __onExamEnd?: () => void }).__onExamEnd;
-    await act(async () => {
-      await onExamEnd?.();
-    });
-    expect(screen.getByText(/시험 결과/)).toBeInTheDocument();
+  test("시험을 제출한 뒤 결과 화면에서 문제 번호(네비게이터)가 보이고, 제출된 상태가 반영되어 보인다", async () => {
+    // Given: 시험 데이터가 준비된 상태
+    renderTestModePage({ yearId: "2023" });
+
+    // When: 첫 번째·두 번째 문제에 각각 답을 선택하고 시험 종료(제출)를 한다
+    whenUserClicksAnswer(1);
+    whenUserClicksNext();
+    whenUserClicksAnswer(2);
+    await whenUserEndsExam();
+
+    // Then: 시험 결과 화면이 보이고, 문제 번호(1, 2) 버튼이 보인다
+    thenUserSeesResultScreen();
     const navButtons = screen.getAllByRole("button", { name: /1|2/ });
     expect(navButtons.length).toBeGreaterThanOrEqual(1);
   });

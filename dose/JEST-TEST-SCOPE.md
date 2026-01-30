@@ -2,69 +2,74 @@
 
 시험 모드(TestModePage)와 암기 모드(MemorizeModePage) 관련 Jest 테스트가 **무엇을 검증하는지** 정리한 문서입니다.
 
+- **구조:** GWT(Given-When-Then) 패턴, 비즈니스 행위 중심 명세  
+- **픽스처:** `__tests__/fixtures/exam-test-fixture.ts` (준비/실행/검증 헬퍼)  
+- **패턴 비교·선택 근거:** [TEST-PATTERNS-AAA-VS-GWT.md](./TEST-PATTERNS-AAA-VS-GWT.md)
+
 ---
 
-## 1. TestModePage (시험 모드) — Unit 테스트
+## 1. 시험 모드 (TestModePage) — 단위 테스트
 
 **파일:** `apps/web/src/app/components/exam/__tests__/TestModePage.test.tsx`
 
-| 테스트 케이스 | 확인하는 것 |
-|---------------|-------------|
-| **renders loading UI** | API 로딩 중일 때 "문제를 불러오는 중..." 문구가 화면에 보이는지 |
-| **renders error UI** | API 에러 시 "문제를 불러오는데 실패했습니다" 문구가 보이는지 |
-| **renders missing examId warning** | `yearId`가 없을 때 "시험 정보가 올바르지 않습니다" 문구가 보이는지 |
-| **selecting an answer updates state** | 답안 선택 시 해당 보기에 `aria-checked="true"`가 적용되는지(선택 상태 반영) |
-| **prev/next navigation works and disables correctly** | 첫 문제에서 이전 버튼 비활성화, 다음으로 이동 후 이전 활성화, 마지막 문제에서 다음 버튼 비활성화가 맞는지 |
-| **handleSubmit sends correct payload and shows result UI** | 시험 종료 시 제출 payload(문제별 선택 답)가 올바른지, 제출 후 "시험 결과"·"획득 점수" 화면이 노출되는지 |
-| **empty question list shows error UI** | 문제 목록이 비어 있을 때 에러 메시지가 보이는지 |
-| **rapid clicking prev/next does not corrupt state** | 이전/다음 버튼을 빠르게 연타해도 인덱스가 깨지지 않고, 첫 문제에서 이전이 비활성화 상태로 유지되는지 |
+| 테스트 명세 (비즈니스 행위) | 확인하는 것 |
+|----------------------------|-------------|
+| 시험 문제를 불러오는 동안에는 사용자에게 로딩 안내 문구가 보인다 | 로딩 중 "문제를 불러오는 중" 문구 노출 |
+| 문제를 불러오는데 실패하면 사용자에게 에러 안내가 보인다 | API 실패 시 "문제를 불러오는데 실패했습니다" 노출 |
+| 시험 정보가 없으면 사용자에게 올바르지 않다는 안내가 보인다 | yearId 없을 때 "시험 정보가 올바르지 않습니다" 노출 |
+| 사용자가 답안을 선택하면 해당 보기가 선택된 것처럼 보인다 | 답 선택 시 해당 보기 선택 상태(aria-checked) 반영 |
+| 첫 번째 문제에서는 이전 버튼이 비활성화되고, 마지막 문제에서는 다음 버튼이 비활성화된다 | 이전/다음 버튼 활성·비활성 상태 |
+| 사용자가 시험을 종료하면 시험 결과 화면과 획득 점수가 보인다 | 제출 후 "시험 결과"·"획득 점수" 화면 노출 |
+| 문제 목록이 비어 있으면 사용자에게 에러 안내가 보인다 | 문제 0개일 때 에러 문구 노출 |
+| 이전/다음 버튼을 빠르게 연타해도 현재 문제 위치가 깨지지 않고, 첫 문제에서 이전은 비활성화된 상태로 유지된다 | 연타 시 인덱스·버튼 상태 유지 |
 
 ---
 
-## 2. TestModePage (시험 모드) — Integration 테스트
+## 2. 시험 모드 (TestModePage) — 통합 테스트
 
 **파일:** `apps/web/src/app/components/exam/__tests__/TestModePage.integration.test.tsx`
 
-| 테스트 케이스 | 확인하는 것 |
-|---------------|-------------|
-| **submitting exam shows result screen** | 여러 문제에 답을 선택한 뒤 시험 종료 시 "시험 결과"·"획득 점수" 화면이 나타나는지(제출 → 결과 화면 전환 흐름) |
-| **question navigator reflects current state after submit** | 제출 후 결과 화면에서 문제 네비게이터(1, 2번 등)가 노출되고, 제출이 완료된 상태가 반영되는지 |
+| 테스트 명세 (비즈니스 행위) | 확인하는 것 |
+|----------------------------|-------------|
+| 사용자가 여러 문제에 답을 선택한 뒤 시험을 종료하면 시험 결과 화면과 획득 점수가 보인다 | 제출 → 결과 화면 전환 흐름 |
+| 시험을 제출한 뒤 결과 화면에서 문제 번호(네비게이터)가 보이고, 제출된 상태가 반영되어 보인다 | 결과 화면에서 문제 번호 버튼 노출·상태 반영 |
 
 ---
 
-## 3. MemorizeModePage (암기 모드) — Unit 테스트
+## 3. 암기 모드 (MemorizeModePage) — 단위 테스트
 
 **파일:** `apps/web/src/app/components/exam/__tests__/MemorizeModePage.test.tsx`
 
-| 테스트 케이스 | 확인하는 것 |
-|---------------|-------------|
-| **renders loading UI** | 문제 로딩 중 "문제를 불러오는 중..." 문구가 보이는지 |
-| **renders error UI** | API 에러 시 "문제를 불러오는데 실패했습니다" 문구가 보이는지 |
-| **selects answer updates selectedAnswer state** | 답안 선택 시 해당 보기에 `aria-checked="true"`가 적용되는지 |
-| **showResult button reveals explanation** | 답 선택 후 "정답 보기" 버튼 클릭 시 "해설" 영역이 노출되는지 |
-| **prev navigation stores and restores state** | 다음 문제로 갔다가 이전으로 돌아왔을 때, 해당 문제의 정답 보기 상태가 복원되어 해설이 다시 보이고 정답 버튼이 비활성화되는지 |
-| **reset button clears answer and result** | "문제 다시 풀기" 클릭 시 선택 해제·해설 숨김(초기 상태로 복귀)되는지 |
-| **breadcrumb shows correct subject/year** | Breadcrumb에 mock 과목명(수학)·연도(2023)가 올바르게 표시되는지 |
+| 테스트 명세 (비즈니스 행위) | 확인하는 것 |
+|----------------------------|-------------|
+| 문제를 불러오는 동안에는 사용자에게 로딩 안내 문구가 보인다 | 로딩 중 "문제를 불러오는 중" 문구 노출 |
+| 문제를 불러오는데 실패하면 사용자에게 에러 안내가 보인다 | API 실패 시 에러 문구 노출 |
+| 사용자가 답안을 선택하면 해당 보기가 선택된 것처럼 보인다 | 답 선택 시 선택 상태 반영 |
+| 사용자가 답을 선택한 뒤 정답 보기를 누르면 해설이 보인다 | 정답 보기 클릭 후 "해설" 영역 노출 |
+| 다음 문제로 갔다가 이전으로 돌아오면 해당 문제의 정답 보기 상태와 해설이 그대로 복원되어 보인다 | 이전/다음 이동 시 기억된 답·해설 복원 |
+| 사용자가 문제 다시 풀기를 누르면 선택과 해설이 사라지고 처음 상태로 돌아간 것처럼 보인다 | 문제 다시 풀기 시 선택 해제·해설 숨김 |
+| 화면 상단 Breadcrumb에 과목명과 연도가 올바르게 보인다 | Breadcrumb에 과목·연도 표시 |
 
 ---
 
-## 4. MemorizeModePage (암기 모드) — Integration 테스트
+## 4. 암기 모드 (MemorizeModePage) — 통합 테스트
 
 **파일:** `apps/web/src/app/components/exam/__tests__/MemorizeModePage.integration.test.tsx`
 
-| 테스트 케이스 | 확인하는 것 |
-|---------------|-------------|
-| **answer button disables after result shown** | 답 선택 후 "정답 보기"를 누르면 정답 버튼이 비활성화되고 해설이 보이는지 |
-| **prev/next preserves remembered answers** | 정답 보기 한 뒤 다음 → 이전으로 이동했을 때, 이전 문제의 해설·정답 보기 상태가 유지되는지(기억된 답/결과 복원) |
+| 테스트 명세 (비즈니스 행위) | 확인하는 것 |
+|----------------------------|-------------|
+| 사용자가 답을 선택한 뒤 정답 보기를 누르면 정답 보기 버튼이 비활성화되고 해설이 보인다 | 정답 보기 후 버튼 비활성화·해설 노출 |
+| 정답 보기를 본 뒤 다음 문제로 갔다가 이전으로 돌아오면, 해당 문제의 해설과 정답 보기 상태가 그대로 복원되어 보인다 | 이동 후 기억된 해설·상태 복원 |
 
 ---
 
-## 5. 공통으로 쓰는 것
+## 5. 공통
 
-- **Mock:** `@/modules/exam` → `__mocks__/exam.ts` (시험 데이터·훅 mock)
-- **data-testid:**  
-  `prev-button`, `answer-button`, `next-button`, `answer-1` / `answer-2`, `reset-button` 등으로 클릭·상태 검증
-- **검증 포인트:**  
-  로딩/에러/경고 문구, 답 선택 상태(aria-checked), 이전/다음 비활성화, 제출 payload·결과 화면, 해설 노출·숨김·복원, Breadcrumb
+- **픽스처:** `__tests__/fixtures/exam-test-fixture.ts`  
+  - Given: `givenExamIsLoading`, `givenExamHasError`, `givenExamDataIsReady` 등  
+  - When: `whenUserClicksAnswer`, `whenUserClicksNext`, `whenUserEndsExam` 등  
+  - Then: `thenUserSeesLoadingMessage`, `thenUserSeesResultScreen` 등  
+- **Mock:** `@/modules/exam` → `__mocks__/exam.ts`  
+- **검증:** 구현(함수 호출 등)이 아닌 **사용자가 보는 결과**(문구, 버튼 상태, 화면 전환) 위주
 
-이 문서는 위 테스트들이 **어떤 동작/상태를 확인하려고 작성되었는지**를 요약한 것입니다.
+이 문서는 위 테스트들이 **어떤 비즈니스 행위/결과를 확인하려고 작성되었는지**를 요약한 것입니다.

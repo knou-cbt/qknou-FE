@@ -1,9 +1,20 @@
 /**
- * MemorizeModePage – integration tests
+ * 암기 모드(MemorizeModePage) 통합 테스트
+ * - GWT(Given-When-Then) 구조, 비즈니스 행위 중심 명세
+ * - 정답 보기 후 상태·이동 시 복원 등 사용자 시나리오 검증
  */
+
 import React from "react";
-import { render, screen, fireEvent } from "@testing-library/react";
-import { MemorizeModePage } from "../MemorizeModePage";
+import {
+  givenExamDataIsReady,
+  renderMemorizeModePage,
+  whenUserClicksAnswer,
+  whenUserClicksShowAnswer,
+  whenUserClicksPrev,
+  whenUserClicksNext,
+  thenUserSeesExplanation,
+  thenShowAnswerButtonIsDisabled,
+} from "./fixtures/exam-test-fixture";
 
 jest.mock("next/navigation", () => ({
   useRouter: () => ({ push: jest.fn() }),
@@ -15,34 +26,37 @@ jest.mock("@/shared/lib", () => ({
 
 jest.mock("@/modules/exam", () => require("../__mocks__/exam"));
 
-describe("MemorizeModePage – integration", () => {
+describe("암기 모드 – 통합 (MemorizeModePage)", () => {
   beforeEach(() => {
     jest.clearAllMocks();
-    const { useExamQuestionsWithAnswersQuery } = require("../__mocks__/exam");
-    useExamQuestionsWithAnswersQuery.mockReturnValue({
-      data: require("../__mocks__/exam").mockExamData,
-      isLoading: false,
-      isError: false,
-    });
+    givenExamDataIsReady();
   });
 
-  test("answer button disables after result shown", () => {
-    render(<MemorizeModePage yearId="2023" />);
-    fireEvent.click(screen.getByTestId("answer-1"));
-    fireEvent.click(screen.getByTestId("answer-button"));
-    // 정답 보기 후 state는 correct/incorrect로 바뀌어 aria-checked는 false가 됨
-    expect(screen.getByTestId("answer-button")).toBeDisabled();
-    expect(screen.getByText(/해설/)).toBeInTheDocument();
+  test("사용자가 답을 선택한 뒤 정답 보기를 누르면 정답 보기 버튼이 비활성화되고 해설이 보인다", () => {
+    // Given: 시험 데이터가 준비된 상태
+    renderMemorizeModePage({ yearId: "2023" });
+
+    // When: 첫 번째 보기를 선택하고 "정답 보기"를 누른다
+    whenUserClicksAnswer(1);
+    whenUserClicksShowAnswer();
+
+    // Then: 정답 보기 버튼은 비활성화되어 있고, 해설이 보인다
+    thenShowAnswerButtonIsDisabled();
+    thenUserSeesExplanation();
   });
 
-  test("prev/next preserves remembered answers", () => {
-    render(<MemorizeModePage yearId="2023" />);
-    fireEvent.click(screen.getByTestId("answer-1"));
-    fireEvent.click(screen.getByTestId("answer-button"));
-    fireEvent.click(screen.getByTestId("next-button"));
-    fireEvent.click(screen.getByTestId("prev-button"));
-    // 이전 문제로 돌아왔을 때 해설·정답 확인 상태가 복원되어야 함
-    expect(screen.getByTestId("answer-button")).toBeDisabled();
-    expect(screen.getByText(/해설/)).toBeInTheDocument();
+  test("정답 보기를 본 뒤 다음 문제로 갔다가 이전으로 돌아오면, 해당 문제의 해설과 정답 보기 상태가 그대로 복원되어 보인다", () => {
+    // Given: 시험 데이터가 준비된 상태
+    renderMemorizeModePage({ yearId: "2023" });
+
+    // When: 첫 번째 보기를 선택하고 정답 보기를 누른 뒤, 다음 → 이전으로 이동한다
+    whenUserClicksAnswer(1);
+    whenUserClicksShowAnswer();
+    whenUserClicksNext();
+    whenUserClicksPrev();
+
+    // Then: 다시 첫 문제에 있으며 해설이 보이고, 정답 보기 버튼은 비활성화되어 있다
+    thenUserSeesExplanation();
+    thenShowAnswerButtonIsDisabled();
   });
 });

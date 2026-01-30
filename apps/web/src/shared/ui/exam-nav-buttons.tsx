@@ -155,6 +155,7 @@ const ExamNavButtons = React.forwardRef<HTMLDivElement, IExamNavButtonsProps>(
                         showLeftIcon
                         onClick={onPrevClick}
                         disabled={prevDisabled}
+                        data-testid="prev-button"
                     >
                         {prevLabel}
                     </ExamNavButton>
@@ -164,6 +165,7 @@ const ExamNavButtons = React.forwardRef<HTMLDivElement, IExamNavButtonsProps>(
                         variant="answer"
                         onClick={onAnswerClick}
                         disabled={answerDisabled}
+                        data-testid="answer-button"
                     >
                         {answerLabel}
                     </ExamNavButton>
@@ -174,6 +176,7 @@ const ExamNavButtons = React.forwardRef<HTMLDivElement, IExamNavButtonsProps>(
                         showRightIcon
                         onClick={onNextClick}
                         disabled={nextDisabled}
+                        data-testid="next-button"
                     >
                         {nextLabel}
                     </ExamNavButton>

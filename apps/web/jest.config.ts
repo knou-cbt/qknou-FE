@@ -15,7 +15,11 @@ const config: Config = {
     '^@/modules/exam/(.*)$': '<rootDir>/src/app/components/exam/$1',
     '^@/(.*)$': '<rootDir>/src/$1',
   },
-  testPathIgnorePatterns: ['<rootDir>/node_modules/', '<rootDir>/.next/'],
+  testPathIgnorePatterns: [
+    '<rootDir>/node_modules/',
+    '<rootDir>/.next/',
+    '<rootDir>/src/app/components/exam/__tests__/fixtures/',
+  ],
 };
 
 export default createJestConfig(config);
