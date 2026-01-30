@@ -29,6 +29,22 @@ To learn more about Next.js, take a look at the following resources:
 
 You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
 
+## 트러블슈팅
+
+### `readlink EINVAL` / `npm run dev`·`npm run build` 실패 시
+
+Windows·OneDrive 환경에서 `.next` 캐시가 꼬이면 `readlink` 관련 오류가 날 수 있습니다.
+
+1. **dev 서버 중지** 후 아래 실행:
+   ```bash
+   cd apps/web
+   npm run clean
+   npm run dev
+   ```
+   또는 빌드: `npm run clean && npm run build`
+
+2. **OneDrive** 동기화 폴더에 프로젝트가 있으면, `apps/web/.next` 폴더를 OneDrive에서 **동기화 제외**하거나, 프로젝트를 OneDrive 밖(예: `C:\dev\qknou-FE`)으로 옮기면 재발을 줄일 수 있습니다.
+
 ## Deploy on Vercel
 
 The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.

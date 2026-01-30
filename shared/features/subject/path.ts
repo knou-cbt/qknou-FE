@@ -2,10 +2,9 @@
  * Subject API 경로
  * API 엔드포인트를 중앙에서 관리합니다.
  */
-const SITE_URL = "https://api.qknou.kr";
-
+import { API_URL } from "../common/url";
 // 과목 API
-const SUBJECTS_BASE = `${SITE_URL}/api/subjects`;
+const SUBJECTS_BASE = `${API_URL}/api/subjects`;
 
 export const SubjectApiPaths = {
   /**

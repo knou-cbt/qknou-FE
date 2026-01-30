@@ -2,11 +2,10 @@
  * Exam API 경로
  * API 엔드포인트를 중앙에서 관리합니다.
  */
-
-const SERVER_URL = process.env.NEXT_PUBLIC_SITE_URL;
+import { API_URL } from "../common/url";
 
 // 시험지/문제 API
-const EXAMS_BASE = `${SERVER_URL}/api/exams`;
+const EXAMS_BASE = `${API_URL}/api/exams`;
 
 export const ExamApiPaths = {
   /**

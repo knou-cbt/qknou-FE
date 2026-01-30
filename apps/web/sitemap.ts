@@ -1,6 +1,6 @@
 import { MetadataRoute } from "next";
 import { SubjectApiPaths } from "@qknou/shared";
-import { SITE_URL } from "./src/shared/data/url";
+import { SITE_URL } from "@qknou/shared";
 
 interface IApiResponse<T> {
   success: boolean;
