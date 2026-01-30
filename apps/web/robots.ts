@@ -1,6 +1,5 @@
 import { MetadataRoute } from "next";
-
-const SITE_URL = "https://www.qknou.kr";
+import { SITE_URL } from "./src/shared/data/url";
 
 export default function robots(): MetadataRoute.Robots {
   return {

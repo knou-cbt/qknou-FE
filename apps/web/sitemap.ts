@@ -1,7 +1,6 @@
 import { MetadataRoute } from "next";
 import { SubjectApiPaths } from "@qknou/shared";
-
-const SITE_URL = "https://www.qknou.kr";
+import { SITE_URL } from "./src/shared/data/url";
 
 interface IApiResponse<T> {
   success: boolean;
@@ -63,7 +62,7 @@ async function getExamsBySubject(subjectId: number): Promise<IExam[]> {
 }
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const baseUrl = SITE_URL;
+  const baseUrl = SITE_URL ?? "https://www.qknou.kr";
 
   // 기본 페이지들
   const staticPages: MetadataRoute.Sitemap = [

@@ -3,7 +3,7 @@
  * API 엔드포인트를 중앙에서 관리합니다.
  */
 
-const SERVER_URL = "https://api.qknou.kr";
+const SERVER_URL = process.env.NEXT_PUBLIC_SITE_URL;
 
 // 시험지/문제 API
 const EXAMS_BASE = `${SERVER_URL}/api/exams`;

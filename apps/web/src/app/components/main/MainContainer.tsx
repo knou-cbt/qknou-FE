@@ -4,7 +4,6 @@ import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 
-// public은 루트(qknou-FE/public)에 있음. apps/web 기준 상대 경로
 import mainIcon01 from "../../../../../../public/main/main-icon-01.svg";
 import mainIcon02 from "../../../../../../public/main/main-icon-02.svg";
 import mainIcon03 from "../../../../../../public/main/main-icon-03.svg";

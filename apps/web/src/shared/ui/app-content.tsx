@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 
 import { Header } from "./header";
 import { Footer } from "./footer";
+import { KakaoAd } from "./kakao-ad";
 import { useExamContext } from "@/modules/exam";
 
 import chatbotImg from "../../../../../public/chatbot.png";
@@ -27,6 +28,7 @@ export function AppContent({ children }: AppContentProps) {
         variant={isExamMode ? "exam" : "default"}
       />
       {children}
+      {/* <KakaoAd /> */}
       <Footer />
       {/* 챗봇 플로팅 버튼 */}
       <button

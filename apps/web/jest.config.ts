@@ -18,7 +18,7 @@ const config: Config = {
   testPathIgnorePatterns: [
     '<rootDir>/node_modules/',
     '<rootDir>/.next/',
-    '<rootDir>/src/app/components/exam/__tests__/fixtures/',
+    '<rootDir>/src/**/__tests__/fixtures/',
   ],
 };
 
