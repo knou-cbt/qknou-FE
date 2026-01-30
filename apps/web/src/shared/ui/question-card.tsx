@@ -324,6 +324,7 @@ const QuestionCard = React.forwardRef<HTMLDivElement, IQuestionCardProps>(
             {answers.map((answer) => (
               <AnswerChoice
                 key={answer.value}
+                data-testid={`answer-${answer.value}`}
                 value={answer.value}
                 state={getAnswerState(answer.value)}
                 onValueSelect={onAnswerSelect}

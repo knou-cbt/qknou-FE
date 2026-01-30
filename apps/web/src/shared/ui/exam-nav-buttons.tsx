@@ -12,7 +12,7 @@ const examNavButtonVariants = cva(
     {
         variants: {
             variant: {
-                prev: "bg-white border-2 border-[var(--border)] text-[var(--secondary)] hover:bg-[var(--muted)] disabled:hover:bg-white",
+                prev: "bg-white border-2 border-[#E5E7EB] text-[#364153] hover:bg-[#E5E7EB] disabled:hover:bg-white",
                 answer: "bg-[var(--secondary)] text-[var(--secondary-foreground)] hover:bg-[#1F2937] disabled:hover:bg-[var(--secondary)]",
                 next: "bg-[var(--brand)] text-[var(--brand-foreground)] hover:bg-[var(--brand-hover)] disabled:hover:bg-[var(--brand)]",
             },

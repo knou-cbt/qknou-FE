@@ -194,6 +194,7 @@ export const MemorizeModePage = ({ subjectId, yearId }: Props) => {
                 <h3 className="font-semibold text-[#101828]">해설</h3>
                 {/* 문제 다시 풀기 버튼 */}
                 <Button
+                  data-testid="reset-button"
                   variant="outline"
                   size="sm"
                   onClick={handleResetQuestion}
@@ -212,6 +213,7 @@ export const MemorizeModePage = ({ subjectId, yearId }: Props) => {
         {showResult && !currentQuestion?.explanation && (
           <div className="w-full max-w-[1066px] mt-6 flex justify-end">
             <Button
+              data-testid="reset-button"
               variant="outline"
               size="sm"
               onClick={handleResetQuestion}

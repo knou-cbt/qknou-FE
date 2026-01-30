@@ -75,7 +75,7 @@ export const MainContainer = () => {
         <div className="relative w-full max-w-[1100px] mx-auto  py-8 md:py-12 lg:py-16">
           <div className="flex flex-col md:flex-row items-center justify-between gap-6 md:gap-8 lg:gap-12">
             {/* Left Side - Text Content */}
-            <div className="flex-1 flex flex-col gap-4 md:gap-6 z-10 max-w-[700px] md:max-w-none">
+            <div className="flex-1 flex flex-col gap-4 md:gap-6 z-10 max-w-[700px] md:max-w-none px-4 md:px-0">
               <h1 className="text-3xl md:text-4xl lg:text-5xl xl:text-6xl font-bold leading-tight">
                 <span className="text-[#155DFC]">큐노와</span>
                 <br />
