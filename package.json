@@ -1,43 +1,12 @@
 {
-  "name": "qknou",
-  "version": "0.1.0",
   "private": true,
+  "name": "qknou",
+  "description": "QKNOU monorepo — 루트는 워크스페이스만 관리, 실제 의존성은 각 패키지에서 관리",
+  "workspaces": ["apps/*", "shared"],
   "scripts": {
-    "dev": "next dev --turbopack",
-    "build": "next build",
-    "start": "next start",
-    "lint": "eslint",
-    "test": "jest",
-    "test:watch": "jest --watch",
-    "test:coverage": "jest --coverage"
-  },
-  "dependencies": {
-    "@tanstack/react-query": "^5.90.16",
-    "@tanstack/react-table": "^8.21.3",
-    "@vercel/analytics": "^1.6.1",
-    "class-variance-authority": "^0.7.1",
-    "clsx": "^2.1.1",
-    "lucide-react": "^0.562.0",
-    "next": "16.1.1",
-    "react": "19.2.3",
-    "react-dom": "19.2.3",
-    "tailwind-merge": "^3.4.0"
-  },
-  "devDependencies": {
-    "@tailwindcss/postcss": "^4",
-    "@testing-library/jest-dom": "^6.9.1",
-    "@testing-library/react": "^16.3.0",
-    "@testing-library/user-event": "^14.6.1",
-    "@types/jest": "^30.0.0",
-    "@types/node": "^20",
-    "@types/react": "^19",
-    "@types/react-dom": "^19",
-    "eslint": "^9",
-    "eslint-config-next": "16.1.1",
-    "jest": "^30.2.0",
-    "jest-environment-jsdom": "^30.2.0",
-    "tailwindcss": "^4",
-    "ts-jest": "^29.4.6",
-    "typescript": "^5"
+    "dev": "npm run dev -w qknou-web",
+    "build": "npm run build -w qknou-web",
+    "lint": "npm run lint -w qknou-web",
+    "install:all": "npm install"
   }
 }
