@@ -1,7 +1,7 @@
 "use client";
 import * as React from "react";
 import { useState, useEffect, useCallback, useRef } from "react";
-import { BookOpen, Clock, LogOut } from "lucide-react";
+import { Clock, LogOut } from "lucide-react";
 import { useRouter } from "next/navigation";
 
 import { cn } from "@/lib/utils";
@@ -18,7 +18,6 @@ export interface IHeaderProps extends React.HTMLAttributes<HTMLElement> {
 
 const Header = React.forwardRef<HTMLElement, IHeaderProps>(
   ({ className, variant = "default", examDuration = 3000, ...props }, ref) => {
-    const router = useRouter();
     const { onExamEnd, unansweredCount } = useExamContext();
     const [remainingTime, setRemainingTime] = useState(examDuration);
     const [showConfirmModal, setShowConfirmModal] = useState(false);
@@ -112,6 +111,7 @@ const Header = React.forwardRef<HTMLElement, IHeaderProps>(
               height={30}
               className="h-12 w-12 sm:h-14 sm:w-14 object-contain"
             />
+            <span className="text-xl font-bold text-[#155DFC]">큐노</span>
           </Link>
 
             {/* 시험 모드 */}

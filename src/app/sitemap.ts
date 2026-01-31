@@ -1,7 +1,5 @@
 import { MetadataRoute } from "next";
-import { SubjectApiPaths } from "@/constants";
-
-const SITE_URL = "https://www.qknou.kr";
+import { SubjectApiPaths, SITE_URL } from "@/constants";
 
 interface IApiResponse<T> {
   success: boolean;

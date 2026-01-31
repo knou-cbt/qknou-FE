@@ -6,6 +6,7 @@ import { QueryProvider } from "@/providers/QueryProvider";
 import { ExamProvider } from "@/contexts";
 import { AppContent } from "@/components";
 import { Analytics } from '@vercel/analytics/react';
+import { SITE_URL } from "@/constants";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -18,7 +19,6 @@ const geistMono = Geist_Mono({
 });
 
 const SITE_NAME = "QKNOU";
-const SITE_URL = "https://www.qknou.kr";
 const SITE_DESC =
   "QKNOU(큐노)는 방송통신대학교(KNOU) 기출문제를 한곳에서 제공하는 문제 풀이 플랫폼입니다. 과목/연도별 문제 풀이와 학습을 지원합니다.";
 const OG_IMAGE = `${SITE_URL}/mobile_preview.png`;

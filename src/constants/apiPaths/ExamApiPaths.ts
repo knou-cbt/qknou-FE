@@ -3,7 +3,9 @@
  * API 엔드포인트를 중앙에서 관리합니다.
  */
 
-const SERVER_URL = "https://api.qknou.kr";
+import { API_URL } from '../urls';
+
+const SERVER_URL = API_URL;
 
 // 과목 API
 const SUBJECTS_BASE = `${SERVER_URL}/api/subjects`;
