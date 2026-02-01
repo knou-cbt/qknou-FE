@@ -267,17 +267,16 @@ function Pagination<TData>({ table, pageSizeOptions }: IPaginationProps<TData>) 
   const pageIndex = table.getState().pagination.pageIndex
   const pageSize = table.getState().pagination.pageSize
   const pageCount = table.getPageCount()
-  const totalRows = table.getRowCount()
 
   return (
-    <div className="flex items-center justify-between px-4 py-3 border-t border-[#E5E7EB] bg-white">
+    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 px-3 sm:px-4 py-3 border-t border-[#E5E7EB] bg-white">
       {/* Page Size Selector */}
-      <div className="flex items-center gap-2 text-sm text-[#6B7280]">
-        <span>페이지당</span>
+      <div className="flex items-center gap-2 text-xs sm:text-sm text-[#6B7280]">
+        <span className="whitespace-nowrap">페이지당</span>
         <select
           value={pageSize}
           onChange={(e) => table.setPageSize(Number(e.target.value))}
-          className="h-8 px-2 rounded border border-[#D1D5DB] bg-white text-[#374151] focus:outline-none focus:ring-2 focus:ring-[#3B82F6] focus:border-transparent"
+          className="h-7 sm:h-8 px-2 rounded border border-[#D1D5DB] bg-white text-[#374151] text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-[#3B82F6] focus:border-transparent"
         >
           {pageSizeOptions.map((size) => (
             <option key={size} value={size}>
@@ -285,33 +284,33 @@ function Pagination<TData>({ table, pageSizeOptions }: IPaginationProps<TData>) 
             </option>
           ))}
         </select>
-        <span>행</span>
+        <span className="whitespace-nowrap">행</span>
       </div>
 
       {/* Page Info */}
-      <div className="flex items-center gap-6">
+      <div className="flex items-center justify-center sm:justify-end gap-2 sm:gap-6">
         {/* Page Navigation */}
-        <div className="flex items-center gap-1">
+        <div className="flex items-center gap-0.5 sm:gap-1">
           <button
             type="button"
             onClick={() => table.setPageIndex(0)}
             disabled={!table.getCanPreviousPage()}
-            className="p-1.5 rounded hover:bg-[#F3F4F6] disabled:opacity-50 disabled:cursor-not-allowed transition-colors cursor-pointer"
+            className="p-1 sm:p-1.5 rounded hover:bg-[#F3F4F6] disabled:opacity-50 disabled:cursor-not-allowed transition-colors cursor-pointer"
             aria-label="첫 페이지"
           >
-            <ChevronsLeft className="w-4 h-4 text-[#6B7280]" />
+            <ChevronsLeft className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-[#6B7280]" />
           </button>
           <button
             type="button"
             onClick={() => table.previousPage()}
             disabled={!table.getCanPreviousPage()}
-            className="p-1.5 rounded hover:bg-[#F3F4F6] disabled:opacity-50 disabled:cursor-not-allowed transition-colors cursor-pointer"
+            className="p-1 sm:p-1.5 rounded hover:bg-[#F3F4F6] disabled:opacity-50 disabled:cursor-not-allowed transition-colors cursor-pointer"
             aria-label="이전 페이지"
           >
-            <ChevronLeft className="w-4 h-4 text-[#6B7280]" />
+            <ChevronLeft className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-[#6B7280]" />
           </button>
 
-          <span className="px-3 text-sm text-[#374151]">
+          <span className="px-2 sm:px-3 text-xs sm:text-sm text-[#374151] whitespace-nowrap">
             {pageIndex + 1} / {pageCount || 1}
           </span>
 
@@ -319,19 +318,19 @@ function Pagination<TData>({ table, pageSizeOptions }: IPaginationProps<TData>) 
             type="button"
             onClick={() => table.nextPage()}
             disabled={!table.getCanNextPage()}
-            className="p-1.5 rounded hover:bg-[#F3F4F6] disabled:opacity-50 disabled:cursor-not-allowed transition-colors cursor-pointer"
+            className="p-1 sm:p-1.5 rounded hover:bg-[#F3F4F6] disabled:opacity-50 disabled:cursor-not-allowed transition-colors cursor-pointer"
             aria-label="다음 페이지"
           >
-            <ChevronRight className="w-4 h-4 text-[#6B7280]" />
+            <ChevronRight className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-[#6B7280]" />
           </button>
           <button
             type="button"
             onClick={() => table.setPageIndex(pageCount - 1)}
             disabled={!table.getCanNextPage()}
-            className="p-1.5 rounded hover:bg-[#F3F4F6] disabled:opacity-50 disabled:cursor-not-allowed transition-colors cursor-pointer"
+            className="p-1 sm:p-1.5 rounded hover:bg-[#F3F4F6] disabled:opacity-50 disabled:cursor-not-allowed transition-colors cursor-pointer"
             aria-label="마지막 페이지"
           >
-            <ChevronsRight className="w-4 h-4 text-[#6B7280]" />
+            <ChevronsRight className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-[#6B7280]" />
           </button>
         </div>
       </div>

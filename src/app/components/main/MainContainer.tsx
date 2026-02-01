@@ -67,7 +67,7 @@ export const MainContainer = () => {
         <div className="relative w-full max-w-[1100px] mx-auto  py-8 md:py-12 lg:py-16">
           <div className="flex flex-col md:flex-row items-center justify-between gap-6 md:gap-8 lg:gap-12">
             {/* Left Side - Text Content */}
-            <div className="flex-1 flex flex-col gap-4 md:gap-6 z-10 max-w-[700px] md:max-w-none">
+            <div className="flex-1 flex flex-col gap-4 md:gap-6 z-10 max-w-[700px] md:max-w-none px-4 md:px-0">
               <h1 className="text-3xl md:text-4xl lg:text-5xl xl:text-6xl font-bold leading-tight">
                 <span className="text-[#155DFC]">큐노와</span>
                 <br />
@@ -107,8 +107,8 @@ export const MainContainer = () => {
                 </div>
 
                 {/* Icon 3 - Bottom Right: Backpack (Largest) */}
-                <div className="absolute bottom-14 right-0 md:bottom-8 md:right-4 z-20">
-                  <div className="relative w-28 h-28 md:w-36 md:h-36">
+                <div className="absolute bottom-20 right-0 md:bottom-8 md:right-4 z-20">
+                  <div className="relative w-20 h-20 md:w-36 md:h-36">
                     <Image
                       src="/main/main-icon-03.svg"
                       alt="배낭"
