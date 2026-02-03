@@ -2,7 +2,7 @@ import * as React from "react"
 
 import { cn } from "@/lib/utils"
 
-export interface IFooterProps extends React.HTMLAttributes<HTMLElement> { }
+export interface IFooterProps extends React.HTMLAttributes<HTMLElement> { } // eslint-disable-line @typescript-eslint/no-empty-object-type
 
 const Footer = React.forwardRef<HTMLElement, IFooterProps>(
   ({ className, ...props }, ref) => {
@@ -20,12 +20,12 @@ const Footer = React.forwardRef<HTMLElement, IFooterProps>(
           QKNOU는 지난 방통대 기출문제를 온라인에서 풀이해 볼 수 있는 무료사이트입니다.
           </p>
           <p>
-            기출문제의 저작권은 출제기관에게 있으며, 관련 문의는 아래 주소로 메일바랍니다.{" "}
+            기출문제의 저작권은 출제기관에게 있으며, 관련 피드백은 아래 주소로 작성해주세요.{" "}
             <a
-              href="mailto:admin@gmail.com"
+              href="https://docs.google.com/forms/d/e/1FAIpQLSdprHhSm4FteqbpWRfl5L67Db-_ypR2Yy_GW8ukiDG18QHHpA/viewform?pli=1"
               className="text-blue-600 hover:underline"
             >
-              admin@gmail.com
+              구글 폼 링크
             </a>
           </p>
           <p className="mt-4">© 2025 QKNOU. All rights reserved.</p>
