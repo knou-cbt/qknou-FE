@@ -6,7 +6,9 @@ import { useRouter } from "next/navigation";
 
 import { cn } from "@/lib/utils";
 import { useExamContext } from "@/contexts";
+import { useAuth } from "@/contexts/AuthContext";
 import { Button, ConfirmModal, AlertModal } from "@/components/ui";
+import { UserMenu } from "@/components/ui/user-menu";
 import Link from "next/link";
 import Image from "next/image";
 
@@ -19,6 +21,7 @@ export interface IHeaderProps extends React.HTMLAttributes<HTMLElement> {
 const Header = React.forwardRef<HTMLElement, IHeaderProps>(
   ({ className, variant = "default", examDuration = 1500, ...props }, ref) => {
     const { onExamEnd, unansweredCount } = useExamContext();
+    const { isAuthenticated, isLoading } = useAuth();
     const [remainingTime, setRemainingTime] = useState(examDuration);
     const [showConfirmModal, setShowConfirmModal] = useState(false);
     const [showTimeoutAlert, setShowTimeoutAlert] = useState(false);
@@ -141,8 +144,23 @@ const Header = React.forwardRef<HTMLElement, IHeaderProps>(
 
             {/* Navigation - 기본 모드일 때만 표시 */}
             {variant === "default" && (
-              <nav className="flex items-center gap-6">
-                {/* 네비게이션 메뉴 항목들 */}
+              <nav className="flex items-center gap-3 sm:gap-4">
+                {!isLoading && (
+                  <>
+                    {isAuthenticated ? (
+                      <UserMenu />
+                    ) : (
+                      <Link href="/auth/login">
+                        <Button
+                          variant="default"
+                          className="bg-[#155DFC] text-white hover:bg-[#1047C8] h-9 px-4 text-sm"
+                        >
+                          로그인
+                        </Button>
+                      </Link>
+                    )}
+                  </>
+                )}
               </nav>
             )}
           </div>

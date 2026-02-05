@@ -4,6 +4,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { QueryProvider } from "@/providers/QueryProvider";
 import { ExamProvider } from "@/contexts";
+import { AuthProvider } from "@/contexts/AuthContext";
 import { AppContent } from "@/components";
 import { Analytics } from '@vercel/analytics/react';
 import { SITE_URL } from "@/constants";
@@ -127,12 +128,14 @@ export default function RootLayout({
 }: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang="ko">
-      <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
-        <QueryProvider>
-          <ExamProvider>
-            <AppContent>{children}</AppContent>
-          </ExamProvider>
-        </QueryProvider>
+      <body className={`${geistSans.variable} ${geistMono.variable} antialiased`} suppressHydrationWarning>
+        <AuthProvider>
+          <QueryProvider>
+            <ExamProvider>
+              <AppContent>{children}</AppContent>
+            </ExamProvider>
+          </QueryProvider>
+        </AuthProvider>
         <Analytics />
       </body>
     </html>
