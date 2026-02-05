@@ -86,30 +86,7 @@ const LoginPage = () => {
           </p>
         </div>
 
-        {/* 홈으로 돌아가기 */}
-        <div className="text-center mt-8">
-          <Link
-            href="/"
-            className="inline-flex items-center gap-2 text-sm text-gray-600 hover:text-[#155DFC] transition-colors duration-200"
-          >
-            <svg
-              width="16"
-              height="16"
-              viewBox="0 0 16 16"
-              fill="none"
-              xmlns="http://www.w3.org/2000/svg"
-            >
-              <path
-                d="M10 12L6 8L10 4"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-            </svg>
-            <span>홈으로 돌아가기</span>
-          </Link>
-        </div>
+   
       </div>
     </div>
   );
