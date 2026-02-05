@@ -110,12 +110,15 @@ export const metadata: Metadata = {
 
   /**
    * ✅ 네이버/구글 서치콘솔 기준: 사이트 소유 확인(권장)
-   * - 실제 발급받은 verification code로 교체
-   * - Google Search Console / Naver Search Advisor 양쪽 모두 등록 권장
+   * - Google: verification.google → <meta name="google-site-verification" content="..." />
+   * - Naver: verification.other["naver-site-verification"] → <meta name="naver-site-verification" content="..." />
    */
   verification: {
     google: "eP1MM8pNKrPdUc8zSu25dccVy4zJH2yY1ik4DRJ01Ks",
-    // naver: process.env.NEXT_PUBLIC_NAVER_VERIFICATION,
+    other: {
+      "naver-site-verification":
+        "939acec133cb5b79530e3c4a8d65de5a34f953a1",
+    },
   },
 };
 
