@@ -1,6 +1,9 @@
 import { MetadataRoute } from "next";
 import { SubjectApiPaths, SITE_URL } from "@/constants";
 
+/** 요청 시마다 사이트맵 생성 — 잘못 캐시돼서 HTML이 나가는 상황 방지 */
+export const dynamic = "force-dynamic";
+
 interface IApiResponse<T> {
   success: boolean;
   data: T;
@@ -63,7 +66,7 @@ async function getExamsBySubject(subjectId: number): Promise<IExam[]> {
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const baseUrl = SITE_URL;
 
-  // 기본 페이지들
+  // 기본 페이지들 — 에러 시에도 최소한 이 목록은 반환해 XML이 나가도록
   const staticPages: MetadataRoute.Sitemap = [
     {
       url: baseUrl,
@@ -73,15 +76,11 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     },
   ];
 
-  // 동적 페이지들 생성
-  const dynamicPages: MetadataRoute.Sitemap = [];
-
   try {
-    // 모든 과목 조회
+    const dynamicPages: MetadataRoute.Sitemap = [];
     const subjects = await getAllSubjects();
 
     for (const subject of subjects) {
-      // 과목별 연도 선택 페이지
       dynamicPages.push({
         url: `${baseUrl}/exam/${subject.id}/year`,
         lastModified: new Date(),
@@ -89,19 +88,14 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
         priority: 0.8,
       });
 
-      // 각 과목의 시험지 목록 조회
       const exams = await getExamsBySubject(subject.id);
-
       for (const exam of exams) {
-        // 암기 모드 페이지 (subject.id 사용 - 이미 해당 과목의 시험지이므로)
         dynamicPages.push({
           url: `${baseUrl}/exam/${subject.id}/${exam.id}/memorize-mode`,
           lastModified: new Date(),
           changeFrequency: "monthly",
           priority: 0.6,
         });
-
-        // 테스트 모드 페이지 (subject.id 사용 - 이미 해당 과목의 시험지이므로)
         dynamicPages.push({
           url: `${baseUrl}/exam/${subject.id}/${exam.id}/test-mode`,
           lastModified: new Date(),
@@ -110,9 +104,11 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
         });
       }
     }
+
+    return [...staticPages, ...dynamicPages];
   } catch (error) {
     console.error("사이트맵 생성 중 오류:", error);
+    // 에러 시에도 최소한 메인 URL만 담은 사이트맵 반환 → HTML 에러 페이지 대신 XML 유지
+    return staticPages;
   }
-
-  return [...staticPages, ...dynamicPages];
 }

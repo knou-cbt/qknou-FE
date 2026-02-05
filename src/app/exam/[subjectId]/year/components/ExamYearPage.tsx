@@ -157,7 +157,7 @@ export const ExamYearPage = ({ subjectId }: Props) => {
             </div>
             <div className="pt-2">
               <p className="text-lg font-bold text-[#101828]">
-                제한 시간: 150분
+                제한 시간: 25분
               </p>
             </div>
           </ModalBody>

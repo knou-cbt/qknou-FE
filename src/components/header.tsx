@@ -12,12 +12,12 @@ import Image from "next/image";
 
 export interface IHeaderProps extends React.HTMLAttributes<HTMLElement> {
   variant?: "default" | "exam";
-  /** 시험 시간 (초 단위, 기본값: 3000초 = 50분) */
+  /** 시험 시간 (초 단위, 기본값: 1500초 = 25분) */
   examDuration?: number;
 }
 
 const Header = React.forwardRef<HTMLElement, IHeaderProps>(
-  ({ className, variant = "default", examDuration = 3000, ...props }, ref) => {
+  ({ className, variant = "default", examDuration = 1500, ...props }, ref) => {
     const { onExamEnd, unansweredCount } = useExamContext();
     const [remainingTime, setRemainingTime] = useState(examDuration);
     const [showConfirmModal, setShowConfirmModal] = useState(false);
