@@ -5,6 +5,7 @@ import "./globals.css";
 import { QueryProvider } from "@/providers/QueryProvider";
 import { ExamProvider } from "@/contexts";
 import { AppContent } from "@/components";
+import { SiteStructuredData } from "@/components/seo";
 import { Analytics } from '@vercel/analytics/react';
 import { SITE_URL } from "@/constants";
 
@@ -127,7 +128,8 @@ export default function RootLayout({
 }: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang="ko">
-      <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
+      <body className={`${geistSans.variable} ${geistMono.variable} antialiased`} suppressHydrationWarning>
+        <SiteStructuredData />
         <QueryProvider>
           <ExamProvider>
             <AppContent>{children}</AppContent>
