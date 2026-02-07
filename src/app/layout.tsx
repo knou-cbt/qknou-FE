@@ -4,6 +4,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { QueryProvider } from "@/providers/QueryProvider";
 import { ExamProvider } from "@/contexts";
+import { AuthProvider } from "@/contexts/AuthContext";
 import { AppContent } from "@/components";
 import { SiteStructuredData } from "@/components/seo";
 import { Analytics } from '@vercel/analytics/react';
@@ -130,11 +131,13 @@ export default function RootLayout({
     <html lang="ko">
       <body className={`${geistSans.variable} ${geistMono.variable} antialiased`} suppressHydrationWarning>
         <SiteStructuredData />
-        <QueryProvider>
-          <ExamProvider>
-            <AppContent>{children}</AppContent>
-          </ExamProvider>
-        </QueryProvider>
+        <AuthProvider>
+          <QueryProvider>
+            <ExamProvider>
+              <AppContent>{children}</AppContent>
+            </ExamProvider>
+          </QueryProvider>
+        </AuthProvider>
         <Analytics />
       </body>
     </html>

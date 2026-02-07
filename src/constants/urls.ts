@@ -4,5 +4,5 @@
  */
 
 export const SITE_URL = "https://www.qknou.kr";
-export const API_URL = "https://api.qknou.kr";
+export const API_URL =  "http://api.qknou.kr";
 
