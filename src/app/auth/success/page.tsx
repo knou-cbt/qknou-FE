@@ -45,7 +45,7 @@ const SuccessContent = () => {
   }, [searchParams, login, router]);
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-[#F9FAFB] to-[#EFF6FF]">
+    <div className="min-h-screen flex items-center justify-center">
       <div className="text-center">
         <div className="flex items-center justify-center mb-4">
           <DotLottieReact
