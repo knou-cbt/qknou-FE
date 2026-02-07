@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useRef, useEffect } from "react";
+import Image from "next/image";
 import { User, LogOut, ChevronDown } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { cn } from "@/lib/utils";
@@ -41,15 +42,14 @@ export const UserMenu = () => {
         )}
       >
         <div className="w-8 h-8 rounded-full bg-[#155DFC] flex items-center justify-center">
-          {user.profileImage ? (
-            <img
-              src={user.profileImage}
-              alt={user.name}
+          <Image
+              src={user.profileImage || "/user-profile.png"}
+              alt={user.name || "user profile image"}
+
+              width={32}
+              height={32}
               className="w-full h-full rounded-full object-cover"
             />
-          ) : (
-            <User className="w-5 h-5 text-white" />
-          )}
         </div>
         <span className="text-sm font-medium text-gray-700 hidden sm:block">
           {user.name}
