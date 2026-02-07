@@ -19,12 +19,17 @@ export function AppContent({ children }: AppContentProps) {
   // 암기 모드 경로 체크
   const isMemorizeMode = pathname.includes("/memorize-mode");
 
+  // auth/success 페이지에서는 헤더 숨김
+  const shouldHideHeader = pathname === "/auth/success";
+
   return (
     <div className="flex min-h-screen flex-col overflow-y-auto bg-white">
-      <Header
-        key={isExamMode ? "exam" : "default"}
-        variant={isExamMode ? "exam" : "default"}
-      />
+      {!shouldHideHeader && (
+        <Header
+          key={isExamMode ? "exam" : "default"}
+          variant={isExamMode ? "exam" : "default"}
+        />
+      )}
       {children}
        <KakaoAd />
       <Footer />
