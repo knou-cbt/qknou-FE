@@ -10,6 +10,7 @@ import { TableSkeleton } from "../../../components/ui/skeleton";
 import { useSubjectListQuery } from "@/app/exam/[subjectId]/year/hooks/service";
 import type { ISubject } from "@/app/exam/[subjectId]/year/interface";
 import { InputSearch } from "@/components/search";
+import { HelpCircle } from "lucide-react";
 
 
 export const MainContainer = () => {
@@ -160,12 +161,27 @@ export const MainContainer = () => {
       {/* Main Content Section */}
       <main className="flex-1 flex flex-col items-center px-4 md:px-6 lg:px-8 py-8 md:py-12 lg:py-16 bg-white">
         {/* Section Title */}
-        <div className="flex flex-col items-center gap-3 md:gap-4 mb-8 md:mb-12 w-full max-w-[1200px]">
-          <h2 className="text-2xl md:text-3xl lg:text-4xl font-bold text-center text-[#101828]">
-            문제 풀이 및 연습
-          </h2>
+        <div className="relative flex flex-col items-center gap-3 md:gap-4 mb-8 md:mb-12 w-full max-w-[1200px]">
+          <div className="relative inline-block">
+            <h2 className="text-2xl md:text-3xl lg:text-4xl font-bold text-center text-[#101828]">
+              문제 풀이 및 연습
+            </h2>
+            <Link 
+              href="/about" 
+              className="group absolute -top-3 -right-8 md:-top-3 md:-right-5 flex items-center justify-center w-5 h-5 md:w-6 md:h-6 text-[#155DFC] hover:text-[#1047C8] hover:bg-[#EFF6FF] rounded-full transition-all duration-200"
+              aria-label="큐노 이용 가이드"
+            >
+              <HelpCircle className="w-3.5 h-3.5 md:w-5 md:h-5" />
+              {/* 툴팁 */}
+              <span className="absolute -top-10 left-1/2 -translate-x-1/2 px-3 py-1.5 text-xs text-white bg-gray-900 rounded-md opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap z-10">
+                사용 방법 및 자주 묻는 질문
+                <span className="absolute bottom-0 left-1/2 -translate-x-1/2 translate-y-full w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-gray-900"></span>
+              </span>
+            </Link>
+          </div>
           <p className="text-base md:text-lg text-center text-[#6B7280] max-w-[700px]">
             과목명을 클릭하면 연도별 기출 문제를 선택하여 풀이하고 연습할 수 있습니다.
+            <br />
             흩어져 있던 방통대 기출 문제를 한 곳에서 체계적으로 학습하세요.
           </p>
         </div>
@@ -205,16 +221,6 @@ export const MainContainer = () => {
             )}
           </div>
         </div>
-
-        {/* Information Link Section */}
-        <section className="w-full max-w-[1100px] mx-auto mt-12 md:mt-16 text-center">
-          <Link
-            href="/about"
-            className="inline-flex items-center gap-2 text-[#155DFC] hover:underline text-sm md:text-base"
-          >
-            사용 방법 및 자주 묻는 질문 보기
-          </Link>
-        </section>
 
         {/* Call to Action Section */}
         {/* <section className="mt-12 md:mt-16 lg:mt-20 w-full max-w-[1200px] px-4 md:px-6">
