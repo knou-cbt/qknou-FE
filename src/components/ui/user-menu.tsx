@@ -2,13 +2,16 @@
 
 import React, { useState, useRef, useEffect } from "react";
 import Image from "next/image";
-import { User, LogOut, ChevronDown } from "lucide-react";
+import { LogOut, ChevronDown, Book, Loader2 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { cn } from "@/lib/utils";
+import { useRouter } from "next/navigation";
 
 export const UserMenu = () => {
+  const router = useRouter();
   const { user, logout } = useAuth();
   const [isOpen, setIsOpen] = useState(false);
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
 
   // 외부 클릭 감지
@@ -23,9 +26,16 @@ export const UserMenu = () => {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  const handleLogout = () => {
-    logout();
-    setIsOpen(false);
+  const handleLogout = async () => {
+    setIsLoggingOut(true);
+    try {
+      // 로그아웃 처리에 약간의 딜레이를 주어 사용자 경험 개선
+      await new Promise((resolve) => setTimeout(resolve, 500));
+      logout();
+      setIsOpen(false);
+    } finally {
+      setIsLoggingOut(false);
+    }
   };
 
   if (!user) return null;
@@ -66,17 +76,12 @@ export const UserMenu = () => {
       {isOpen && (
         <div className="absolute right-0 mt-2 w-56 bg-white rounded-lg shadow-lg border border-gray-200 py-1 z-50">
           {/* 사용자 정보 */}
-          <div className="px-4 py-3 border-b border-gray-100">
+          {/* <div className="px-4 py-3 border-b border-gray-100">
             <p className="text-sm font-medium text-gray-900">{user.name || "사용자"}</p>
             {user.email && (
               <p className="text-xs text-gray-500 mt-1">{user.email}</p>
             )}
-            {user.provider && (
-              <p className="text-xs text-gray-400 mt-1 capitalize">
-                {user.provider} 계정
-              </p>
-            )}
-          </div>
+          </div> */}
 
           {/* 메뉴 항목들 */}
           <div className="py-1">
@@ -92,13 +97,37 @@ export const UserMenu = () => {
               마이페이지
             </button> */}
 
+              <button
+              onClick={() => {
+                setIsOpen(false);
+                router.push("/about");
+              }}
+              className="w-full flex items-center gap-3 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
+            >
+              <Book className="w-4 h-4" />
+              사용 가이드
+            </button>
+
             {/* 로그아웃 */}
             <button
               onClick={handleLogout}
-              className="w-full flex items-center gap-3 px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition-colors"
+              disabled={isLoggingOut}
+              className={cn(
+                "w-full flex items-center gap-3 px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition-colors",
+                isLoggingOut && "opacity-50 cursor-not-allowed"
+              )}
             >
-              <LogOut className="w-4 h-4" />
-              로그아웃
+              {isLoggingOut ? (
+                <>
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                  로그아웃 중...
+                </>
+              ) : (
+                <>
+                  <LogOut className="w-4 h-4" />
+                  로그아웃
+                </>
+              )}
             </button>
           </div>
         </div>

@@ -2,7 +2,6 @@
 import * as React from "react";
 import { useState, useEffect, useCallback, useRef } from "react";
 import { Clock, LogOut } from "lucide-react";
-import { useRouter } from "next/navigation";
 
 import { cn } from "@/lib/utils";
 import { useExamContext } from "@/contexts";
