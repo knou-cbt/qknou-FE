@@ -32,16 +32,12 @@ const LoginPage = () => {
             큐노에 오신 것을 환영합니다
           </h1>
           <p className="text-gray-600">
-            방송통신대학교 기출문제를 풀어보세요
+            로그인하여 시작하세요
           </p>
         </div>
 
         {/* 로그인 카드 */}
         <div className="bg-white rounded-2xl shadow-lg p-8">
-          <h2 className="text-xl font-semibold text-gray-900 mb-6 text-center">
-            로그인
-          </h2>
-
           <div className="space-y-3">
             {/* Google 로그인 버튼 */}
             <button
