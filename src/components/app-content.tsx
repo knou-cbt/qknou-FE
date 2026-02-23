@@ -1,8 +1,9 @@
 "use client";
+import { useState } from "react";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
 
-import { Header, Footer, KakaoAd } from "@/components";
+import { Header, Footer, KakaoAd, ChatbotPanel } from "@/components";
 import { useExamContext } from "@/contexts";
 
 interface AppContentProps {
@@ -22,6 +23,8 @@ export function AppContent({ children }: AppContentProps) {
   // auth/success 페이지에서는 헤더 숨김
   const shouldHideHeader = pathname === "/auth/success";
 
+  const [chatbotOpen, setChatbotOpen] = useState(false);
+
   return (
     <div className="flex min-h-screen flex-col overflow-y-auto bg-white">
       {!shouldHideHeader && (
@@ -35,20 +38,23 @@ export function AppContent({ children }: AppContentProps) {
       <Footer />
         {/* 챗봇 플로팅 버튼 - 암기 모드에서만 표시 */}
         {isMemorizeMode && (
-          <button
-            type="button"
-            onClick={() => alert("챗봇 서비스 개발중입니다.")}
-            className="fixed bottom-6 right-6 z-50 pl-2 size-14 rounded-full shadow-lg transition bg-white hover:scale-105 focus:outline-none focus:ring-2 focus:ring-[#5D50FF] focus:ring-offset-2 cursor-pointer"
-            aria-label="챗봇"
-          >
-            <Image
-              src={'/chatbot.png'}
-              alt="챗봇"
-              className="size-full object-contain"
-              width={56}
-              height={56}
-            />
-          </button>
+          <>
+            <button
+              type="button"
+              onClick={() => setChatbotOpen(true)}
+              className="fixed bottom-6 right-6 z-50 pl-2 size-14 rounded-full shadow-lg transition bg-white hover:scale-105 focus:outline-none focus:ring-2 focus:ring-[#5D50FF] focus:ring-offset-2 cursor-pointer"
+              aria-label="챗봇"
+            >
+              <Image
+                src={'/chatbot.png'}
+                alt="챗봇"
+                className="size-full object-contain"
+                width={56}
+                height={56}
+              />
+            </button>
+            <ChatbotPanel open={chatbotOpen} onClose={() => setChatbotOpen(false)} />
+          </>
         )}
     </div>
   );
