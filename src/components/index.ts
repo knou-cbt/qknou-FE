@@ -1,4 +1,5 @@
 export * from "./ui"
+export * from "./chatbot"
 export * from "./search"
 export * from "../app/components/main"
 export * from "./header"

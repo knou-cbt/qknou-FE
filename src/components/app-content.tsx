@@ -1,9 +1,10 @@
 "use client";
+import { useState } from "react";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
 
-import { Header, Footer, KakaoAd } from "@/components";
-import { useExamContext } from "@/contexts";
+import { Header, Footer, KakaoAd, ChatbotPanel } from "@/components";
+import { useExamContext, useAuth } from "@/contexts";
 
 interface AppContentProps {
   children: React.ReactNode;
@@ -12,6 +13,7 @@ interface AppContentProps {
 export function AppContent({ children }: AppContentProps) {
   const pathname = usePathname();
   const { isSubmitted } = useExamContext();
+  const { token } = useAuth();
 
   // 시험모드 경로 체크 (제출 후에는 exam 모드 해제)
   const isExamMode = pathname.includes("/test-mode") && !isSubmitted;
@@ -19,8 +21,14 @@ export function AppContent({ children }: AppContentProps) {
   // 암기 모드 경로 체크
   const isMemorizeMode = pathname.includes("/memorize-mode");
 
+  // 챗봇: 회원(토큰 있음) + 암기 모드일 때만 노출
+  // const canUseChatbot = Boolean(token) && isMemorizeMode;
+  const canUseChatbot = isMemorizeMode;
+
   // auth/success 페이지에서는 헤더 숨김
   const shouldHideHeader = pathname === "/auth/success";
+
+  const [chatbotOpen, setChatbotOpen] = useState(false);
 
   return (
     <div className="flex min-h-screen flex-col overflow-y-auto bg-white">
@@ -33,22 +41,25 @@ export function AppContent({ children }: AppContentProps) {
       {children}
        <KakaoAd />
       <Footer />
-        {/* 챗봇 플로팅 버튼 - 암기 모드에서만 표시 */}
-        {isMemorizeMode && (
-          <button
-            type="button"
-            onClick={() => alert("챗봇 서비스 개발중입니다.")}
-            className="fixed bottom-6 right-6 z-50 pl-2 size-14 rounded-full shadow-lg transition bg-white hover:scale-105 focus:outline-none focus:ring-2 focus:ring-[#5D50FF] focus:ring-offset-2 cursor-pointer"
-            aria-label="챗봇"
-          >
-            <Image
-              src={'/chatbot.png'}
-              alt="챗봇"
-              className="size-full object-contain"
-              width={56}
-              height={56}
-            />
-          </button>
+        {/* 챗봇 플로팅 버튼 - 회원 + 암기 모드에서만 표시 */}
+        {canUseChatbot && (
+          <>
+            <button
+              type="button"
+              onClick={() => setChatbotOpen(true)}
+              className="fixed bottom-6 right-6 z-50 pl-2 size-14 rounded-full shadow-lg transition bg-white hover:scale-105 focus:outline-none focus:ring-2 focus:ring-[#5D50FF] focus:ring-offset-2 cursor-pointer"
+              aria-label="챗봇"
+            >
+              <Image
+                src={'/chatbot.png'}
+                alt="챗봇"
+                className="size-full object-contain"
+                width={56}
+                height={56}
+              />
+            </button>
+            <ChatbotPanel open={chatbotOpen} onClose={() => setChatbotOpen(false)} />
+          </>
         )}
     </div>
   );
