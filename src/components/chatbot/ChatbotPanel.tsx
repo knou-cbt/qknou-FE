@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback, useRef, useEffect } from "react";
+import { useState, useCallback, useRef, useEffect, useMemo } from "react";
 import Image from "next/image";
 import {
   ChevronLeft,
@@ -38,24 +38,26 @@ function getStoredQuestionCount(userId: string): number {
 
 export function ChatbotPanel({ open, onClose }: ChatbotPanelProps) {
   const { user } = useAuth();
-  const userId = user?.id ?? "";
+  const storageUserKey = useMemo(() => String(user?.id ?? "anonymous"), [user?.id]);
 
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
-  const [, setStorageVersion] = useState(0);
+  const [questionCount, setQuestionCount] = useState(0);
   const [messages, setMessages] = useState<{ role: "user" | "bot"; text: string }[]>([]);
   const [limitReachedMessage, setLimitReachedMessage] = useState<string | null>(null);
 
-  const questionCount = userId ? getStoredQuestionCount(userId) : 0;
   const canAsk = questionCount < CHATBOT_QUESTION_LIMIT;
+
+  useEffect(() => {
+    setQuestionCount(getStoredQuestionCount(storageUserKey));
+  }, [storageUserKey]);
 
   const persistCount = useCallback(
     (count: number) => {
-      if (!userId) return;
-      localStorage.setItem(getQuestionCountKey(userId), String(count));
-      setStorageVersion((v) => v + 1);
+      localStorage.setItem(getQuestionCountKey(storageUserKey), String(count));
+      setQuestionCount(count);
     },
-    [userId]
+    [storageUserKey]
   );
 
   const scrollAreaRef = useRef<HTMLDivElement>(null);
@@ -71,7 +73,7 @@ export function ChatbotPanel({ open, onClose }: ChatbotPanelProps) {
   }, [messages.length, loading]);
 
   const handleSend = useCallback(
-    (text: string) => {
+    async (text: string) => {
       const trimmed = text.trim();
       if (!trimmed) return;
       if (!canAsk) {
@@ -83,16 +85,39 @@ export function ChatbotPanel({ open, onClose }: ChatbotPanelProps) {
       setInput("");
       persistCount(questionCount + 1);
       setLoading(true);
-      // TODO: 실제 API 연동 시 여기서 요청 후 응답 추가
-      setTimeout(() => {
+      try {
+        const payloadMessages = [...messages, { role: "user" as const, text: trimmed }];
+        const res = await fetch("/api/chatbot", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            messages: payloadMessages,
+          }),
+        });
+        const data = await res.json();
+        if (!res.ok) {
+          throw new Error(data?.error || "챗봇 응답 생성에 실패했습니다.");
+        }
+        setMessages((prev) => [...prev, { role: "bot", text: data.reply }]);
+      } catch (error) {
+        const message =
+          error instanceof Error
+            ? error.message
+            : "일시적인 오류가 발생했어요. 잠시 후 다시 시도해 주세요.";
         setMessages((prev) => [
           ...prev,
-          { role: "bot", text: "답변 기능은 준비 중이에요. 곧 만나요! 😊" },
+          {
+            role: "bot",
+            text: message,
+          },
         ]);
+      } finally {
         setLoading(false);
-      }, 1200);
+      }
     },
-    [canAsk, questionCount, persistCount]
+    [canAsk, questionCount, persistCount, messages]
   );
 
   if (!open) return null;
@@ -213,7 +238,7 @@ export function ChatbotPanel({ open, onClose }: ChatbotPanelProps) {
                 )}
                 <div
                   className={cn(
-                    "max-w-[85%] rounded-2xl px-4 py-2.5 text-sm",
+                    "max-w-[85%] rounded-2xl px-4 py-2.5 text-sm whitespace-pre-wrap break-words",
                     msg.role === "user"
                       ? "rounded-tr-md bg-[#5D50FF] text-white"
                       : "rounded-tl-md bg-[#F3F4F6] text-[#374151]"
@@ -258,7 +283,7 @@ export function ChatbotPanel({ open, onClose }: ChatbotPanelProps) {
                   <button
                     key={text}
                     type="button"
-                    onClick={() => handleSend(text)}
+                    onClick={() => void handleSend(text)}
                     disabled={!canAsk}
                     className="max-w-[85%] rounded-2xl rounded-tr-md bg-[#F3F4F6] px-4 py-2.5 text-left text-sm text-[#374151] hover:bg-[#E5E7EB] disabled:opacity-60"
                   >
@@ -281,7 +306,7 @@ export function ChatbotPanel({ open, onClose }: ChatbotPanelProps) {
                 onKeyDown={(e) => {
                   if (e.key === "Enter" && !e.nativeEvent.isComposing) {
                     e.preventDefault();
-                    handleSend(input);
+                    void handleSend(input);
                   }
                 }}
                 placeholder={
@@ -296,7 +321,7 @@ export function ChatbotPanel({ open, onClose }: ChatbotPanelProps) {
             </div>
             <button
               type="button"
-              onClick={() => handleSend(input)}
+              onClick={() => void handleSend(input)}
               disabled={!canAsk || loading}
               className="flex size-10 shrink-0 items-center justify-center rounded-full bg-[#5D50FF] text-white hover:bg-[#4a3ecc] disabled:opacity-50 disabled:cursor-not-allowed"
               aria-label="보내기"
