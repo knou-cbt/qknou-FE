@@ -32,6 +32,41 @@ export const TestModePage = ({ yearId }: Props) => {
     setIsSubmitted: setContextIsSubmitted,
   } = useExamContext();
 
+  // 복사 방지
+  useEffect(() => {
+    const preventDefault = (event: Event) => {
+      event.preventDefault();
+    };
+    const preventCopyHotkey = (event: KeyboardEvent) => {
+      if (!(event.ctrlKey || event.metaKey)) return;
+      const key = event.key.toLowerCase();
+      if (key === "c" || key === "x" || key === "a") {
+        event.preventDefault();
+      }
+    };
+
+    document.addEventListener("copy", preventDefault);
+    document.addEventListener("cut", preventDefault);
+    document.addEventListener("paste", preventDefault);
+    document.addEventListener("contextmenu", preventDefault);
+    document.addEventListener("selectstart", preventDefault as EventListener);
+    document.addEventListener("dragstart", preventDefault);
+    document.addEventListener("keydown", preventCopyHotkey);
+
+    return () => {
+      document.removeEventListener("copy", preventDefault);
+      document.removeEventListener("cut", preventDefault);
+      document.removeEventListener("paste", preventDefault);
+      document.removeEventListener("contextmenu", preventDefault);
+      document.removeEventListener(
+        "selectstart",
+        preventDefault as EventListener
+      );
+      document.removeEventListener("dragstart", preventDefault);
+      document.removeEventListener("keydown", preventCopyHotkey);
+    };
+  }, []);
+
   const [currentIndex, setCurrentIndex] = useState(0);
   const [answers, setAnswers] = useState<
     Record<number, string | number | null>
@@ -141,6 +176,18 @@ export const TestModePage = ({ yearId }: Props) => {
       value: choice.number,
       label: choice.text,
     }));
+  }, [currentQuestion]);
+
+  const normalizedExample = currentQuestion?.example ?? undefined;
+  const normalizedImageUrls = useMemo(() => {
+    if (!currentQuestion) return undefined;
+
+    const urls = currentQuestion.imageUrls?.filter(
+      (url): url is string => typeof url === "string" && url.trim().length > 0
+    );
+    if (urls && urls.length > 0) return urls;
+
+    return currentQuestion.imageUrl ? [currentQuestion.imageUrl] : undefined;
   }, [currentQuestion]);
 
   // 문제 상태 계산
@@ -367,7 +414,8 @@ export const TestModePage = ({ yearId }: Props) => {
               <QuestionCard
                 size="full"
                 question={currentQuestion.text}
-                example={currentQuestion.example}
+                example={normalizedExample}
+                imageUrls={normalizedImageUrls}
                 answers={formattedAnswers}
                 selectedAnswer={
                   answers[currentIndex] !== undefined
@@ -441,7 +489,8 @@ export const TestModePage = ({ yearId }: Props) => {
             <QuestionCard
               size="full"
               question={currentQuestion.text}
-              example={currentQuestion.example}
+              example={normalizedExample}
+              imageUrls={normalizedImageUrls}
               answers={formattedAnswers}
               selectedAnswer={selectedAnswer}
               correctAnswer={[]}

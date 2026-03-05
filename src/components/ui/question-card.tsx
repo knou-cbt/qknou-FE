@@ -1,4 +1,5 @@
 import * as React from "react";
+import Image from "next/image";
 import { cva, type VariantProps } from "class-variance-authority";
 
 import { cn } from "@/lib/utils";
@@ -232,6 +233,7 @@ export interface IQuestionCardProps
   tags?: IQuestionTag[];
   question?: string;
   example?: string | null;
+  imageUrls?: string[] | null;
   answers?: IAnswerOption[];
   selectedAnswer?: string | number | null;
   correctAnswer?: (string | number)[]; // 복수 정답 지원 (배열)
@@ -250,6 +252,7 @@ const QuestionCard = React.forwardRef<HTMLDivElement, IQuestionCardProps>(
       tags = [],
       question,
       example,
+      imageUrls,
       answers = [],
       selectedAnswer,
       correctAnswer = [],
@@ -263,6 +266,10 @@ const QuestionCard = React.forwardRef<HTMLDivElement, IQuestionCardProps>(
     },
     ref
   ) => {
+    const validImageUrls = (imageUrls ?? []).filter(
+      (url): url is string => typeof url === "string" && url.trim().length > 0
+    );
+
     const getAnswerState = (
       value: string | number
     ): "default" | "selected" | "correct" | "incorrect" => {
@@ -306,10 +313,36 @@ const QuestionCard = React.forwardRef<HTMLDivElement, IQuestionCardProps>(
           {example && (
             <div className="w-full mt-4 px-4 sm:px-0">
               <div className="p-4 bg-[#F9FAFB] border border-[#E5E7EB] rounded-[12px]">
-                <p className="text-xs font-medium text-[#6B7280] mb-2">보기</p>
                 <p className="font-normal text-sm sm:text-base leading-6 text-[#364153] break-words">
                   {example}
                 </p>
+              </div>
+            </div>
+          )}
+
+          {/* Question Images */}
+          {validImageUrls.length > 0 && (
+            <div className="w-full mt-4 px-4 sm:px-0">
+              <div className="flex flex-col gap-3">
+                {validImageUrls.map((url, index) => (
+                  <div
+                    key={`${url}-${index}`}
+                    className="relative w-full h-[70px] sm:h-[120px] overflow-hidden rounded-[12px] border border-[#E5E7EB]"
+                    onContextMenu={(e) => e.preventDefault()}
+                    onDragStart={(e) => e.preventDefault()}
+                  >
+                    <Image
+                      src={url}
+                      alt={`문항 이미지 ${index + 1}`}
+                      fill
+                      sizes="(max-width: 640px) 100vw, (max-width: 1100px) 90vw, 1100px"
+                      className="object-contain p-2"
+                      unoptimized
+                      loading="lazy"
+                      draggable={false}
+                    />
+                  </div>
+                ))}
               </div>
             </div>
           )}

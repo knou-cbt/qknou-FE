@@ -1,7 +1,14 @@
 "use client";
 import { useState, useCallback, useMemo, useEffect } from "react";
-import { ExamNavButtons, QuestionCard, Button, Breadcrumb } from "@/components/ui";
+import {
+  ExamNavButtons,
+  QuestionCard,
+  Breadcrumb,
+  Toggle,
+} from "@/components/ui";
+import ReactMarkdown from "react-markdown";
 import { useExamQuestionsWithAnswersQuery } from "../hooks/service";
+import { useExamContext } from "@/contexts";
 
 type Props = {
   subjectId?: string;
@@ -24,6 +31,43 @@ export const MemorizeModePage = ({ subjectId, yearId }: Props) => {
     >
   >({});
 
+  const { isExplanationVisible, setIsExplanationVisible } = useExamContext();
+
+  // 복사 방지
+  useEffect(() => {
+    const preventDefault = (event: Event) => {
+      event.preventDefault();
+    };
+    const preventCopyHotkey = (event: KeyboardEvent) => {
+      if (!(event.ctrlKey || event.metaKey)) return;
+      const key = event.key.toLowerCase();
+      if (key === "c" || key === "x" || key === "a") {
+        event.preventDefault();
+      }
+    };
+
+    document.addEventListener("copy", preventDefault);
+    document.addEventListener("cut", preventDefault);
+    document.addEventListener("paste", preventDefault);
+    document.addEventListener("contextmenu", preventDefault);
+    document.addEventListener("selectstart", preventDefault as EventListener);
+    document.addEventListener("dragstart", preventDefault);
+    document.addEventListener("keydown", preventCopyHotkey);
+
+    return () => {
+      document.removeEventListener("copy", preventDefault);
+      document.removeEventListener("cut", preventDefault);
+      document.removeEventListener("paste", preventDefault);
+      document.removeEventListener("contextmenu", preventDefault);
+      document.removeEventListener(
+        "selectstart",
+        preventDefault as EventListener
+      );
+      document.removeEventListener("dragstart", preventDefault);
+      document.removeEventListener("keydown", preventCopyHotkey);
+    };
+  }, []);
+
   // API 호출
   const { data, isLoading, isError } = useExamQuestionsWithAnswersQuery(
     examId ?? ""
@@ -43,6 +87,18 @@ export const MemorizeModePage = ({ subjectId, yearId }: Props) => {
       value: choice.number,
       label: choice.text,
     }));
+  }, [currentQuestion]);
+
+  const normalizedExample = currentQuestion?.example ?? undefined;
+  const normalizedImageUrls = useMemo(() => {
+    if (!currentQuestion) return undefined;
+
+    const urls = currentQuestion.imageUrls?.filter(
+      (url): url is string => typeof url === "string" && url.trim().length > 0
+    );
+    if (urls && urls.length > 0) return urls;
+
+    return currentQuestion.imageUrl ? [currentQuestion.imageUrl] : undefined;
   }, [currentQuestion]);
 
   const handleAnswerSelect = useCallback(
@@ -175,6 +231,8 @@ export const MemorizeModePage = ({ subjectId, yearId }: Props) => {
             <QuestionCard
               size="full"
               question={currentQuestion.text}
+              example={normalizedExample}
+              imageUrls={normalizedImageUrls}
               answers={formattedAnswers}
               selectedAnswer={selectedAnswer}
               correctAnswer={currentQuestion.correctAnswers}
@@ -185,51 +243,40 @@ export const MemorizeModePage = ({ subjectId, yearId }: Props) => {
           </div>
         )}
 
-        {/* 해설 영역 - 정답 확인 이후에만 노출 */}
+        {/* 해설 영역 - 정답 확인 이후에만 노출 (전역 토글) */}
         {showResult && currentQuestion?.explanation && (
           <div className="w-full max-w-[1066px] mt-6">
             <div className="bg-[#F9FAFB] border border-[#E5E7EB] rounded-[16px] p-6">
               <div className="flex items-center justify-between mb-3">
-                <h3 className="font-semibold text-[#101828]">해설</h3>
-                {/* 문제 다시 풀기 버튼 */}
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={handleResetQuestion}
-                >
-                  문제 다시 풀기
-                </Button>
+                <div className="flex items-center gap-3">
+                  <h3 className="font-semibold text-[#101828]">해설</h3>
+                  <Toggle
+                    checked={isExplanationVisible}
+                    onChange={setIsExplanationVisible}
+                    label="해설 표시"
+                  />
+                </div>
               </div>
-              <p className="text-[#364153] leading-7">
-                {currentQuestion.explanation}
-              </p>
+              {isExplanationVisible && (
+                <div className="text-[#364153] leading-7 [&_a]:text-[#155DFC] [&_a]:underline [&_code]:rounded [&_code]:bg-[#F3F4F6] [&_code]:px-1 [&_li]:ml-5 [&_ol]:list-decimal [&_p]:mb-3 [&_ul]:list-disc">
+                  <ReactMarkdown>{currentQuestion.explanation}</ReactMarkdown>
+                </div>
+              )}
             </div>
           </div>
         )}
 
-        {/* 문제 다시 풀기 버튼 - 해설이 없지만 정답이 보일 때 */}
-        {showResult && !currentQuestion?.explanation && (
-          <div className="w-full max-w-[1066px] mt-6 flex justify-end">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={handleResetQuestion}
-            >
-              문제 다시 풀기
-            </Button>
-          </div>
-        )}
 
         {/* Navigation Buttons */}
         <div className="w-full max-w-[896px] mt-8">
           <ExamNavButtons
             onPrevClick={handlePrev}
-            onAnswerClick={handleShowAnswer}
+            onAnswerClick={showResult ? handleResetQuestion : handleShowAnswer}
             onNextClick={handleNext}
             prevDisabled={isFirstQuestion}
-            answerDisabled={!hasSelectedAnswer || showResult}
+            answerDisabled={!showResult && !hasSelectedAnswer}
             nextDisabled={isLastQuestion}
-            answerLabel={showResult ? "정답 확인됨" : "정답 확인"}
+            answerLabel={showResult ? "다시 풀기" : "정답 확인"}
           />
         </div>
       </main>

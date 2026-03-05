@@ -7,6 +7,8 @@ import {
   useCallback,
   useRef,
   type ReactNode,
+  type Dispatch,
+  type SetStateAction,
 } from "react";
 
 interface IExamContextValue {
@@ -21,6 +23,9 @@ interface IExamContextValue {
   setUnansweredCount: (count: number) => void;
   totalQuestions: number;
   setTotalQuestions: (count: number) => void;
+  // 해설 표시 여부 전역 상태
+  isExplanationVisible: boolean;
+  setIsExplanationVisible: Dispatch<SetStateAction<boolean>>;
 }
 
 const ExamContext = createContext<IExamContextValue | null>(null);
@@ -30,6 +35,7 @@ export const ExamProvider = ({ children }: { children: ReactNode }) => {
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [unansweredCount, setUnansweredCount] = useState(0);
   const [totalQuestions, setTotalQuestions] = useState(0);
+  const [isExplanationVisible, setIsExplanationVisible] = useState(true);
 
   // ref로 관리하여 리렌더링 방지
   const onExamEndRef = useRef<(() => void) | null>(null);
@@ -55,6 +61,8 @@ export const ExamProvider = ({ children }: { children: ReactNode }) => {
         setUnansweredCount,
         totalQuestions,
         setTotalQuestions,
+        isExplanationVisible,
+        setIsExplanationVisible,
       }}
     >
       {children}
