@@ -270,6 +270,10 @@ export const MemorizeModePage = ({ subjectId, yearId }: Props) => {
         open={chatbotOpen}
         onClose={() => setChatbotOpen(false)}
         questionId={currentQuestion?.id ?? undefined}
+        subjectId={subjectId}
+        yearId={yearId}
+        subjectLabel={exam?.subject}
+        yearLabel={exam?.year ? `${exam.year}년도` : undefined}
       />
     </div>
   );

@@ -2,6 +2,8 @@
 
 import { useState, useCallback, useRef, useEffect, useMemo } from "react";
 import Image from "next/image";
+import { useRouter } from "next/navigation";
+import ReactMarkdown from "react-markdown";
 import {
   ChevronLeft,
   MessageCircle,
@@ -9,10 +11,14 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/contexts";
-import { Select } from "@/components/ui";
 
 const CHATBOT_QUESTION_LIMIT = 10;
 const STORAGE_KEY_PREFIX = "qknou_chatbot_questions_";
+const CHAT_HISTORY_KEY_PREFIX = "qknou_chatbot_history_";
+const CHAT_HISTORY_TTL_MS = 30 * 24 * 60 * 60 * 1000;
+const LOGIN_CTA_TEXT_COLOR = "#155DFC";
+const LOGIN_CTA_CLASS =
+  "cursor-pointer font-medium hover:underline hover:underline-offset-2";
 
 type TutorIntent = "define" | "compare" | "recommend" | "general";
 
@@ -38,18 +44,32 @@ type TutorResponse = {
   };
 };
 
-const INTENT_OPTIONS = [
-  { value: "define", label: "개념 설명" },
-  { value: "compare", label: "개념 비교" },
-  { value: "recommend", label: "관련 문제 추천" },
-  { value: "general", label: "일반 학습 질문" },
-] as const;
+type ChatMessage = { role: "user" | "bot"; text: string };
+
+type ChatThread = {
+  threadId: string;
+  subjectId?: string;
+  yearId?: string;
+  subjectLabel?: string;
+  yearLabel?: string;
+  messages: ChatMessage[];
+  updatedAt: number;
+};
+
+type StoredChatHistory = {
+  version: 2;
+  threads: ChatThread[];
+};
 
 interface ChatbotPanelProps {
   open: boolean;
   onClose: () => void;
   /** 현재 문제 ID (암기 모드 등에서 전달 시 튜터 API 사용) */
   questionId?: number;
+  subjectId?: string;
+  yearId?: string;
+  subjectLabel?: string;
+  yearLabel?: string;
 }
 
 const SUGGESTIONS = [
@@ -61,6 +81,21 @@ function getQuestionCountKey(userId: string) {
   return `${STORAGE_KEY_PREFIX}${userId}`;
 }
 
+function getChatHistoryKey(userId: string) {
+  return `${CHAT_HISTORY_KEY_PREFIX}${userId}`;
+}
+
+function buildThreadId(subjectId?: string, yearId?: string) {
+  if (subjectId && yearId) return `${subjectId}:${yearId}`;
+  return "general";
+}
+
+function formatThreadTitle(thread: ChatThread) {
+  const subject = thread.subjectLabel ?? thread.subjectId ?? "일반";
+  const year = thread.yearLabel ?? thread.yearId ?? "-";
+  return `${subject} · ${year}`;
+}
+
 function getStoredQuestionCount(userId: string): number {
   if (typeof window === "undefined") return 0;
   const raw = localStorage.getItem(getQuestionCountKey(userId));
@@ -68,7 +103,93 @@ function getStoredQuestionCount(userId: string): number {
   return Number.isNaN(n) ? 0 : Math.max(0, n);
 }
 
-export function ChatbotPanel({ open, onClose, questionId }: ChatbotPanelProps) {
+function getStoredChatHistory(userId: string): StoredChatHistory {
+  const empty: StoredChatHistory = { version: 2, threads: [] };
+  if (typeof window === "undefined") return empty;
+  const raw = localStorage.getItem(getChatHistoryKey(userId));
+  if (!raw) return empty;
+
+  try {
+    const parsed = JSON.parse(raw) as
+      | StoredChatHistory
+      | { messages?: ChatMessage[]; updatedAt?: number };
+
+    // v1 마이그레이션: 단일 messages 구조 -> general 스레드 1개
+    if (!("version" in parsed) || parsed.version !== 2) {
+      const messages = Array.isArray(parsed?.messages)
+        ? parsed.messages.filter(
+            (m): m is ChatMessage =>
+              (m?.role === "user" || m?.role === "bot") &&
+              typeof m?.text === "string"
+          )
+        : [];
+      const updatedAt =
+        typeof parsed?.updatedAt === "number" ? parsed.updatedAt : Date.now();
+      if (Date.now() - updatedAt > CHAT_HISTORY_TTL_MS) {
+        localStorage.removeItem(getChatHistoryKey(userId));
+        return empty;
+      }
+      return {
+        version: 2,
+        threads: [
+          {
+            threadId: "general",
+            subjectLabel: "일반",
+            yearLabel: "-",
+            messages,
+            updatedAt,
+          },
+        ],
+      };
+    }
+
+    const threads = Array.isArray(parsed.threads) ? parsed.threads : [];
+    const validThreads = threads
+      .filter((thread) => {
+        if (!thread?.threadId || !Array.isArray(thread?.messages)) return false;
+        if (
+          typeof thread.updatedAt !== "number" ||
+          Date.now() - thread.updatedAt > CHAT_HISTORY_TTL_MS
+        ) {
+          return false;
+        }
+        return true;
+      })
+      .map((thread) => ({
+        ...thread,
+        messages: thread.messages.filter(
+          (m): m is ChatMessage =>
+            (m?.role === "user" || m?.role === "bot") &&
+            typeof m?.text === "string"
+        ),
+      }));
+
+    if (validThreads.length === 0) {
+      localStorage.removeItem(getChatHistoryKey(userId));
+      return empty;
+    }
+    return { version: 2, threads: validThreads };
+  } catch {
+    localStorage.removeItem(getChatHistoryKey(userId));
+    return empty;
+  }
+}
+
+function persistChatHistory(userId: string, data: StoredChatHistory) {
+  if (typeof window === "undefined") return;
+  localStorage.setItem(getChatHistoryKey(userId), JSON.stringify(data));
+}
+
+export function ChatbotPanel({
+  open,
+  onClose,
+  questionId,
+  subjectId,
+  yearId,
+  subjectLabel,
+  yearLabel,
+}: ChatbotPanelProps) {
+  const router = useRouter();
   const { user } = useAuth();
   const isLoggedIn = Boolean(user);
   const storageUserKey = useMemo(() => String(user?.id ?? "anonymous"), [user?.id]);
@@ -76,17 +197,79 @@ export function ChatbotPanel({ open, onClose, questionId }: ChatbotPanelProps) {
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
   const [questionCount, setQuestionCount] = useState(0);
-  const [messages, setMessages] = useState<{ role: "user" | "bot"; text: string }[]>([]);
+  const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [limitReachedMessage, setLimitReachedMessage] = useState<string | null>(null);
-  const [intent, setIntent] = useState<TutorIntent>("define");
+  const [isTyping, setIsTyping] = useState(false);
+  const [threads, setThreads] = useState<ChatThread[]>([]);
+  const [showThreadList, setShowThreadList] = useState(false);
+  const [selectedThreadId, setSelectedThreadId] = useState("");
+  const isHistoryHydratedRef = useRef(false);
+  const activeThreadId = useMemo(
+    () => buildThreadId(subjectId, yearId),
+    [subjectId, yearId]
+  );
+  const isViewingOtherThread =
+    selectedThreadId.length > 0 && selectedThreadId !== activeThreadId;
+  const selectedThread = useMemo(
+    () => threads.find((thread) => thread.threadId === selectedThreadId),
+    [threads, selectedThreadId]
+  );
+  const displayedMessages = useMemo(
+    () => (isViewingOtherThread ? selectedThread?.messages ?? [] : messages),
+    [isViewingOtherThread, selectedThread?.messages, messages]
+  );
 
   const canAskByLimit = questionCount < CHATBOT_QUESTION_LIMIT;
   const hasQuestionContext = questionId != null;
-  const canAsk = isLoggedIn && (hasQuestionContext || canAskByLimit);
+  const canAsk = isLoggedIn && canAskByLimit;
 
   useEffect(() => {
     setQuestionCount(getStoredQuestionCount(storageUserKey));
   }, [storageUserKey]);
+
+  useEffect(() => {
+    isHistoryHydratedRef.current = false;
+    const stored = getStoredChatHistory(storageUserKey);
+    setThreads(stored.threads);
+    const currentThread = stored.threads.find(
+      (thread) => thread.threadId === activeThreadId
+    );
+    setMessages(currentThread?.messages ?? []);
+    setSelectedThreadId(activeThreadId);
+    isHistoryHydratedRef.current = true;
+  }, [storageUserKey, activeThreadId]);
+
+  useEffect(() => {
+    if (!isHistoryHydratedRef.current) return;
+
+    setThreads((prev) => {
+      const now = Date.now();
+      const index = prev.findIndex((thread) => thread.threadId === activeThreadId);
+      const nextThread: ChatThread = {
+        threadId: activeThreadId,
+        subjectId,
+        yearId,
+        subjectLabel,
+        yearLabel,
+        messages,
+        updatedAt: now,
+      };
+      const next =
+        index >= 0
+          ? prev.map((thread, i) => (i === index ? { ...thread, ...nextThread } : thread))
+          : [...prev, nextThread];
+      persistChatHistory(storageUserKey, { version: 2, threads: next });
+      return next;
+    });
+  }, [
+    storageUserKey,
+    messages,
+    activeThreadId,
+    subjectId,
+    yearId,
+    subjectLabel,
+    yearLabel,
+  ]);
 
   const persistCount = useCallback(
     (count: number) => {
@@ -97,6 +280,14 @@ export function ChatbotPanel({ open, onClose, questionId }: ChatbotPanelProps) {
   );
 
   const scrollAreaRef = useRef<HTMLDivElement>(null);
+  const typingTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+
+  const clearTypingTimer = useCallback(() => {
+    if (typingTimerRef.current) {
+      clearInterval(typingTimerRef.current);
+      typingTimerRef.current = null;
+    }
+  }, []);
 
   useEffect(() => {
     const el = scrollAreaRef.current;
@@ -106,27 +297,56 @@ export function ChatbotPanel({ open, onClose, questionId }: ChatbotPanelProps) {
     };
     scrollToBottom();
     requestAnimationFrame(scrollToBottom);
-  }, [messages.length, loading]);
+  }, [displayedMessages, loading, isTyping]);
 
-  // GPT 보조(fallback) 호출 - /api/chatbot, 1인당 10회 제한
+  useEffect(() => {
+    return () => {
+      clearTypingTimer();
+    };
+  }, [clearTypingTimer]);
+
+  const appendBotMessageWithTyping = useCallback(
+    async (fullText: string) => {
+      if (!fullText) return;
+      clearTypingTimer();
+
+      let targetIndex = -1;
+      setMessages((prev) => {
+        targetIndex = prev.length;
+        return [...prev, { role: "bot", text: "" }];
+      });
+
+      setIsTyping(true);
+      await new Promise<void>((resolve) => {
+        let cursor = 0;
+        typingTimerRef.current = setInterval(() => {
+          cursor += 1;
+
+          setMessages((prev) => {
+            if (targetIndex < 0 || targetIndex >= prev.length) return prev;
+            const next = [...prev];
+            next[targetIndex] = {
+              ...next[targetIndex],
+              text: fullText.slice(0, cursor),
+            };
+            return next;
+          });
+
+          if (cursor >= fullText.length) {
+            clearTypingTimer();
+            setIsTyping(false);
+            resolve();
+          }
+        }, 18);
+      });
+    },
+    [clearTypingTimer]
+  );
+
+  // GPT 보조(fallback) 호출 - 질문 1회 차감 후 내부적으로 사용
   const callGptFallback = useCallback(
-    async (historyMessages: { role: "user" | "bot"; text: string }[]) => {
-      if (!canAskByLimit) {
-        setLimitReachedMessage(
-          `GPT 보조 사용 한도를 모두 사용했어요. (${CHATBOT_QUESTION_LIMIT}회)`
-        );
-        setMessages((prev) => [
-          ...prev,
-          {
-            role: "bot",
-            text: "튜터에서 충분한 정보를 찾지 못했고, GPT 보조 사용 한도도 모두 소진되었습니다.",
-          },
-        ]);
-        return;
-      }
-
+    async (historyMessages: ChatMessage[]) => {
       setLimitReachedMessage(null);
-      persistCount(questionCount + 1);
       setLoading(true);
       try {
         const res = await fetch("/api/chatbot", {
@@ -142,33 +362,39 @@ export function ChatbotPanel({ open, onClose, questionId }: ChatbotPanelProps) {
         if (!res.ok) {
           throw new Error(data?.error || "GPT 보조 응답 생성에 실패했습니다.");
         }
-        setMessages((prev) => [...prev, { role: "bot", text: data.reply }]);
+        await appendBotMessageWithTyping(data.reply);
       } catch (error) {
         const message =
           error instanceof Error
             ? error.message
             : "일시적인 오류가 발생했어요. 잠시 후 다시 시도해 주세요.";
-        setMessages((prev) => [
-          ...prev,
-          {
-            role: "bot",
-            text: message,
-          },
-        ]);
+        await appendBotMessageWithTyping(message);
       } finally {
         setLoading(false);
       }
     },
-    [canAskByLimit, persistCount, questionCount]
+    [appendBotMessageWithTyping]
   );
 
   const handleSend = useCallback(
     async (text: string) => {
       const trimmed = text.trim();
       if (!trimmed) return;
+      if (isViewingOtherThread) {
+        setLimitReachedMessage(
+          "조회 전용 대화입니다. 현재 과목/연도 대화에서만 질문할 수 있어요."
+        );
+        return;
+      }
 
       if (!isLoggedIn) {
         setLimitReachedMessage("로그인 사용자만 이용 가능합니다.");
+        return;
+      }
+      if (!canAskByLimit) {
+        setLimitReachedMessage(
+          `질문 한도를 모두 사용했어요. (${CHATBOT_QUESTION_LIMIT}개)`
+        );
         return;
       }
 
@@ -181,6 +407,7 @@ export function ChatbotPanel({ open, onClose, questionId }: ChatbotPanelProps) {
         ];
         setMessages(historyMessages);
         setInput("");
+        persistCount(questionCount + 1);
         setLoading(true);
 
         try {
@@ -225,7 +452,7 @@ export function ChatbotPanel({ open, onClose, questionId }: ChatbotPanelProps) {
               botText += `\n\n추천 문제 목록:\n${list}`;
             }
 
-            setMessages((prev) => [...prev, { role: "bot", text: botText }]);
+            await appendBotMessageWithTyping(botText);
             setLoading(false);
             return;
           }
@@ -240,14 +467,6 @@ export function ChatbotPanel({ open, onClose, questionId }: ChatbotPanelProps) {
         } finally {
           setLoading(false);
         }
-        return;
-      }
-
-      // 현재 문제 정보가 없을 때는 기존 GPT 챗봇 플로우만 사용
-      if (!canAskByLimit) {
-        setLimitReachedMessage(
-          `질문 한도를 모두 사용했어요. (${CHATBOT_QUESTION_LIMIT}개)`
-        );
         return;
       }
 
@@ -274,19 +493,13 @@ export function ChatbotPanel({ open, onClose, questionId }: ChatbotPanelProps) {
         if (!res.ok) {
           throw new Error(data?.error || "챗봇 응답 생성에 실패했습니다.");
         }
-        setMessages((prev) => [...prev, { role: "bot", text: data.reply }]);
+        await appendBotMessageWithTyping(data.reply);
       } catch (error) {
         const message =
           error instanceof Error
             ? error.message
             : "일시적인 오류가 발생했어요. 잠시 후 다시 시도해 주세요.";
-        setMessages((prev) => [
-          ...prev,
-          {
-            role: "bot",
-            text: message,
-          },
-        ]);
+        await appendBotMessageWithTyping(message);
       } finally {
         setLoading(false);
       }
@@ -300,10 +513,16 @@ export function ChatbotPanel({ open, onClose, questionId }: ChatbotPanelProps) {
       canAskByLimit,
       persistCount,
       questionCount,
+      appendBotMessageWithTyping,
+      isViewingOtherThread,
     ]
   );
 
   if (!open) return null;
+
+  const threadSummaries = [...threads]
+    .filter((thread) => thread.threadId !== "general")
+    .sort((a, b) => b.updatedAt - a.updatedAt);
 
   return (
     <>
@@ -347,7 +566,13 @@ export function ChatbotPanel({ open, onClose, questionId }: ChatbotPanelProps) {
             </div>
             <span className="font-semibold text-[#111827]">AI 학습 도우미</span>
           </div>
-          <div className="w-9" />
+          <button
+            type="button"
+            onClick={() => setShowThreadList((prev) => !prev)}
+            className="rounded-md px-2 py-1 text-xs text-[#4B5563] hover:bg-[#F3F4F6]"
+          >
+            {showThreadList ? "대화로" : "목록으로"}
+          </button>
         </div>
 
         {/* Content - scroll */}
@@ -355,8 +580,49 @@ export function ChatbotPanel({ open, onClose, questionId }: ChatbotPanelProps) {
           ref={scrollAreaRef}
           className="flex flex-1 flex-col overflow-y-auto px-4 py-4"
         >
+          {showThreadList ? (
+            <div className="mb-4">
+              <p className="mb-2 text-xs font-medium text-[#6B7280]">대화 목록</p>
+              {threadSummaries.length === 0 ? (
+                <p className="text-sm text-[#9CA3AF]">저장된 대화가 없습니다.</p>
+              ) : (
+                <div className="space-y-2">
+                  {threadSummaries.map((thread) => (
+                    <button
+                      type="button"
+                      key={thread.threadId}
+                      onClick={() => {
+                        setSelectedThreadId(thread.threadId);
+                        setShowThreadList(false);
+                      }}
+                      className={cn(
+                        "block w-full rounded-lg border px-3 py-2 text-left",
+                        thread.threadId === selectedThreadId
+                          ? "border-[#5D50FF] bg-[#F5F3FF]"
+                          : "border-[#E5E7EB] bg-white"
+                      )}
+                    >
+                      <p className="text-sm font-medium text-[#374151]">
+                        {formatThreadTitle(thread)}
+                      </p>
+                      <p className="text-xs text-[#9CA3AF]">
+                        최근 기록: {""}
+                        {new Date(thread.updatedAt).toLocaleDateString("ko-KR")}
+                      </p>
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+          ) : (
+            <>
+          {isViewingOtherThread && (
+            <p className="mb-3 rounded-md bg-[#FEF3C7] px-3 py-2 text-xs text-[#92400E]">
+              이 대화는 조회 전용입니다. 현재 과목/연도 대화에서만 질문할 수 있어요.
+            </p>
+          )}
           {/* Welcome block - 처음만 */}
-          {messages.length === 0 && (
+          {displayedMessages.length === 0 && (
             <div className="mb-4">
               <div className="mb-2 flex items-center gap-1.5">
                 <MessageCircle className="size-4 text-[#6B7280]" />
@@ -368,21 +634,21 @@ export function ChatbotPanel({ open, onClose, questionId }: ChatbotPanelProps) {
                 안녕하세요! 😊 학습이나 암기 모드에 대해 궁금한 점을 남겨주시면
                 빠르게 안내드리겠습니다.
               </p>
-              <ul className="mb-4 space-y-1 text-sm text-[#6B7280]">
-                <li className="flex items-start gap-2">
-                  <span className="mt-1.5 size-1.5 shrink-0 rounded-sm bg-[#111827]" />
+              <ul className="mb-4 list-inside list-disc space-y-1 text-xs text-[#6B7280]">
+                <li>
                   AI 챗봇: 24시간 연중무휴
                 </li>
+                <li>
+                   챗봇 대화 내용은 30일 동안만 유지되며 이후 자동으로 초기화됩니다.
+                </li>
               </ul>
-              <p className="mb-3 text-sm text-[#374151]">
-                질문은 1인당 하루 {CHATBOT_QUESTION_LIMIT}개까지 가능해요.
-              </p>
+             
             </div>
           )}
 
           {/* 채팅 메시지 목록 */}
           <div className="mb-4 flex flex-col gap-3">
-            {messages.map((msg, i) => (
+            {displayedMessages.map((msg, i) => (
               <div
                 key={i}
                 className={cn(
@@ -411,12 +677,18 @@ export function ChatbotPanel({ open, onClose, questionId }: ChatbotPanelProps) {
                       : "rounded-tl-md bg-[#F3F4F6] text-[#374151]"
                   )}
                 >
-                  {msg.text}
+                  {msg.role === "bot" ? (
+                    <div className="[&_code]:rounded [&_code]:bg-[#E5E7EB] [&_code]:px-1 [&_li]:ml-5 [&_ol]:list-decimal [&_p]:mb-2 [&_ul]:list-disc">
+                      <ReactMarkdown>{msg.text}</ReactMarkdown>
+                    </div>
+                  ) : (
+                    msg.text
+                  )}
                 </div>
               </div>
             ))}
             {/* 로딩 중: loading-chatbot 이미지 */}
-            {loading && (
+            {loading && !isTyping && !isViewingOtherThread && (
               <div className="flex gap-2">
                 <div className="relative flex size-8 shrink-0 items-center justify-center overflow-hidden rounded-full border border-[#E5E7EB]">
                   <div className="relative size-full">
@@ -442,7 +714,7 @@ export function ChatbotPanel({ open, onClose, questionId }: ChatbotPanelProps) {
           {limitReachedMessage && (
             <p className="mb-3 text-sm text-amber-600">{limitReachedMessage}</p>
           )}
-          {messages.length === 0 && (
+          {displayedMessages.length === 0 && (
             <>
               <p className="text-end mb-2 text-xs text-[#6B7280]">자주 묻는 질문</p>
               <div className="mb-6 flex flex-col items-end gap-2">
@@ -451,7 +723,7 @@ export function ChatbotPanel({ open, onClose, questionId }: ChatbotPanelProps) {
                     key={text}
                     type="button"
                     onClick={() => void handleSend(text)}
-                    disabled={!canAsk}
+                    disabled={!canAsk || isViewingOtherThread}
                     className="max-w-[85%] rounded-2xl rounded-tr-md bg-[#F3F4F6] px-4 py-2.5 text-left text-sm text-[#374151] hover:bg-[#E5E7EB] disabled:opacity-60"
                   >
                     {text}
@@ -460,33 +732,12 @@ export function ChatbotPanel({ open, onClose, questionId }: ChatbotPanelProps) {
               </div>
             </>
           )}
+            </>
+          )}
         </div>
 
         {/* Input area - fixed at bottom */}
         <div className="shrink-0 border-t border-[#E5E7EB] bg-white p-3">
-          {/* 질문 유형 선택 - 로그인 사용자만 */}
-          {isLoggedIn && (
-            <div className="mb-2 flex flex-col gap-1">
-              <div className="flex items-center justify-between gap-2">
-                <span className="text-xs font-medium text-[#4B5563]">질문 유형</span>
-                <Select
-                  options={[...INTENT_OPTIONS]}
-                  value={intent}
-                  onChange={(v) => setIntent(v as TutorIntent)}
-                />
-              </div>
-              <p className="text-[11px] text-[#9CA3AF]">
-                {intent === "define" &&
-                  '예: "DI가 뭐야?"처럼 하나의 개념을 물어보세요.'}
-                {intent === "compare" &&
-                  '예: "DI랑 IoC 차이가 뭐야?"처럼 두 개념을 함께 적어주세요.'}
-                {intent === "recommend" &&
-                  '예: "비슷한 문제 더 줘"처럼 현재 문제와 관련된 문제를 요청해 보세요.'}
-                {intent === "general" &&
-                  "시험 전략, 학습 방법 등 전반적인 질문을 자유롭게 남겨주세요."}
-              </p>
-            </div>
-           )}
           <div className="flex items-end gap-2">
             <div className="flex flex-1 items-center gap-1 rounded-2xl border border-[#E5E7EB] bg-[#F9FAFB] px-3 py-2">
               <input
@@ -502,14 +753,16 @@ export function ChatbotPanel({ open, onClose, questionId }: ChatbotPanelProps) {
                 placeholder={
                   !isLoggedIn
                     ? "로그인 사용자만 이용 가능합니다."
-                    : hasQuestionContext
-                    ? "현재 문제를 기준으로 AI 튜터에게 질문해 주세요."
+                    : isViewingOtherThread
+                    ? "조회 전용 대화입니다. 현재 과목/연도 대화에서 질문해 주세요."
                     : canAskByLimit
-                    ? "AI에게 질문해 주세요."
+                    ? hasQuestionContext
+                      ? "현재 문제를 기준으로 AI 튜터에게 질문해 주세요."
+                      : "AI에게 질문해 주세요."
                     : `오늘 질문 한도가 모두 소진되었어요 (${CHATBOT_QUESTION_LIMIT}/${CHATBOT_QUESTION_LIMIT})`
                 }
                 disabled={
-                  !isLoggedIn || (!hasQuestionContext && !canAskByLimit)
+                  !isLoggedIn || !canAskByLimit || isTyping || isViewingOtherThread
                 }
                 className="min-w-0 flex-1 bg-transparent text-sm text-[#111827] placeholder:text-[#9CA3AF] focus:outline-none disabled:opacity-70"
                 aria-label="메시지 입력"
@@ -519,7 +772,7 @@ export function ChatbotPanel({ open, onClose, questionId }: ChatbotPanelProps) {
               type="button"
               onClick={() => void handleSend(input)}
               disabled={
-                !isLoggedIn || (!hasQuestionContext && !canAskByLimit) || loading
+                !isLoggedIn || !canAskByLimit || loading || isTyping || isViewingOtherThread
               }
               className="flex size-10 shrink-0 items-center justify-center rounded-full bg-[#5D50FF] text-white hover:bg-[#4a3ecc] disabled:opacity-50 disabled:cursor-not-allowed"
               aria-label="보내기"
@@ -528,15 +781,22 @@ export function ChatbotPanel({ open, onClose, questionId }: ChatbotPanelProps) {
             </button>
           </div>
           <p className="mt-2 text-center text-xs text-[#9CA3AF]">
-            {!isLoggedIn
-              ? "로그인 사용자만 이용 가능합니다3."
-              : hasQuestionContext
-              ? canAskByLimit
-                ? `GPT 보조 설명은 ${CHATBOT_QUESTION_LIMIT - questionCount}회까지 이용할 수 있어요. 튜터는 계속 사용할 수 있습니다.`
-                : "GPT 보조 사용 한도는 모두 소진되었지만, 튜터는 계속 사용할 수 있습니다."
-              : canAskByLimit
-              ? `남은 질문 ${CHATBOT_QUESTION_LIMIT - questionCount}회 · AI는 한정된 데이터에 기반하니 중요한 정보는 추가 확인을 권장해요.`
-              : "AI는 한정된 데이터에 기반하니, 중요한 정보는 추가 확인을 권장해요."}
+            {!isLoggedIn ? (
+              <button
+                type="button"
+                onClick={() => router.push("/auth/login")}
+                className={LOGIN_CTA_CLASS}
+                style={{ color: LOGIN_CTA_TEXT_COLOR }}
+              >
+                로그인 하러 가기
+              </button>
+            ) : hasQuestionContext ? (
+              `남은 질문 ${CHATBOT_QUESTION_LIMIT - questionCount}회 · AI는 한정된 데이터에 기반하니 중요한 정보는 추가 확인을 권장해요.`
+            ) : canAskByLimit ? (
+              `남은 질문 ${CHATBOT_QUESTION_LIMIT - questionCount}회 · AI는 한정된 데이터에 기반하니 중요한 정보는 추가 확인을 권장해요.`
+            ) : (
+              "AI는 한정된 데이터에 기반하니, 중요한 정보는 추가 확인을 권장해요."
+            )}
           </p>
         </div>
       </div>
