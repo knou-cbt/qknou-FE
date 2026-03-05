@@ -12,7 +12,7 @@ import {
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/contexts";
 
-const CHATBOT_QUESTION_LIMIT = 10;
+const CHATBOT_QUESTION_LIMIT = 5;
 const STORAGE_KEY_PREFIX = "qknou_chatbot_questions_";
 const CHAT_HISTORY_KEY_PREFIX = "qknou_chatbot_history_";
 const CHAT_HISTORY_TTL_MS = 30 * 24 * 60 * 60 * 1000;
