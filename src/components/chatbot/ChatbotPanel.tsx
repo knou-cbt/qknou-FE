@@ -5,19 +5,51 @@ import Image from "next/image";
 import {
   ChevronLeft,
   MessageCircle,
-  BookOpen,
   Send,
-  X,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/contexts";
+import { Select } from "@/components/ui";
 
 const CHATBOT_QUESTION_LIMIT = 10;
 const STORAGE_KEY_PREFIX = "qknou_chatbot_questions_";
 
+type TutorIntent = "define" | "compare" | "recommend" | "general";
+
+type TutorHistoryItem = {
+  role: "user" | "assistant";
+  content: string;
+};
+
+type TutorRecommendation = {
+  id: number;
+  questionNumber: number;
+  text: string;
+  examTitle: string;
+  year: number;
+};
+
+type TutorResponse = {
+  success: boolean;
+  data?: {
+    answer: string;
+    intent: TutorIntent;
+    recommendations?: TutorRecommendation[];
+  };
+};
+
+const INTENT_OPTIONS = [
+  { value: "define", label: "개념 설명" },
+  { value: "compare", label: "개념 비교" },
+  { value: "recommend", label: "관련 문제 추천" },
+  { value: "general", label: "일반 학습 질문" },
+] as const;
+
 interface ChatbotPanelProps {
   open: boolean;
   onClose: () => void;
+  /** 현재 문제 ID (암기 모드 등에서 전달 시 튜터 API 사용) */
+  questionId?: number;
 }
 
 const SUGGESTIONS = [
@@ -36,8 +68,9 @@ function getStoredQuestionCount(userId: string): number {
   return Number.isNaN(n) ? 0 : Math.max(0, n);
 }
 
-export function ChatbotPanel({ open, onClose }: ChatbotPanelProps) {
+export function ChatbotPanel({ open, onClose, questionId }: ChatbotPanelProps) {
   const { user } = useAuth();
+  const isLoggedIn = Boolean(user);
   const storageUserKey = useMemo(() => String(user?.id ?? "anonymous"), [user?.id]);
 
   const [input, setInput] = useState("");
@@ -45,8 +78,11 @@ export function ChatbotPanel({ open, onClose }: ChatbotPanelProps) {
   const [questionCount, setQuestionCount] = useState(0);
   const [messages, setMessages] = useState<{ role: "user" | "bot"; text: string }[]>([]);
   const [limitReachedMessage, setLimitReachedMessage] = useState<string | null>(null);
+  const [intent, setIntent] = useState<TutorIntent>("define");
 
-  const canAsk = questionCount < CHATBOT_QUESTION_LIMIT;
+  const canAskByLimit = questionCount < CHATBOT_QUESTION_LIMIT;
+  const hasQuestionContext = questionId != null;
+  const canAsk = isLoggedIn && (hasQuestionContext || canAskByLimit);
 
   useEffect(() => {
     setQuestionCount(getStoredQuestionCount(storageUserKey));
@@ -72,28 +108,166 @@ export function ChatbotPanel({ open, onClose }: ChatbotPanelProps) {
     requestAnimationFrame(scrollToBottom);
   }, [messages.length, loading]);
 
-  const handleSend = useCallback(
-    async (text: string) => {
-      const trimmed = text.trim();
-      if (!trimmed) return;
-      if (!canAsk) {
-        setLimitReachedMessage(`질문 한도를 모두 사용했어요. (${CHATBOT_QUESTION_LIMIT}개)`);
+  // GPT 보조(fallback) 호출 - /api/chatbot, 1인당 10회 제한
+  const callGptFallback = useCallback(
+    async (historyMessages: { role: "user" | "bot"; text: string }[]) => {
+      if (!canAskByLimit) {
+        setLimitReachedMessage(
+          `GPT 보조 사용 한도를 모두 사용했어요. (${CHATBOT_QUESTION_LIMIT}회)`
+        );
+        setMessages((prev) => [
+          ...prev,
+          {
+            role: "bot",
+            text: "튜터에서 충분한 정보를 찾지 못했고, GPT 보조 사용 한도도 모두 소진되었습니다.",
+          },
+        ]);
         return;
       }
+
       setLimitReachedMessage(null);
-      setMessages((prev) => [...prev, { role: "user", text: trimmed }]);
-      setInput("");
       persistCount(questionCount + 1);
       setLoading(true);
       try {
-        const payloadMessages = [...messages, { role: "user" as const, text: trimmed }];
         const res = await fetch("/api/chatbot", {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
           },
           body: JSON.stringify({
-            messages: payloadMessages,
+            messages: historyMessages,
+          }),
+        });
+        const data = await res.json();
+        if (!res.ok) {
+          throw new Error(data?.error || "GPT 보조 응답 생성에 실패했습니다.");
+        }
+        setMessages((prev) => [...prev, { role: "bot", text: data.reply }]);
+      } catch (error) {
+        const message =
+          error instanceof Error
+            ? error.message
+            : "일시적인 오류가 발생했어요. 잠시 후 다시 시도해 주세요.";
+        setMessages((prev) => [
+          ...prev,
+          {
+            role: "bot",
+            text: message,
+          },
+        ]);
+      } finally {
+        setLoading(false);
+      }
+    },
+    [canAskByLimit, persistCount, questionCount]
+  );
+
+  const handleSend = useCallback(
+    async (text: string) => {
+      const trimmed = text.trim();
+      if (!trimmed) return;
+
+      if (!isLoggedIn) {
+        setLimitReachedMessage("로그인 사용자만 이용 가능합니다.");
+        return;
+      }
+
+      // 현재 문제 기반 튜터 플로우: /api/tutor/chat 우선 호출
+      if (hasQuestionContext && questionId != null) {
+        setLimitReachedMessage(null);
+        const historyMessages = [
+          ...messages,
+          { role: "user" as const, text: trimmed },
+        ];
+        setMessages(historyMessages);
+        setInput("");
+        setLoading(true);
+
+        try {
+          const tutorHistory: TutorHistoryItem[] = historyMessages
+            .slice(0, -1)
+            .map((m) => ({
+              role: m.role === "user" ? "user" : "assistant",
+              content: m.text,
+            }));
+
+          const res = await fetch("/api/tutor/chat", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              questionId: questionId!,
+              message: trimmed,
+              history: tutorHistory.length ? tutorHistory : undefined,
+            }),
+          });
+
+          const data: TutorResponse = await res.json();
+          const ok = res.ok && data?.success;
+          const payload = data?.data;
+          const recommendations = payload?.recommendations ?? [];
+          const isRecommendIntent = payload?.intent === "recommend";
+          const hasRecommendationResult =
+            !isRecommendIntent || recommendations.length > 0;
+
+          if (ok && payload && hasRecommendationResult) {
+            let botText = payload.answer;
+
+            if (isRecommendIntent && recommendations.length > 0) {
+              const list = recommendations
+                .slice(0, 5)
+                .map(
+                  (r, index) =>
+                    `${index + 1}. [${r.year}] ${r.examTitle} ${r.questionNumber}번 - ${r.text}`
+                )
+                .join("\n");
+              botText += `\n\n추천 문제 목록:\n${list}`;
+            }
+
+            setMessages((prev) => [...prev, { role: "bot", text: botText }]);
+            setLoading(false);
+            return;
+          }
+
+          // 추천 의도인데 추천 결과가 없거나, success=false/HTTP 에러인 경우 GPT 보조로 fallback
+          await callGptFallback(historyMessages);
+        } catch {
+          await callGptFallback([
+            ...messages,
+            { role: "user" as const, text: trimmed },
+          ]);
+        } finally {
+          setLoading(false);
+        }
+        return;
+      }
+
+      // 현재 문제 정보가 없을 때는 기존 GPT 챗봇 플로우만 사용
+      if (!canAskByLimit) {
+        setLimitReachedMessage(
+          `질문 한도를 모두 사용했어요. (${CHATBOT_QUESTION_LIMIT}개)`
+        );
+        return;
+      }
+
+      setLimitReachedMessage(null);
+      const historyMessages = [
+        ...messages,
+        { role: "user" as const, text: trimmed },
+      ];
+      setMessages(historyMessages);
+      setInput("");
+      persistCount(questionCount + 1);
+      setLoading(true);
+      try {
+        const res = await fetch("/api/chatbot", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            messages: historyMessages,
           }),
         });
         const data = await res.json();
@@ -117,7 +291,16 @@ export function ChatbotPanel({ open, onClose }: ChatbotPanelProps) {
         setLoading(false);
       }
     },
-    [canAsk, questionCount, persistCount, messages]
+    [
+      isLoggedIn,
+      hasQuestionContext,
+      questionId,
+      messages,
+      callGptFallback,
+      canAskByLimit,
+      persistCount,
+      questionCount,
+    ]
   );
 
   if (!open) return null;
@@ -194,22 +377,6 @@ export function ChatbotPanel({ open, onClose }: ChatbotPanelProps) {
               <p className="mb-3 text-sm text-[#374151]">
                 질문은 1인당 하루 {CHATBOT_QUESTION_LIMIT}개까지 가능해요.
               </p>
-              <div className="flex flex-wrap gap-2">
-                <button
-                  type="button"
-                  className="inline-flex items-center gap-1.5 rounded-lg bg-[#F3F4F6] px-3 py-2 text-sm font-medium text-[#374151] hover:bg-[#E5E7EB]"
-                >
-                  <MessageCircle className="size-4" />
-                  상담받기
-                </button>
-                <button
-                  type="button"
-                  className="inline-flex items-center gap-1.5 rounded-lg bg-[#10B981] px-3 py-2 text-sm font-medium text-white hover:bg-[#059669]"
-                >
-                  <BookOpen className="size-4" />
-                  학습 가이드
-                </button>
-              </div>
             </div>
           )}
 
@@ -238,7 +405,7 @@ export function ChatbotPanel({ open, onClose }: ChatbotPanelProps) {
                 )}
                 <div
                   className={cn(
-                    "max-w-[85%] rounded-2xl px-4 py-2.5 text-sm whitespace-pre-wrap break-words",
+                    "max-w-[85%] rounded-2xl px-4 py-2.5 text-sm whitespace-pre-wrap wrap-break-word",
                     msg.role === "user"
                       ? "rounded-tr-md bg-[#5D50FF] text-white"
                       : "rounded-tl-md bg-[#F3F4F6] text-[#374151]"
@@ -277,7 +444,7 @@ export function ChatbotPanel({ open, onClose }: ChatbotPanelProps) {
           )}
           {messages.length === 0 && (
             <>
-              <p className="mb-2 text-xs text-[#6B7280]">자주 묻는 질문</p>
+              <p className="text-end mb-2 text-xs text-[#6B7280]">자주 묻는 질문</p>
               <div className="mb-6 flex flex-col items-end gap-2">
                 {SUGGESTIONS.map((text) => (
                   <button
@@ -297,6 +464,29 @@ export function ChatbotPanel({ open, onClose }: ChatbotPanelProps) {
 
         {/* Input area - fixed at bottom */}
         <div className="shrink-0 border-t border-[#E5E7EB] bg-white p-3">
+          {/* 질문 유형 선택 - 로그인 사용자만 */}
+          {isLoggedIn && (
+            <div className="mb-2 flex flex-col gap-1">
+              <div className="flex items-center justify-between gap-2">
+                <span className="text-xs font-medium text-[#4B5563]">질문 유형</span>
+                <Select
+                  options={[...INTENT_OPTIONS]}
+                  value={intent}
+                  onChange={(v) => setIntent(v as TutorIntent)}
+                />
+              </div>
+              <p className="text-[11px] text-[#9CA3AF]">
+                {intent === "define" &&
+                  '예: "DI가 뭐야?"처럼 하나의 개념을 물어보세요.'}
+                {intent === "compare" &&
+                  '예: "DI랑 IoC 차이가 뭐야?"처럼 두 개념을 함께 적어주세요.'}
+                {intent === "recommend" &&
+                  '예: "비슷한 문제 더 줘"처럼 현재 문제와 관련된 문제를 요청해 보세요.'}
+                {intent === "general" &&
+                  "시험 전략, 학습 방법 등 전반적인 질문을 자유롭게 남겨주세요."}
+              </p>
+            </div>
+           )}
           <div className="flex items-end gap-2">
             <div className="flex flex-1 items-center gap-1 rounded-2xl border border-[#E5E7EB] bg-[#F9FAFB] px-3 py-2">
               <input
@@ -310,11 +500,17 @@ export function ChatbotPanel({ open, onClose }: ChatbotPanelProps) {
                   }
                 }}
                 placeholder={
-                  canAsk
+                  !isLoggedIn
+                    ? "로그인 사용자만 이용 가능합니다."
+                    : hasQuestionContext
+                    ? "현재 문제를 기준으로 AI 튜터에게 질문해 주세요."
+                    : canAskByLimit
                     ? "AI에게 질문해 주세요."
                     : `오늘 질문 한도가 모두 소진되었어요 (${CHATBOT_QUESTION_LIMIT}/${CHATBOT_QUESTION_LIMIT})`
                 }
-                disabled={!canAsk}
+                disabled={
+                  !isLoggedIn || (!hasQuestionContext && !canAskByLimit)
+                }
                 className="min-w-0 flex-1 bg-transparent text-sm text-[#111827] placeholder:text-[#9CA3AF] focus:outline-none disabled:opacity-70"
                 aria-label="메시지 입력"
               />
@@ -322,7 +518,9 @@ export function ChatbotPanel({ open, onClose }: ChatbotPanelProps) {
             <button
               type="button"
               onClick={() => void handleSend(input)}
-              disabled={!canAsk || loading}
+              disabled={
+                !isLoggedIn || (!hasQuestionContext && !canAskByLimit) || loading
+              }
               className="flex size-10 shrink-0 items-center justify-center rounded-full bg-[#5D50FF] text-white hover:bg-[#4a3ecc] disabled:opacity-50 disabled:cursor-not-allowed"
               aria-label="보내기"
             >
@@ -330,21 +528,17 @@ export function ChatbotPanel({ open, onClose }: ChatbotPanelProps) {
             </button>
           </div>
           <p className="mt-2 text-center text-xs text-[#9CA3AF]">
-            {canAsk
+            {!isLoggedIn
+              ? "로그인 사용자만 이용 가능합니다3."
+              : hasQuestionContext
+              ? canAskByLimit
+                ? `GPT 보조 설명은 ${CHATBOT_QUESTION_LIMIT - questionCount}회까지 이용할 수 있어요. 튜터는 계속 사용할 수 있습니다.`
+                : "GPT 보조 사용 한도는 모두 소진되었지만, 튜터는 계속 사용할 수 있습니다."
+              : canAskByLimit
               ? `남은 질문 ${CHATBOT_QUESTION_LIMIT - questionCount}회 · AI는 한정된 데이터에 기반하니 중요한 정보는 추가 확인을 권장해요.`
               : "AI는 한정된 데이터에 기반하니, 중요한 정보는 추가 확인을 권장해요."}
           </p>
         </div>
-
-        {/* Close X - bottom right */}
-        <button
-          type="button"
-          onClick={onClose}
-          className="absolute bottom-28 right-4 flex size-10 items-center justify-center rounded-full border border-[#E5E7EB] bg-white shadow-md hover:bg-[#F9FAFB]"
-          aria-label="챗봇 닫기"
-        >
-          <X className="size-5 text-[#374151]" />
-        </button>
       </div>
     </>
   );

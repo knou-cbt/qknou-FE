@@ -1,11 +1,13 @@
 "use client";
 import { useState, useCallback, useMemo, useEffect } from "react";
+import Image from "next/image";
 import {
   ExamNavButtons,
   QuestionCard,
   Breadcrumb,
   Toggle,
 } from "@/components/ui";
+import { ChatbotPanel } from "@/components/chatbot";
 import ReactMarkdown from "react-markdown";
 import { useExamQuestionsWithAnswersQuery } from "../hooks/service";
 import { useExamContext } from "@/contexts";
@@ -34,6 +36,7 @@ export const MemorizeModePage = ({ subjectId, yearId }: Props) => {
 
   const { isExplanationVisible, setIsExplanationVisible } = useExamContext();
   useCopyProtection();
+  const [chatbotOpen, setChatbotOpen] = useState(false);
 
   // API 호출
   const { data, isLoading, isError } = useExamQuestionsWithAnswersQuery(
@@ -247,6 +250,27 @@ export const MemorizeModePage = ({ subjectId, yearId }: Props) => {
           />
         </div>
       </main>
+
+      {/* 챗봇 - 암기 모드에서만, 현재 문제 ID 전달 */}
+      <button
+        type="button"
+        onClick={() => setChatbotOpen(true)}
+        className="fixed bottom-6 right-6 z-50 pl-2 size-14 rounded-full shadow-lg transition bg-white hover:scale-105 focus:outline-none focus:ring-2 focus:ring-[#5D50FF] focus:ring-offset-2 cursor-pointer"
+        aria-label="챗봇"
+      >
+        <Image
+          src="/chatbot.png"
+          alt="챗봇"
+          className="size-full object-contain"
+          width={56}
+          height={56}
+        />
+      </button>
+      <ChatbotPanel
+        open={chatbotOpen}
+        onClose={() => setChatbotOpen(false)}
+        questionId={currentQuestion?.id ?? undefined}
+      />
     </div>
   );
 };
