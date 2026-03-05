@@ -12,6 +12,7 @@ import {
 } from "@/components/ui";
 import { useExamContext } from "@/contexts";
 import { useIsMobile } from "@/lib/useIsMobile";
+import { useCopyProtection } from "@/lib/useCopyProtection";
 import { useExamQuestionsQuery, useExamSubmitMutation } from "../hooks/service";
 import type { IQuestionResult } from "../interface";
 
@@ -31,6 +32,7 @@ export const TestModePage = ({ yearId }: Props) => {
     setTotalQuestions,
     setIsSubmitted: setContextIsSubmitted,
   } = useExamContext();
+  useCopyProtection();
 
   const [currentIndex, setCurrentIndex] = useState(0);
   const [answers, setAnswers] = useState<
@@ -141,6 +143,18 @@ export const TestModePage = ({ yearId }: Props) => {
       value: choice.number,
       label: choice.text,
     }));
+  }, [currentQuestion]);
+
+  const normalizedExample = currentQuestion?.example ?? undefined;
+  const normalizedImageUrls = useMemo(() => {
+    if (!currentQuestion) return undefined;
+
+    const urls = currentQuestion.imageUrls?.filter(
+      (url): url is string => typeof url === "string" && url.trim().length > 0
+    );
+    if (urls && urls.length > 0) return urls;
+
+    return currentQuestion.imageUrl ? [currentQuestion.imageUrl] : undefined;
   }, [currentQuestion]);
 
   // 문제 상태 계산
@@ -367,7 +381,8 @@ export const TestModePage = ({ yearId }: Props) => {
               <QuestionCard
                 size="full"
                 question={currentQuestion.text}
-                example={currentQuestion.example}
+                example={normalizedExample}
+                imageUrls={normalizedImageUrls}
                 answers={formattedAnswers}
                 selectedAnswer={
                   answers[currentIndex] !== undefined
@@ -441,7 +456,8 @@ export const TestModePage = ({ yearId }: Props) => {
             <QuestionCard
               size="full"
               question={currentQuestion.text}
-              example={currentQuestion.example}
+              example={normalizedExample}
+              imageUrls={normalizedImageUrls}
               answers={formattedAnswers}
               selectedAnswer={selectedAnswer}
               correctAnswer={[]}

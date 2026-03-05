@@ -11,31 +11,31 @@
   --foreground: #111827;
 
   /* ✅ Primary: UI 기준 컬러 (밝고 생생한 파란색) */
-  --primary: #155DFC;
+  --primary: #155dfc;
   --primary-foreground: #ffffff;
-  --primary-hover: #1447E6;
+  --primary-hover: #1447e6;
 
   /* ✅ Brand / Point 컬러 */
-  --brand: #155DFC;
+  --brand: #155dfc;
   --brand-foreground: #ffffff;
-  --brand-hover: #1447E6;
+  --brand-hover: #1447e6;
 
   /* ✅ Secondary: 밝은 회색 계열 */
   --secondary: #364153;
   --secondary-foreground: #ffffff;
-  --secondary-hover: #1F2937;
+  --secondary-hover: #1f2937;
 
-  --destructive: #DC2626;
+  --destructive: #dc2626;
   --destructive-foreground: #ffffff;
 
-  --accent: #F3F4F6;
+  --accent: #f3f4f6;
   --accent-foreground: #111827;
 
-  --muted: #F9FAFB;
-  --muted-foreground: #6B7280;
+  --muted: #f9fafb;
+  --muted-foreground: #6b7280;
 
-  --border: #E5E7EB;
-  --input: #E5E7EB;
+  --border: #e5e7eb;
+  --input: #e5e7eb;
 
   /* focus ring은 포인트 컬러로 */
   --ring: var(--brand);
@@ -89,18 +89,18 @@
     --foreground: #ededed;
 
     /* ✅ Primary: 다크 모드에서도 밝은 파란색 유지 */
-    --primary: #155DFC;
+    --primary: #155dfc;
     --primary-foreground: #ffffff;
-    --primary-hover: #1447E6;
+    --primary-hover: #1447e6;
 
     /* ✅ Brand / Point 컬러는 유지 */
-    --brand: #155DFC;
+    --brand: #155dfc;
     --brand-foreground: #ffffff;
-    --brand-hover: #1447E6;
+    --brand-hover: #1447e6;
 
     --secondary: #364153;
     --secondary-foreground: #ffffff;
-    --secondary-hover: #1F2937;
+    --secondary-hover: #1f2937;
 
     --destructive: #dc2626;
     --destructive-foreground: #ffffff;
@@ -148,7 +148,8 @@ select {
    ========================================================================== */
 
 @keyframes pulse-slow {
-  0%, 100% {
+  0%,
+  100% {
     opacity: 0.4;
   }
   50% {
@@ -157,7 +158,8 @@ select {
 }
 
 @keyframes float {
-  0%, 100% {
+  0%,
+  100% {
     transform: translateY(0px);
   }
   50% {
@@ -166,7 +168,8 @@ select {
 }
 
 @keyframes sparkle {
-  0%, 100% {
+  0%,
+  100% {
     opacity: 0;
     transform: scale(0);
   }
@@ -209,13 +212,12 @@ select {
   h1 {
     font-size: clamp(1.5rem, 8vw, 2rem);
   }
-  
+
   h2 {
     font-size: clamp(1.25rem, 6vw, 1.75rem);
   }
-  
+
   /* Better touch targets */
-  button,
   a {
     min-height: 44px;
     min-width: 44px;

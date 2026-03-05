@@ -120,7 +120,7 @@ const Header = React.forwardRef<HTMLElement, IHeaderProps>(
             {variant === "exam" && (
               <div className="flex flex-row items-center gap-2 sm:gap-3 shrink-0">
                 {/* Timer */}
-                <div className="flex flex-row items-center px-2 sm:px-3 gap-1.5 sm:gap-2 h-8 sm:h-11 bg-[#EFF6FF] rounded-[10px]">
+                <div className="flex flex-row items-center px-2 sm:px-3 gap-1.5 sm:gap-2 h-7 sm:h-9 bg-[#EFF6FF] rounded-[10px]">
                   <Clock
                     className="w-4 h-4 sm:w-5 sm:h-5 text-[#155DFC] shrink-0"
                     strokeWidth={1.67}
@@ -133,7 +133,7 @@ const Header = React.forwardRef<HTMLElement, IHeaderProps>(
                 <Button
                   variant="outline"
                   onClick={handleExamEndClick}
-                  className="bg-[#FEF2F2] border-[#FFC9C9] text-xs sm:text-sm text-[#E7000B] hover:bg-[#FEE2E2] hover:text-[#E7000B] h-8 sm:h-9 px-2 sm:px-3 gap-1.5 sm:gap-2 whitespace-nowrap"
+                  className="bg-[#FEF2F2] border-[#FFC9C9] text-xs sm:text-sm text-[#E7000B] hover:bg-[#FEE2E2] hover:text-[#E7000B] h-7 sm:h-9 px-2 sm:px-3 gap-1.5 sm:gap-2 whitespace-nowrap"
                 >
                   <LogOut className="w-3 h-3 sm:w-4 sm:h-4 shrink-0" strokeWidth={1.33} />
                   <span>시험 종료</span>

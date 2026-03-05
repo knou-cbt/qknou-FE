@@ -30,6 +30,8 @@ interface IApiQuestionWithAnswer {
   number: number;
   text: string;
   imageUrl?: string | null;
+  imageUrls?: string[] | null;
+  example?: string | null;
   choices: { id: number; number: number; text: string }[];
   correctAnswers?: number[]; // 복수 정답 지원
   explanation?: string;
