@@ -4,6 +4,7 @@ import { useState, useCallback, useRef, useEffect, useMemo } from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
 import {
   ChevronLeft,
   MessageCircle,
@@ -76,6 +77,49 @@ const SUGGESTIONS = [
   "학습 도우미는 무엇인가요?",
   "암기 모드 사용법을 알려주세요.",
 ];
+
+const PRESET_ANSWERS: Record<string, string> = {
+  "학습 도우미는 무엇인가요?": `
+## 학습 도우미란?
+
+학습 도우미는 학습자가 목표를 달성하도록 **지원하고 안내하는 사람/도구**를 의미합니다.
+
+- 어려운 개념을 쉽게 설명
+- 문제 풀이 과정에서 막힌 부분 보조
+- 학습 계획 수립과 복습 루틴 제안
+
+학습 도우미는 개인 튜터, 스터디 그룹, 온라인 학습 플랫폼 등 다양한 형태로 제공될 수 있으며, 학습자 상황에 맞춘 지원으로 **이해도·자율성·동기**를 높이는 데 기여합니다.
+
+결론적으로 학습 도우미는 효과적인 학습을 위한 중요한 자원입니다.
+`.trim(),
+  "암기 모드 사용법을 알려주세요.": `
+## 암기 모드 사용법
+
+암기 모드는 문제를 반복 학습하면서 정답과 해설을 빠르게 점검하는 모드입니다.
+
+### 1. 문제 확인
+- 현재 문제를 읽고 선택지를 검토합니다.
+
+### 2. 답안 선택
+- 정답이라고 생각하는 보기를 선택합니다.
+
+### 3. 정답 확인
+- **정답 확인** 버튼을 눌러 정답/오답 여부를 확인합니다.
+
+### 4. 해설 학습
+- 해설 표시를 켜고 핵심 개념을 확인합니다.
+- 필요한 경우 다시 풀기로 해당 문제를 재시도합니다.
+
+### 5. 반복 학습
+- 이전/다음으로 이동하며 취약 문제를 반복합니다.
+- 틀린 문제 위주로 여러 번 회독하면 암기 효율이 높아집니다.
+
+## 추천 학습 루틴
+- 1회차: 전 범위 빠르게 풀기
+- 2회차: 오답/헷갈린 문제 집중
+- 3회차: 해설 없이 재도전
+`.trim(),
+};
 
 function getQuestionCountKey(userId: string) {
   return `${STORAGE_KEY_PREFIX}${userId}`;
@@ -396,6 +440,20 @@ export function ChatbotPanel({
         setLimitReachedMessage("로그인 사용자만 이용 가능합니다.");
         return;
       }
+
+      const presetAnswer = PRESET_ANSWERS[trimmed];
+      if (presetAnswer) {
+        const historyMessages = [
+          ...messages,
+          { role: "user" as const, text: trimmed },
+        ];
+        setMessages(historyMessages);
+        setInput("");
+        setLimitReachedMessage(null);
+        await appendBotMessageWithTyping(presetAnswer);
+        return;
+      }
+
       if (!canAskByLimit) {
         setLimitReachedMessage(
           `질문 한도를 모두 사용했어요. (${CHATBOT_QUESTION_LIMIT}개)`
@@ -683,8 +741,10 @@ export function ChatbotPanel({
                   )}
                 >
                   {msg.role === "bot" ? (
-                    <div className="[&_code]:rounded [&_code]:bg-[#E5E7EB] [&_code]:px-1 [&_li]:ml-5 [&_ol]:list-decimal [&_p]:mb-2 [&_ul]:list-disc">
-                      <ReactMarkdown>{msg.text}</ReactMarkdown>
+                    <div className="[&_code]:rounded [&_code]:bg-[#E5E7EB] [&_code]:px-1 [&_li]:ml-5 [&_ol]:list-decimal [&_p]:mb-2 [&_table]:w-full [&_table]:border-collapse [&_table]:text-xs [&_td]:border [&_td]:border-[#D1D5DB] [&_td]:px-2 [&_td]:py-1 [&_th]:border [&_th]:border-[#D1D5DB] [&_th]:bg-[#E5E7EB] [&_th]:px-2 [&_th]:py-1 [&_ul]:list-disc">
+                      <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                        {msg.text}
+                      </ReactMarkdown>
                     </div>
                   ) : (
                     msg.text
@@ -719,7 +779,7 @@ export function ChatbotPanel({
           {limitReachedMessage && (
             <p className="mb-3 text-sm text-amber-600">{limitReachedMessage}</p>
           )}
-          {displayedMessages.length === 0 && (
+          {isLoggedIn && displayedMessages.length === 0 && (
             <>
               <p className="text-end mb-2 text-xs text-[#6B7280]">자주 묻는 질문</p>
               <div className="mb-6 flex flex-col items-end gap-2">
