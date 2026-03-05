@@ -110,21 +110,25 @@ function getStoredChatHistory(userId: string): StoredChatHistory {
   if (!raw) return empty;
 
   try {
-    const parsed = JSON.parse(raw) as
-      | StoredChatHistory
-      | { messages?: ChatMessage[]; updatedAt?: number };
+    const parsed = JSON.parse(raw) as unknown;
 
     // v1 마이그레이션: 단일 messages 구조 -> general 스레드 1개
-    if (!("version" in parsed) || parsed.version !== 2) {
-      const messages = Array.isArray(parsed?.messages)
-        ? parsed.messages.filter(
+    if (
+      !parsed ||
+      typeof parsed !== "object" ||
+      !("version" in parsed) ||
+      (parsed as { version?: unknown }).version !== 2
+    ) {
+      const legacy = parsed as { messages?: unknown; updatedAt?: unknown };
+      const messages = Array.isArray(legacy.messages)
+        ? legacy.messages.filter(
             (m): m is ChatMessage =>
               (m?.role === "user" || m?.role === "bot") &&
               typeof m?.text === "string"
           )
         : [];
       const updatedAt =
-        typeof parsed?.updatedAt === "number" ? parsed.updatedAt : Date.now();
+        typeof legacy.updatedAt === "number" ? legacy.updatedAt : Date.now();
       if (Date.now() - updatedAt > CHAT_HISTORY_TTL_MS) {
         localStorage.removeItem(getChatHistoryKey(userId));
         return empty;
@@ -143,7 +147,8 @@ function getStoredChatHistory(userId: string): StoredChatHistory {
       };
     }
 
-    const threads = Array.isArray(parsed.threads) ? parsed.threads : [];
+    const v2 = parsed as StoredChatHistory;
+    const threads = Array.isArray(v2.threads) ? v2.threads : [];
     const validThreads = threads
       .filter((thread) => {
         if (!thread?.threadId || !Array.isArray(thread?.messages)) return false;
