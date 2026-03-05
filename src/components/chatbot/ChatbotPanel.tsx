@@ -14,6 +14,8 @@ import { cn } from "@/lib/utils";
 import { useAuth } from "@/contexts";
 
 const CHATBOT_QUESTION_LIMIT = 5;
+// API 요청에 포함할 과거 대화 개수(현재 질문 제외)
+const CHAT_HISTORY_CONTEXT_LIMIT = 2;
 const STORAGE_KEY_PREFIX = "qknou_chatbot_questions_";
 const CHAT_HISTORY_KEY_PREFIX = "qknou_chatbot_history_";
 const CHAT_HISTORY_TTL_MS = 30 * 24 * 60 * 60 * 1000;
@@ -60,6 +62,12 @@ type ChatThread = {
 type StoredChatHistory = {
   version: 2;
   threads: ChatThread[];
+};
+
+type StoredDailyQuestionCount = {
+  count: number;
+  // 일일 제한 초기화를 위한 로컬 날짜 키 (YYYY-MM-DD)
+  dateKey: string;
 };
 
 interface ChatbotPanelProps {
@@ -125,11 +133,19 @@ function getQuestionCountKey(userId: string) {
   return `${STORAGE_KEY_PREFIX}${userId}`;
 }
 
+function getLocalDateKey(date = new Date()) {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
+}
+
 function getChatHistoryKey(userId: string) {
   return `${CHAT_HISTORY_KEY_PREFIX}${userId}`;
 }
 
 function buildThreadId(subjectId?: string, yearId?: string) {
+  // 과목/연도별 대화 스레드 키
   if (subjectId && yearId) return `${subjectId}:${yearId}`;
   return "general";
 }
@@ -143,8 +159,26 @@ function formatThreadTitle(thread: ChatThread) {
 function getStoredQuestionCount(userId: string): number {
   if (typeof window === "undefined") return 0;
   const raw = localStorage.getItem(getQuestionCountKey(userId));
-  const n = parseInt(raw ?? "0", 10);
-  return Number.isNaN(n) ? 0 : Math.max(0, n);
+  if (!raw) return 0;
+
+  // 레거시 포맷(숫자 문자열) 호환
+  const legacyNumber = parseInt(raw, 10);
+  if (!Number.isNaN(legacyNumber)) {
+    return Math.max(0, legacyNumber);
+  }
+
+  try {
+    const parsed = JSON.parse(raw) as Partial<StoredDailyQuestionCount>;
+    if (typeof parsed.count !== "number" || typeof parsed.dateKey !== "string") {
+      return 0;
+    }
+    if (parsed.dateKey !== getLocalDateKey()) {
+      return 0;
+    }
+    return Math.max(0, parsed.count);
+  } catch {
+    return 0;
+  }
 }
 
 function getStoredChatHistory(userId: string): StoredChatHistory {
@@ -191,6 +225,7 @@ function getStoredChatHistory(userId: string): StoredChatHistory {
       };
     }
 
+    // v2: 스레드 목록 구조
     const v2 = parsed as StoredChatHistory;
     const threads = Array.isArray(v2.threads) ? v2.threads : [];
     const validThreads = threads
@@ -277,6 +312,28 @@ export function ChatbotPanel({
   }, [storageUserKey]);
 
   useEffect(() => {
+    // 페이지를 켜둔 상태에서도 자정에 일일 질문 횟수 리셋
+    const now = new Date();
+    const nextMidnight = new Date(now);
+    nextMidnight.setHours(24, 0, 0, 0);
+    const msUntilMidnight = nextMidnight.getTime() - now.getTime();
+
+    const timer = window.setTimeout(() => {
+      const payload: StoredDailyQuestionCount = {
+        count: 0,
+        dateKey: getLocalDateKey(),
+      };
+      localStorage.setItem(getQuestionCountKey(storageUserKey), JSON.stringify(payload));
+      setQuestionCount(0);
+    }, msUntilMidnight + 100);
+
+    return () => {
+      window.clearTimeout(timer);
+    };
+  }, [storageUserKey]);
+
+  useEffect(() => {
+    // 사용자/과목/연도 기준 스레드 복원
     isHistoryHydratedRef.current = false;
     const stored = getStoredChatHistory(storageUserKey);
     setThreads(stored.threads);
@@ -291,6 +348,7 @@ export function ChatbotPanel({
   useEffect(() => {
     if (!isHistoryHydratedRef.current) return;
 
+    // 현재 스레드 메시지 변경 시 로컬 저장소 동기화
     setThreads((prev) => {
       const now = Date.now();
       const index = prev.findIndex((thread) => thread.threadId === activeThreadId);
@@ -322,7 +380,11 @@ export function ChatbotPanel({
 
   const persistCount = useCallback(
     (count: number) => {
-      localStorage.setItem(getQuestionCountKey(storageUserKey), String(count));
+      const payload: StoredDailyQuestionCount = {
+        count,
+        dateKey: getLocalDateKey(),
+      };
+      localStorage.setItem(getQuestionCountKey(storageUserKey), JSON.stringify(payload));
       setQuestionCount(count);
     },
     [storageUserKey]
@@ -398,13 +460,17 @@ export function ChatbotPanel({
       setLimitReachedMessage(null);
       setLoading(true);
       try {
+        // 과거 컨텍스트는 최근 N개만 전달
+        const apiMessages = historyMessages.slice(
+          -(CHAT_HISTORY_CONTEXT_LIMIT + 1)
+        );
         const res = await fetch("/api/chatbot", {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
           },
           body: JSON.stringify({
-            messages: historyMessages,
+            messages: apiMessages,
           }),
         });
         const data = await res.json();
@@ -429,6 +495,7 @@ export function ChatbotPanel({
     async (text: string) => {
       const trimmed = text.trim();
       if (!trimmed) return;
+      // 다른 과목/연도 스레드는 조회 전용
       if (isViewingOtherThread) {
         setLimitReachedMessage(
           "조회 전용 대화입니다. 현재 과목/연도 대화에서만 질문할 수 있어요."
@@ -476,6 +543,8 @@ export function ChatbotPanel({
         try {
           const tutorHistory: TutorHistoryItem[] = historyMessages
             .slice(0, -1)
+            // 튜터 history도 최근 N개만 전달
+            .slice(-CHAT_HISTORY_CONTEXT_LIMIT)
             .map((m) => ({
               role: m.role === "user" ? "user" : "assistant",
               content: m.text,
@@ -543,13 +612,17 @@ export function ChatbotPanel({
       persistCount(questionCount + 1);
       setLoading(true);
       try {
+        // 과거 컨텍스트는 최근 N개만 전달
+        const apiMessages = historyMessages.slice(
+          -(CHAT_HISTORY_CONTEXT_LIMIT + 1)
+        );
         const res = await fetch("/api/chatbot", {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
           },
           body: JSON.stringify({
-            messages: historyMessages,
+            messages: apiMessages,
           }),
         });
         const data = await res.json();
@@ -699,7 +772,7 @@ export function ChatbotPanel({
               </p>
               <ul className="mb-4 list-inside list-disc space-y-1 text-xs text-[#6B7280]">
                 <li>
-                  AI 챗봇: 24시간 연중무휴
+                  재질문 시 최근 대화 {CHAT_HISTORY_CONTEXT_LIMIT}개만 컨텍스트로 전달됩니다.
                 </li>
                 <li>
                    챗봇 대화 내용은 30일 동안만 유지되며 이후 자동으로 초기화됩니다.
