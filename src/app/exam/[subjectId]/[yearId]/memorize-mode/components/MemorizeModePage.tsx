@@ -9,6 +9,7 @@ import {
 import ReactMarkdown from "react-markdown";
 import { useExamQuestionsWithAnswersQuery } from "../hooks/service";
 import { useExamContext } from "@/contexts";
+import { useCopyProtection } from "@/lib/useCopyProtection";
 
 type Props = {
   subjectId?: string;
@@ -32,41 +33,7 @@ export const MemorizeModePage = ({ subjectId, yearId }: Props) => {
   >({});
 
   const { isExplanationVisible, setIsExplanationVisible } = useExamContext();
-
-  // 복사 방지
-  useEffect(() => {
-    const preventDefault = (event: Event) => {
-      event.preventDefault();
-    };
-    const preventCopyHotkey = (event: KeyboardEvent) => {
-      if (!(event.ctrlKey || event.metaKey)) return;
-      const key = event.key.toLowerCase();
-      if (key === "c" || key === "x" || key === "a") {
-        event.preventDefault();
-      }
-    };
-
-    document.addEventListener("copy", preventDefault);
-    document.addEventListener("cut", preventDefault);
-    document.addEventListener("paste", preventDefault);
-    document.addEventListener("contextmenu", preventDefault);
-    document.addEventListener("selectstart", preventDefault as EventListener);
-    document.addEventListener("dragstart", preventDefault);
-    document.addEventListener("keydown", preventCopyHotkey);
-
-    return () => {
-      document.removeEventListener("copy", preventDefault);
-      document.removeEventListener("cut", preventDefault);
-      document.removeEventListener("paste", preventDefault);
-      document.removeEventListener("contextmenu", preventDefault);
-      document.removeEventListener(
-        "selectstart",
-        preventDefault as EventListener
-      );
-      document.removeEventListener("dragstart", preventDefault);
-      document.removeEventListener("keydown", preventCopyHotkey);
-    };
-  }, []);
+  useCopyProtection();
 
   // API 호출
   const { data, isLoading, isError } = useExamQuestionsWithAnswersQuery(

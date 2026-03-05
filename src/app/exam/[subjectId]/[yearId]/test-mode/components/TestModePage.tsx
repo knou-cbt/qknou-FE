@@ -12,6 +12,7 @@ import {
 } from "@/components/ui";
 import { useExamContext } from "@/contexts";
 import { useIsMobile } from "@/lib/useIsMobile";
+import { useCopyProtection } from "@/lib/useCopyProtection";
 import { useExamQuestionsQuery, useExamSubmitMutation } from "../hooks/service";
 import type { IQuestionResult } from "../interface";
 
@@ -31,41 +32,7 @@ export const TestModePage = ({ yearId }: Props) => {
     setTotalQuestions,
     setIsSubmitted: setContextIsSubmitted,
   } = useExamContext();
-
-  // 복사 방지
-  useEffect(() => {
-    const preventDefault = (event: Event) => {
-      event.preventDefault();
-    };
-    const preventCopyHotkey = (event: KeyboardEvent) => {
-      if (!(event.ctrlKey || event.metaKey)) return;
-      const key = event.key.toLowerCase();
-      if (key === "c" || key === "x" || key === "a") {
-        event.preventDefault();
-      }
-    };
-
-    document.addEventListener("copy", preventDefault);
-    document.addEventListener("cut", preventDefault);
-    document.addEventListener("paste", preventDefault);
-    document.addEventListener("contextmenu", preventDefault);
-    document.addEventListener("selectstart", preventDefault as EventListener);
-    document.addEventListener("dragstart", preventDefault);
-    document.addEventListener("keydown", preventCopyHotkey);
-
-    return () => {
-      document.removeEventListener("copy", preventDefault);
-      document.removeEventListener("cut", preventDefault);
-      document.removeEventListener("paste", preventDefault);
-      document.removeEventListener("contextmenu", preventDefault);
-      document.removeEventListener(
-        "selectstart",
-        preventDefault as EventListener
-      );
-      document.removeEventListener("dragstart", preventDefault);
-      document.removeEventListener("keydown", preventCopyHotkey);
-    };
-  }, []);
+  useCopyProtection();
 
   const [currentIndex, setCurrentIndex] = useState(0);
   const [answers, setAnswers] = useState<
