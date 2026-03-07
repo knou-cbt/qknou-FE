@@ -1,6 +1,7 @@
 import * as React from "react";
 import Image from "next/image";
 import { cva, type VariantProps } from "class-variance-authority";
+import ReactMarkdown from "react-markdown";
 
 import { cn } from "@/lib/utils";
 
@@ -266,6 +267,7 @@ const QuestionCard = React.forwardRef<HTMLDivElement, IQuestionCardProps>(
     },
     ref
   ) => {
+    const hasMarkdownCodeBlock = example?.includes("```") ?? false;
     const validImageUrls = (imageUrls ?? []).filter(
       (url): url is string => typeof url === "string" && url.trim().length > 0
     );
@@ -313,9 +315,15 @@ const QuestionCard = React.forwardRef<HTMLDivElement, IQuestionCardProps>(
           {example && (
             <div className="w-full mt-4 px-4 sm:px-0">
               <div className="p-4 bg-[#F9FAFB] border border-[#E5E7EB] rounded-[12px]">
-                <p className="font-normal text-sm sm:text-base leading-6 text-[#364153] break-words">
-                  {example}
-                </p>
+                {hasMarkdownCodeBlock ? (
+                  <div className="font-normal text-sm sm:text-base leading-6 text-[#364153] break-words [&_code]:rounded [&_code]:px-1 [&_pre]:overflow-x-auto [&_pre]:rounded [&_pre]:bg-[#111827] [&_pre]:p-3 [&_pre]:text-[#F9FAFB]">
+                    <ReactMarkdown>{example}</ReactMarkdown>
+                  </div>
+                ) : (
+                  <p className="font-normal text-sm sm:text-base leading-6 text-[#364153] break-words">
+                    {example}
+                  </p>
+                )}
               </div>
             </div>
           )}

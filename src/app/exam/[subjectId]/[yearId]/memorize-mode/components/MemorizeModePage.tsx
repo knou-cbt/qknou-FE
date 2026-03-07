@@ -25,6 +25,7 @@ type QuestionMetaFields = {
   question?: string | null;
   commonText?: string | null;
   commonExample?: string | null;
+  sharedExample?: string | null;
   commonView?: string | null;
   commonImageUrls?: string[] | null;
   commonImageUrl?: string | null;
@@ -107,6 +108,7 @@ export const MemorizeModePage = ({ subjectId, yearId }: Props) => {
     currentQuestion?.example,
     currentQuestionMeta?.commonText,
     currentQuestionMeta?.commonExample,
+    currentQuestionMeta?.sharedExample,
     currentQuestionMeta?.commonView
   );
   const questionTitle = normalizedQuestionText

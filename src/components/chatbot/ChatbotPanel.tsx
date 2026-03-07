@@ -140,6 +140,12 @@ function getLocalDateKey(date = new Date()) {
   return `${year}-${month}-${day}`;
 }
 
+function getMsUntilNextLocalMidnight(now = new Date()) {
+  const nextMidnight = new Date(now);
+  nextMidnight.setHours(24, 0, 0, 0);
+  return Math.max(0, nextMidnight.getTime() - now.getTime());
+}
+
 function getChatHistoryKey(userId: string) {
   return `${CHAT_HISTORY_KEY_PREFIX}${userId}`;
 }
@@ -312,23 +318,28 @@ export function ChatbotPanel({
   }, [storageUserKey]);
 
   useEffect(() => {
-    // 페이지를 켜둔 상태에서도 자정에 일일 질문 횟수 리셋
-    const now = new Date();
-    const nextMidnight = new Date(now);
-    nextMidnight.setHours(24, 0, 0, 0);
-    const msUntilMidnight = nextMidnight.getTime() - now.getTime();
-
-    const timer = window.setTimeout(() => {
-      const payload: StoredDailyQuestionCount = {
-        count: 0,
-        dateKey: getLocalDateKey(),
-      };
-      localStorage.setItem(getQuestionCountKey(storageUserKey), JSON.stringify(payload));
-      setQuestionCount(0);
-    }, msUntilMidnight + 100);
+    // 사용자 로컬 시간 기준 자정(AM 12:00)마다 일일 질문 횟수 리셋
+    let timer: number | undefined;
+    const scheduleDailyReset = () => {
+      timer = window.setTimeout(() => {
+        const payload: StoredDailyQuestionCount = {
+          count: 0,
+          dateKey: getLocalDateKey(),
+        };
+        localStorage.setItem(
+          getQuestionCountKey(storageUserKey),
+          JSON.stringify(payload)
+        );
+        setQuestionCount(0);
+        scheduleDailyReset();
+      }, getMsUntilNextLocalMidnight() + 100);
+    };
+    scheduleDailyReset();
 
     return () => {
-      window.clearTimeout(timer);
+      if (timer !== undefined) {
+        window.clearTimeout(timer);
+      }
     };
   }, [storageUserKey]);
 
