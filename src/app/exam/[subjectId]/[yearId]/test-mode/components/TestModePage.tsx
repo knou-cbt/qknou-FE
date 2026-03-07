@@ -189,10 +189,6 @@ export const TestModePage = ({ subjectId, yearId }: Props) => {
     currentQuestionMeta?.questionText,
     currentQuestionMeta?.question
   );
-  const questionNumber =
-    typeof currentQuestionMeta?.number === "number"
-      ? currentQuestionMeta.number
-      : currentIndex + 1;
   const normalizedExample = pickFirstText(
     currentQuestion?.example,
     currentQuestionMeta?.commonText,
@@ -200,7 +196,7 @@ export const TestModePage = ({ subjectId, yearId }: Props) => {
     currentQuestionMeta?.commonView
   );
   const questionTitle = normalizedQuestionText
-    ? `${questionNumber}. ${normalizedQuestionText}`
+    ? `${currentIndex + 1}. ${normalizedQuestionText}`
     : undefined;
   const normalizedImageUrls = useMemo(() => {
     if (!currentQuestion) return undefined;
