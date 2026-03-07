@@ -252,7 +252,9 @@ function getStoredChatHistory(userId: string): StoredChatHistory {
             (m?.role === "user" || m?.role === "bot") &&
             typeof m?.text === "string"
         ),
-      }));
+      }))
+      // 대화가 없는 빈 스레드는 저장/복원 대상에서 제외
+      .filter((thread) => thread.messages.length > 0);
 
     if (validThreads.length === 0) {
       localStorage.removeItem(getChatHistoryKey(userId));
@@ -358,6 +360,7 @@ export function ChatbotPanel({
 
   useEffect(() => {
     if (!isHistoryHydratedRef.current) return;
+    if (messages.length === 0) return;
 
     // 현재 스레드 메시지 변경 시 로컬 저장소 동기화
     setThreads((prev) => {
