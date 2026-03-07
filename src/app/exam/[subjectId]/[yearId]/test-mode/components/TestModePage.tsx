@@ -14,7 +14,7 @@ import { useExamContext } from "@/contexts";
 import { useIsMobile } from "@/lib/useIsMobile";
 import { useCopyProtection } from "@/lib/useCopyProtection";
 import { useExamQuestionsQuery, useExamSubmitMutation } from "../hooks/service";
-import type { IQuestionResult } from "../interface";
+import type { IQuestion, IQuestionResult } from "../interface";
 
 type Props = {
   subjectId?: string;
@@ -22,6 +22,16 @@ type Props = {
 };
 
 const POST_LOGIN_REDIRECT_KEY = "qknou_post_login_redirect";
+type QuestionMetaFields = {
+  questionText?: string | null;
+  question?: string | null;
+  commonText?: string | null;
+  commonExample?: string | null;
+  commonView?: string | null;
+  commonImageUrls?: string[] | null;
+  commonImageUrl?: string | null;
+  images?: string[] | null;
+};
 
 const isNonEmptyString = (value: unknown): value is string =>
   typeof value === "string" && value.trim().length > 0;
@@ -160,7 +170,9 @@ export const TestModePage = ({ subjectId, yearId }: Props) => {
   }, [setContextIsSubmitted]);
 
   const currentQuestion = questions[currentIndex];
-  const currentQuestionMeta = currentQuestion as Record<string, unknown> | undefined;
+  const currentQuestionMeta = currentQuestion as
+    | (IQuestion & QuestionMetaFields)
+    | undefined;
   const selectedAnswer = answers[currentIndex] ?? null;
 
   // choices를 QuestionCard에 맞는 형식으로 변환

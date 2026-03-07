@@ -10,6 +10,7 @@ import {
 import { ChatbotPanel } from "@/components/chatbot";
 import ReactMarkdown from "react-markdown";
 import { useExamQuestionsWithAnswersQuery } from "../hooks/service";
+import type { IQuestionWithAnswer } from "../interface";
 import { useExamContext } from "@/contexts";
 import { useCopyProtection } from "@/lib/useCopyProtection";
 
@@ -19,6 +20,16 @@ type Props = {
 };
 
 const POST_LOGIN_REDIRECT_KEY = "qknou_post_login_redirect";
+type QuestionMetaFields = {
+  questionText?: string | null;
+  question?: string | null;
+  commonText?: string | null;
+  commonExample?: string | null;
+  commonView?: string | null;
+  commonImageUrls?: string[] | null;
+  commonImageUrl?: string | null;
+  images?: string[] | null;
+};
 
 const isNonEmptyString = (value: unknown): value is string =>
   typeof value === "string" && value.trim().length > 0;
@@ -71,7 +82,9 @@ export const MemorizeModePage = ({ subjectId, yearId }: Props) => {
   const exam = data?.exam;
   const questions = data?.questions ?? [];
   const currentQuestion = questions[currentIndex];
-  const currentQuestionMeta = currentQuestion as Record<string, unknown> | undefined;
+  const currentQuestionMeta = currentQuestion as
+    | (IQuestionWithAnswer & QuestionMetaFields)
+    | undefined;
   const isFirstQuestion = currentIndex === 0;
   const isLastQuestion = currentIndex === questions.length - 1;
   const hasSelectedAnswer = selectedAnswer !== null;
