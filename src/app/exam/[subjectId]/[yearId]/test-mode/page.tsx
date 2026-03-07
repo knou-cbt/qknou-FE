@@ -64,5 +64,5 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 
 export default async function Page({ params }: PageProps) {
   const { subjectId, yearId } = await params;
-  return <TestModePage yearId={yearId} />;
+  return <TestModePage subjectId={subjectId} yearId={yearId} />;
 }

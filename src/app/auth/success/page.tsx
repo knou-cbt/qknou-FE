@@ -5,6 +5,15 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { useAuth } from "@/contexts/AuthContext";
 import { DotLottieReact } from "@lottiefiles/dotlottie-react";
 
+const POST_LOGIN_REDIRECT_KEY = "qknou_post_login_redirect";
+
+function getSafeRedirectPath(path: string | null): string {
+  if (!path || !path.startsWith("/") || path.startsWith("//")) {
+    return "/";
+  }
+  return path;
+}
+
 const SuccessContent = () => {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -16,18 +25,29 @@ const SuccessContent = () => {
         const token = searchParams.get("token");
         console.debug("Token from URL:", token ? "존재함" : "없음");
 
-      if (token) {
+        if (token) {
           // 토큰 저장 및 로그인 처리
           login(token);
+          const redirectFromQuery = searchParams.get("redirect");
+          const redirectFromStorage =
+            typeof window !== "undefined"
+              ? sessionStorage.getItem(POST_LOGIN_REDIRECT_KEY)
+              : null;
+          const redirectPath = getSafeRedirectPath(
+            redirectFromQuery ?? redirectFromStorage
+          );
+          if (typeof window !== "undefined") {
+            sessionStorage.removeItem(POST_LOGIN_REDIRECT_KEY);
+          }
 
-          // 짧은 지연 후 홈으로 이동 (사용자에게 피드백 제공)
+          // 짧은 지연 후 복귀 경로로 이동 (사용자에게 피드백 제공)
           setTimeout(() => {
             // router.push와 window.location 둘 다 시도
-            router.push("/");
+            router.push(redirectPath);
             
             // 만약 router.push가 작동하지 않으면 window.location 사용
             setTimeout(() => {
-              window.location.href = "/";
+              window.location.href = redirectPath;
             }, 500);
           }, 1500);
         } else {

@@ -18,6 +18,31 @@ type Props = {
   yearId?: string;
 };
 
+const POST_LOGIN_REDIRECT_KEY = "qknou_post_login_redirect";
+
+const isNonEmptyString = (value: unknown): value is string =>
+  typeof value === "string" && value.trim().length > 0;
+
+const pickFirstText = (...values: unknown[]): string | undefined =>
+  values.find(isNonEmptyString)?.trim();
+
+const collectImageUrls = (...values: unknown[]): string[] => {
+  const urls = values.flatMap((value) => {
+    if (Array.isArray(value)) return value;
+    return [value];
+  });
+
+  const seen = new Set<string>();
+  return urls
+    .filter(isNonEmptyString)
+    .map((url) => url.trim())
+    .filter((url) => {
+      if (seen.has(url)) return false;
+      seen.add(url);
+      return true;
+    });
+};
+
 export const MemorizeModePage = ({ subjectId, yearId }: Props) => {
   const examId = yearId;
 
@@ -46,6 +71,7 @@ export const MemorizeModePage = ({ subjectId, yearId }: Props) => {
   const exam = data?.exam;
   const questions = data?.questions ?? [];
   const currentQuestion = questions[currentIndex];
+  const currentQuestionMeta = currentQuestion as Record<string, unknown> | undefined;
   const isFirstQuestion = currentIndex === 0;
   const isLastQuestion = currentIndex === questions.length - 1;
   const hasSelectedAnswer = selectedAnswer !== null;
@@ -59,17 +85,36 @@ export const MemorizeModePage = ({ subjectId, yearId }: Props) => {
     }));
   }, [currentQuestion]);
 
-  const normalizedExample = currentQuestion?.example ?? undefined;
+  const normalizedQuestionText = pickFirstText(
+    currentQuestion?.text,
+    currentQuestionMeta?.questionText,
+    currentQuestionMeta?.question
+  );
+  const questionNumber =
+    typeof currentQuestionMeta?.number === "number"
+      ? currentQuestionMeta.number
+      : currentIndex + 1;
+  const normalizedExample = pickFirstText(
+    currentQuestion?.example,
+    currentQuestionMeta?.commonText,
+    currentQuestionMeta?.commonExample,
+    currentQuestionMeta?.commonView
+  );
+  const questionTitle = normalizedQuestionText
+    ? `${questionNumber}. ${normalizedQuestionText}`
+    : undefined;
   const normalizedImageUrls = useMemo(() => {
     if (!currentQuestion) return undefined;
 
-    const urls = currentQuestion.imageUrls?.filter(
-      (url): url is string => typeof url === "string" && url.trim().length > 0
+    const urls = collectImageUrls(
+      currentQuestion.imageUrls,
+      currentQuestion.imageUrl,
+      currentQuestionMeta?.commonImageUrls,
+      currentQuestionMeta?.commonImageUrl,
+      currentQuestionMeta?.images
     );
-    if (urls && urls.length > 0) return urls;
-
-    return currentQuestion.imageUrl ? [currentQuestion.imageUrl] : undefined;
-  }, [currentQuestion]);
+    return urls.length > 0 ? urls : undefined;
+  }, [currentQuestion, currentQuestionMeta]);
 
   const handleAnswerSelect = useCallback(
     (value: string | number) => {
@@ -156,6 +201,14 @@ export const MemorizeModePage = ({ subjectId, yearId }: Props) => {
     }
   }, [currentQuestion?.id]);
 
+  useEffect(() => {
+    if (!subjectId || !yearId || typeof window === "undefined") return;
+    sessionStorage.setItem(
+      POST_LOGIN_REDIRECT_KEY,
+      `/exam/${subjectId}/${yearId}/memorize-mode`
+    );
+  }, [subjectId, yearId]);
+
   if (isLoading) {
     return (
       <div className="min-h-screen bg-white flex items-center justify-center">
@@ -190,7 +243,7 @@ export const MemorizeModePage = ({ subjectId, yearId }: Props) => {
         {/* Question Info */}
         <div className="w-full max-w-[1100px]">
           <p className="text-sm text-[#6B7280]">
-             암기모드 | {currentIndex + 1} /{" "}
+             암기모드 | {questionNumber} /{" "}
             {questions.length}
           </p>
         </div>
@@ -200,7 +253,7 @@ export const MemorizeModePage = ({ subjectId, yearId }: Props) => {
           <div className="w-full max-w-[1100px]">
             <QuestionCard
               size="full"
-              question={currentQuestion.text}
+              question={questionTitle}
               example={normalizedExample}
               imageUrls={normalizedImageUrls}
               answers={formattedAnswers}
