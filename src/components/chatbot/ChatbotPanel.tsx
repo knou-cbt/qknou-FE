@@ -40,11 +40,20 @@ type TutorRecommendation = {
 
 type TutorResponse = {
   success: boolean;
+  error?: string;
   data?: {
     answer: string;
     intent: TutorIntent;
     recommendations?: TutorRecommendation[];
   };
+  remainingCount?: number;
+};
+
+type TutorRemainingCountResponse = {
+  success: boolean;
+  error?: string;
+  remainingCount?: number;
+  totalLimit?: number;
 };
 
 type ChatMessage = { role: "user" | "bot"; text: string };
@@ -282,13 +291,17 @@ export function ChatbotPanel({
   yearLabel,
 }: ChatbotPanelProps) {
   const router = useRouter();
-  const { user } = useAuth();
+  const { user, token } = useAuth();
   const isLoggedIn = Boolean(user);
   const storageUserKey = useMemo(() => String(user?.id ?? "anonymous"), [user?.id]);
 
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
   const [questionCount, setQuestionCount] = useState(0);
+  const [tutorTotalLimit, setTutorTotalLimit] = useState(CHATBOT_QUESTION_LIMIT);
+  const [tutorRemainingCount, setTutorRemainingCount] = useState<number | null>(
+    CHATBOT_QUESTION_LIMIT
+  );
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [limitReachedMessage, setLimitReachedMessage] = useState<string | null>(null);
   const [isTyping, setIsTyping] = useState(false);
@@ -311,8 +324,11 @@ export function ChatbotPanel({
     [isViewingOtherThread, selectedThread?.messages, messages]
   );
 
-  const canAskByLimit = questionCount < CHATBOT_QUESTION_LIMIT;
   const hasQuestionContext = questionId != null;
+  const remainingByMode = hasQuestionContext
+    ? Math.max(0, tutorRemainingCount ?? tutorTotalLimit)
+    : Math.max(0, CHATBOT_QUESTION_LIMIT - questionCount);
+  const canAskByLimit = remainingByMode > 0;
   const canAsk = isLoggedIn && canAskByLimit;
 
   useEffect(() => {
@@ -403,6 +419,37 @@ export function ChatbotPanel({
     },
     [storageUserKey]
   );
+
+  const syncTutorRemainingCount = useCallback(async () => {
+    if (!token) return;
+
+    try {
+      const res = await fetch("/api/tutor/remaining-count", {
+        method: "GET",
+        headers: {
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
+        cache: "no-store",
+      });
+      const data: TutorRemainingCountResponse = await res.json();
+      if (
+        res.ok &&
+        data?.success &&
+        typeof data.remainingCount === "number" &&
+        typeof data.totalLimit === "number"
+      ) {
+        setTutorRemainingCount(Math.max(0, data.remainingCount));
+        setTutorTotalLimit(Math.max(1, data.totalLimit));
+      }
+    } catch {
+      // 초기 남은 횟수 조회 실패 시 기존 값 유지
+    }
+  }, [token]);
+
+  useEffect(() => {
+    if (!open || !isLoggedIn || !hasQuestionContext) return;
+    void syncTutorRemainingCount();
+  }, [open, isLoggedIn, hasQuestionContext, syncTutorRemainingCount]);
 
   const scrollAreaRef = useRef<HTMLDivElement>(null);
   const typingTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
@@ -537,7 +584,7 @@ export function ChatbotPanel({
 
       if (!canAskByLimit) {
         setLimitReachedMessage(
-          `질문 한도를 모두 사용했어요. (${CHATBOT_QUESTION_LIMIT}개)`
+          "질문 한도를 모두 사용했어요."
         );
         return;
       }
@@ -551,7 +598,6 @@ export function ChatbotPanel({
         ];
         setMessages(historyMessages);
         setInput("");
-        persistCount(questionCount + 1);
         setLoading(true);
 
         try {
@@ -568,6 +614,7 @@ export function ChatbotPanel({
             method: "POST",
             headers: {
               "Content-Type": "application/json",
+              ...(token ? { Authorization: `Bearer ${token}` } : {}),
             },
             body: JSON.stringify({
               questionId: questionId!,
@@ -577,6 +624,9 @@ export function ChatbotPanel({
           });
 
           const data: TutorResponse = await res.json();
+          if (typeof data?.remainingCount === "number") {
+            setTutorRemainingCount(Math.max(0, data.remainingCount));
+          }
           const ok = res.ok && data?.success;
           const payload = data?.data;
           const recommendations = payload?.recommendations ?? [];
@@ -599,6 +649,12 @@ export function ChatbotPanel({
             }
 
             await appendBotMessageWithTyping(botText);
+            setLoading(false);
+            return;
+          }
+
+          if (!res.ok && data?.error) {
+            await appendBotMessageWithTyping(data.error);
             setLoading(false);
             return;
           }
@@ -665,6 +721,7 @@ export function ChatbotPanel({
       questionCount,
       appendBotMessageWithTyping,
       isViewingOtherThread,
+      token,
     ]
   );
 
@@ -785,6 +842,9 @@ export function ChatbotPanel({
                 빠르게 안내드리겠습니다.
               </p>
               <ul className="mb-4 list-inside list-disc space-y-1 text-xs text-[#6B7280]">
+                <li>
+                  대화 내용은 사용자 기기에만 저장됩니다.
+                </li>
                 <li>
                   재질문 시 최근 대화 {CHAT_HISTORY_CONTEXT_LIMIT}개만 컨텍스트로 전달됩니다.
                 </li>
@@ -911,7 +971,7 @@ export function ChatbotPanel({
                     ? hasQuestionContext
                       ? "현재 문제를 기준으로 AI 튜터에게 질문해 주세요."
                       : "AI에게 질문해 주세요."
-                    : `오늘 질문 한도가 모두 소진되었어요 (${CHATBOT_QUESTION_LIMIT}/${CHATBOT_QUESTION_LIMIT})`
+                    : `오늘 질문 한도가 모두 소진되었어요 (${(hasQuestionContext ? tutorTotalLimit : CHATBOT_QUESTION_LIMIT) - remainingByMode}/${hasQuestionContext ? tutorTotalLimit : CHATBOT_QUESTION_LIMIT})`
                 }
                 disabled={
                   !isLoggedIn || !canAskByLimit || isTyping || isViewingOtherThread
@@ -943,9 +1003,9 @@ export function ChatbotPanel({
                 로그인 하러 가기
               </button>
             ) : hasQuestionContext ? (
-              `남은 질문 ${CHATBOT_QUESTION_LIMIT - questionCount}회 · AI는 한정된 데이터에 기반하니 중요한 정보는 추가 확인을 권장해요.`
+              `남은 질문 ${remainingByMode}회 · AI는 한정된 데이터에 기반하니 중요한 정보는 추가 확인을 권장해요.`
             ) : canAskByLimit ? (
-              `남은 질문 ${CHATBOT_QUESTION_LIMIT - questionCount}회 · AI는 한정된 데이터에 기반하니 중요한 정보는 추가 확인을 권장해요.`
+              `남은 질문 ${remainingByMode}회 · AI는 한정된 데이터에 기반하니 중요한 정보는 추가 확인을 권장해요.`
             ) : (
               "AI는 한정된 데이터에 기반하니, 중요한 정보는 추가 확인을 권장해요."
             )}

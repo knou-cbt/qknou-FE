@@ -9,10 +9,14 @@ import {
 } from "@/components/ui";
 import { ChatbotPanel } from "@/components/chatbot";
 import ReactMarkdown from "react-markdown";
-import { useExamQuestionsWithAnswersQuery } from "../hooks/service";
+import {
+  useExamQuestionsWithAnswersQuery,
+  useTutorQuestionExplanationMutation,
+} from "../hooks/service";
 import type { IQuestionWithAnswer } from "../interface";
 import { useExamContext } from "@/contexts";
 import { useCopyProtection } from "@/lib/useCopyProtection";
+import type { ITutorQuestionExplanationResponse } from "../hooks/api";
 
 type Props = {
   subjectId?: string;
@@ -63,6 +67,14 @@ export const MemorizeModePage = ({ subjectId, yearId }: Props) => {
     null
   );
   const [showResult, setShowResult] = useState(false);
+  const [explanationsByQuestion, setExplanationsByQuestion] = useState<
+    Record<number, ITutorQuestionExplanationResponse>
+  >({});
+  const [explanationErrorByQuestion, setExplanationErrorByQuestion] = useState<
+    Record<number, string | null>
+  >({});
+  const [explanationLoadingQuestionId, setExplanationLoadingQuestionId] =
+    useState<number | null>(null);
   // 정답 기억하기 상태 (questionId -> { showResult, selectedAnswer })
   const [rememberedAnswers, setRememberedAnswers] = useState<
     Record<
@@ -74,6 +86,8 @@ export const MemorizeModePage = ({ subjectId, yearId }: Props) => {
   const { isExplanationVisible, setIsExplanationVisible } = useExamContext();
   useCopyProtection();
   const [chatbotOpen, setChatbotOpen] = useState(false);
+  const { mutateAsync: fetchQuestionExplanation } =
+    useTutorQuestionExplanationMutation();
 
   // API 호출
   const { data, isLoading, isError } = useExamQuestionsWithAnswersQuery(
@@ -136,9 +150,30 @@ export const MemorizeModePage = ({ subjectId, yearId }: Props) => {
     [showResult]
   );
 
-  const handleShowAnswer = useCallback(() => {
+  const handleShowAnswer = useCallback(async () => {
+    const questionId = currentQuestion?.id;
     setShowResult(true);
-  }, []);
+
+    if (!questionId) return;
+    if (explanationsByQuestion[questionId]) return;
+
+    setExplanationErrorByQuestion((prev) => ({ ...prev, [questionId]: null }));
+    setExplanationLoadingQuestionId(questionId);
+
+    try {
+      const explanation = await fetchQuestionExplanation(questionId);
+      setExplanationsByQuestion((prev) => ({ ...prev, [questionId]: explanation }));
+    } catch {
+      setExplanationErrorByQuestion((prev) => ({
+        ...prev,
+        [questionId]: "해설을 불러오지 못했습니다. 다시 시도해 주세요.",
+      }));
+    } finally {
+      setExplanationLoadingQuestionId((prev) =>
+        prev === questionId ? null : prev
+      );
+    }
+  }, [currentQuestion?.id, explanationsByQuestion, fetchQuestionExplanation]);
 
   // 문제 이동 시 저장된 정답 상태 복원
   useEffect(() => {
@@ -220,6 +255,20 @@ export const MemorizeModePage = ({ subjectId, yearId }: Props) => {
     );
   }, [subjectId, yearId]);
 
+  const currentQuestionId = currentQuestion?.id;
+  const explanationData = currentQuestionId
+    ? explanationsByQuestion[currentQuestionId]
+    : undefined;
+  const explanationError = currentQuestionId
+    ? explanationErrorByQuestion[currentQuestionId]
+    : null;
+  const explanationText =
+    explanationData?.explanation ?? currentQuestion?.explanation;
+  const conceptTags = explanationData?.conceptTags ?? [];
+  const isExplanationLoading =
+    currentQuestionId !== undefined &&
+    explanationLoadingQuestionId === currentQuestionId;
+
   if (isLoading) {
     return (
       <div className="min-h-screen bg-white flex items-center justify-center">
@@ -278,7 +327,7 @@ export const MemorizeModePage = ({ subjectId, yearId }: Props) => {
         )}
 
         {/* 해설 영역 - 정답 확인 이후에만 노출 (전역 토글) */}
-        {showResult && currentQuestion?.explanation && (
+        {showResult && (
           <div className="w-full max-w-[1066px] mt-6">
             <div className="bg-[#F9FAFB] border border-[#E5E7EB] rounded-[16px] p-6">
               <div className="flex items-center justify-between mb-3">
@@ -291,9 +340,27 @@ export const MemorizeModePage = ({ subjectId, yearId }: Props) => {
                   />
                 </div>
               </div>
-              {isExplanationVisible && (
+              {isExplanationVisible && isExplanationLoading && (
+                <p className="text-sm text-[#6B7280]">해설을 생성하는 중...</p>
+              )}
+              {isExplanationVisible && explanationError && (
+                <p className="text-sm text-red-500">{explanationError}</p>
+              )}
+              {isExplanationVisible && explanationText && (
                 <div className="text-[#364153] leading-7 [&_a]:text-[#155DFC] [&_a]:underline [&_code]:rounded [&_code]:bg-[#F3F4F6] [&_code]:px-1 [&_li]:ml-5 [&_ol]:list-decimal [&_p]:mb-3 [&_ul]:list-disc">
-                  <ReactMarkdown>{currentQuestion.explanation}</ReactMarkdown>
+                  <ReactMarkdown>{explanationText}</ReactMarkdown>
+                  {conceptTags.length > 0 && (
+                    <div className="mt-4 flex flex-wrap gap-2">
+                      {conceptTags.map((tag) => (
+                        <span
+                          key={tag}
+                          className="rounded-full bg-[#EEF2FF] text-[#3730A3] px-3 py-1 text-xs font-medium"
+                        >
+                          #{tag}
+                        </span>
+                      ))}
+                    </div>
+                  )}
                 </div>
               )}
             </div>

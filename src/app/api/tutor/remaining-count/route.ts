@@ -1,22 +1,19 @@
 import { NextResponse } from "next/server";
 
-const TUTOR_CHAT_URL = "https://api.qknou.kr/api/tutor/chat";
+const TUTOR_REMAINING_COUNT_URL =
+  "https://api.qknou.kr/api/tutor/remaining-count";
 
-export async function POST(req: Request) {
+export async function GET(req: Request) {
   try {
-    const body = await req.json();
     const authorization = req.headers.get("authorization");
-    const headers: Record<string, string> = {
-      "Content-Type": "application/json",
-    };
+    const headers: Record<string, string> = {};
     if (authorization) {
       headers.Authorization = authorization;
     }
 
-    const response = await fetch(TUTOR_CHAT_URL, {
-      method: "POST",
+    const response = await fetch(TUTOR_REMAINING_COUNT_URL, {
+      method: "GET",
       headers,
-      body: JSON.stringify(body),
       cache: "no-store",
     });
 
@@ -35,8 +32,8 @@ export async function POST(req: Request) {
     });
   } catch {
     return NextResponse.json(
-      { success: false, error: "튜터 API 프록시 호출에 실패했습니다." },
-      { status: 500 },
+      { success: false, error: "남은 사용 횟수 조회에 실패했습니다." },
+      { status: 500 }
     );
   }
 }
