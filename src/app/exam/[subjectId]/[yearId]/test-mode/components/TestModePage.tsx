@@ -34,6 +34,7 @@ const POST_LOGIN_REDIRECT_KEY = "qknou_post_login_redirect";
 type QuestionMetaFields = {
   questionText?: string | null;
   question?: string | null;
+  explanation?: string | null;
   commonText?: string | null;
   commonExample?: string | null;
   sharedExample?: string | null;
@@ -319,7 +320,7 @@ export const TestModePage = ({ subjectId, yearId }: Props) => {
   const explanationData = currentQuestionId
     ? resultExplanationsByQuestion[currentQuestionId]
     : undefined;
-  const explanationText = explanationData?.explanation ?? currentQuestion?.explanation;
+  const explanationText = explanationData?.explanation ?? currentQuestionMeta?.explanation;
   const conceptTags = explanationData?.conceptTags ?? [];
   const explanationError = currentQuestionId
     ? explanationErrorByQuestion[currentQuestionId]
