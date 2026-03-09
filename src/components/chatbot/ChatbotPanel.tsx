@@ -775,7 +775,16 @@ export function ChatbotPanel({
           </div>
           <button
             type="button"
-            onClick={() => setShowThreadList((prev) => !prev)}
+            onClick={() => {
+              setShowThreadList((prev) => {
+                const next = !prev;
+                // 목록 진입 시 현재 과목/연도 스레드를 기본 선택으로 맞춤
+                if (next) {
+                  setSelectedThreadId(activeThreadId);
+                }
+                return next;
+              });
+            }}
             className="rounded-md px-2 py-1 text-xs text-[#4B5563] hover:bg-[#F3F4F6]"
           >
             {showThreadList ? "대화로" : "목록으로"}
