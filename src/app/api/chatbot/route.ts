@@ -5,6 +5,11 @@ type IncomingMessage = {
   text: string;
 };
 
+type NormalizedMessage = {
+  role: "user" | "bot";
+  text: string;
+};
+
 type ResponsesApiOutputContent = {
   type?: string;
   text?: string;
@@ -54,10 +59,22 @@ export async function POST(req: Request) {
     }
 
     const body = (await req.json()) as { messages?: IncomingMessage[] };
-    const messages = Array.isArray(body?.messages) ? body.messages : [];
+    const rawMessages = Array.isArray(body?.messages) ? body.messages : [];
+    const messages: NormalizedMessage[] = rawMessages
+      .filter(
+        (message): message is IncomingMessage =>
+          (message?.role === "user" || message?.role === "bot") &&
+          typeof message?.text === "string",
+      )
+      .map((message) => ({
+        role: message.role,
+        text: message.text.trim(),
+      }))
+      .filter((message) => message.text.length > 0);
+
     if (messages.length === 0) {
       return NextResponse.json(
-        { error: "messages가 비어 있습니다." },
+        { error: "유효한 messages가 없습니다. role/user|bot, text를 확인해 주세요." },
         { status: 400 },
       );
     }

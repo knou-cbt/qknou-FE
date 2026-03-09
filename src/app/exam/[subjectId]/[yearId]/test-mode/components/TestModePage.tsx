@@ -1,7 +1,8 @@
 "use client";
 import { useState, useCallback, useEffect, useMemo, useRef } from "react";
 import { useRouter } from "next/navigation";
-import { CheckCircle, XCircle, Clock, BookOpen, Calendar } from "lucide-react";
+import { CheckCircle, XCircle, Clock, BookOpen } from "lucide-react";
+import ReactMarkdown from "react-markdown";
 
 import {
   QuestionCard,
@@ -10,6 +11,7 @@ import {
   type TQuestionState,
   Button,
 } from "@/components/ui";
+import { API_URL } from "@/constants";
 import { useExamContext } from "@/contexts";
 import { useIsMobile } from "@/lib/useIsMobile";
 import { useCopyProtection } from "@/lib/useCopyProtection";
@@ -19,6 +21,13 @@ import type { IQuestion, IQuestionResult } from "../interface";
 type Props = {
   subjectId?: string;
   yearId?: string;
+};
+
+type TutorQuestionExplanation = {
+  success: boolean;
+  explanation: string;
+  conceptTags?: string[] | null;
+  generated: boolean;
 };
 
 const POST_LOGIN_REDIRECT_KEY = "qknou_post_login_redirect";
@@ -77,6 +86,15 @@ export const TestModePage = ({ subjectId, yearId }: Props) => {
   >({});
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [results, setResults] = useState<IQuestionResult[]>([]);
+  const [visibleExplanationByQuestion, setVisibleExplanationByQuestion] =
+    useState<Record<number, boolean>>({});
+  const [resultExplanationsByQuestion, setResultExplanationsByQuestion] =
+    useState<Record<number, TutorQuestionExplanation>>({});
+  const [explanationErrorByQuestion, setExplanationErrorByQuestion] = useState<
+    Record<number, string | null>
+  >({});
+  const [explanationLoadingQuestionId, setExplanationLoadingQuestionId] =
+    useState<number | null>(null);
 
   // 시험 시작 시간 추적
   const [startTime] = useState<number>(() => Date.now());
@@ -294,6 +312,65 @@ export const TestModePage = ({ subjectId, yearId }: Props) => {
   const currentResult = results.find(
     (r) => r.questionId === currentQuestion?.id
   );
+  const currentQuestionId = currentQuestion?.id;
+  const isExplanationVisible = currentQuestionId
+    ? Boolean(visibleExplanationByQuestion[currentQuestionId])
+    : false;
+  const explanationData = currentQuestionId
+    ? resultExplanationsByQuestion[currentQuestionId]
+    : undefined;
+  const explanationText = explanationData?.explanation ?? currentQuestion?.explanation;
+  const conceptTags = explanationData?.conceptTags ?? [];
+  const explanationError = currentQuestionId
+    ? explanationErrorByQuestion[currentQuestionId]
+    : null;
+  const isExplanationLoading =
+    currentQuestionId !== undefined &&
+    explanationLoadingQuestionId === currentQuestionId;
+
+  const handleToggleExplanation = useCallback(async () => {
+    const questionId = currentQuestion?.id;
+    if (!questionId) return;
+
+    const nextVisible = !visibleExplanationByQuestion[questionId];
+    setVisibleExplanationByQuestion((prev) => ({
+      ...prev,
+      [questionId]: nextVisible,
+    }));
+
+    if (!nextVisible || resultExplanationsByQuestion[questionId]) return;
+
+    setExplanationErrorByQuestion((prev) => ({ ...prev, [questionId]: null }));
+    setExplanationLoadingQuestionId(questionId);
+
+    try {
+      const response = await fetch(
+        `${API_URL}/api/tutor/questions/${questionId}/explanation`,
+        {
+          method: "GET",
+          cache: "no-store",
+        }
+      );
+      if (!response.ok) throw new Error("해설 조회 실패");
+
+      const data = (await response.json()) as TutorQuestionExplanation;
+      if (!data.success) throw new Error("해설 생성 실패");
+
+      setResultExplanationsByQuestion((prev) => ({
+        ...prev,
+        [questionId]: data,
+      }));
+    } catch {
+      setExplanationErrorByQuestion((prev) => ({
+        ...prev,
+        [questionId]: "해설을 불러오지 못했습니다. 다시 시도해 주세요.",
+      }));
+    } finally {
+      setExplanationLoadingQuestionId((prev) =>
+        prev === questionId ? null : prev
+      );
+    }
+  }, [currentQuestion?.id, visibleExplanationByQuestion, resultExplanationsByQuestion]);
 
   useEffect(() => {
     if (!subjectId || !yearId || typeof window === "undefined") return;
@@ -442,21 +519,50 @@ export const TestModePage = ({ subjectId, yearId }: Props) => {
           {/* 문제 카드 */}
           <div className="w-full max-w-[1104px] bg-white border border-[#E5E7EB] rounded-xl p-4 sm:p-6 mb-4 sm:mb-6">
             {currentQuestion && (
-              <QuestionCard
-                size="full"
-                question={questionTitle}
-                example={normalizedExample}
-                imageUrls={normalizedImageUrls}
-                answers={formattedAnswers}
-                selectedAnswer={
-                  answers[currentIndex] !== undefined
-                    ? answers[currentIndex]
-                    : null
-                }
-                correctAnswer={currentResult?.correctAnswers ?? []}
-                showResult={true}
-                actionButtonText=""
-              />
+              <>
+                <QuestionCard
+                  size="full"
+                  question={questionTitle}
+                  example={normalizedExample}
+                  imageUrls={normalizedImageUrls}
+                  answers={formattedAnswers}
+                  selectedAnswer={
+                    answers[currentIndex] !== undefined
+                      ? answers[currentIndex]
+                      : null
+                  }
+                  correctAnswer={currentResult?.correctAnswers ?? []}
+                  showResult={true}
+                  actionButtonText=""
+                />
+                {isExplanationVisible && (
+                  <div className="mt-4 bg-[#F9FAFB] border border-[#E5E7EB] rounded-[16px] p-5">
+                    {isExplanationLoading && (
+                      <p className="text-sm text-[#6B7280]">해설을 생성하는 중...</p>
+                    )}
+                    {explanationError && (
+                      <p className="text-sm text-red-500">{explanationError}</p>
+                    )}
+                    {!isExplanationLoading && !explanationError && explanationText && (
+                      <div className="text-[#364153] leading-7 [&_a]:text-[#155DFC] [&_a]:underline [&_code]:rounded [&_code]:bg-[#F3F4F6] [&_code]:px-1 [&_li]:ml-5 [&_ol]:list-decimal [&_p]:mb-3 [&_ul]:list-disc">
+                        <ReactMarkdown>{explanationText}</ReactMarkdown>
+                        {conceptTags.length > 0 && (
+                          <div className="mt-4 flex flex-wrap gap-2">
+                            {conceptTags.map((tag) => (
+                              <span
+                                key={tag}
+                                className="rounded-full bg-[#EEF2FF] text-[#3730A3] px-3 py-1 text-xs font-medium"
+                              >
+                                #{tag}
+                              </span>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                )}
+              </>
             )}
           </div>
 
@@ -464,10 +570,11 @@ export const TestModePage = ({ subjectId, yearId }: Props) => {
           <div className="w-full max-w-[896px]">
             <ExamNavButtons
               onPrevClick={handlePrev}
+              onAnswerClick={() => void handleToggleExplanation()}
               onNextClick={handleNext}
               prevDisabled={currentIndex === 0}
               nextDisabled={currentIndex === questions.length - 1}
-              showAnswer={false}
+              answerLabel={isExplanationVisible ? "해설 숨기기" : "해설 보기"}
             />
           </div>
 
