@@ -12,13 +12,22 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/contexts";
+import {
+  buildThreadId,
+  CHATBOT_QUESTION_LIMIT,
+  CHAT_HISTORY_CONTEXT_LIMIT,
+  CHAT_HISTORY_TTL_MS,
+  formatThreadTitle,
+  getChatHistoryKey,
+  getLocalDateKey,
+  getMsUntilNextLocalMidnight,
+  getQuestionCountKey,
+  type ChatMessage,
+  type ChatThread,
+  type StoredChatHistory,
+  type StoredDailyQuestionCount,
+} from "./chatbotPanel.utils";
 
-const CHATBOT_QUESTION_LIMIT = 5;
-// API 요청에 포함할 과거 대화 개수(현재 질문 제외)
-const CHAT_HISTORY_CONTEXT_LIMIT = 2;
-const STORAGE_KEY_PREFIX = "qknou_chatbot_questions_";
-const CHAT_HISTORY_KEY_PREFIX = "qknou_chatbot_history_";
-const CHAT_HISTORY_TTL_MS = 30 * 24 * 60 * 60 * 1000;
 const LOGIN_CTA_TEXT_COLOR = "#155DFC";
 const LOGIN_CTA_CLASS =
   "cursor-pointer font-medium hover:underline hover:underline-offset-2";
@@ -54,29 +63,6 @@ type TutorRemainingCountResponse = {
   error?: string;
   remainingCount?: number;
   totalLimit?: number;
-};
-
-type ChatMessage = { role: "user" | "bot"; text: string };
-
-type ChatThread = {
-  threadId: string;
-  subjectId?: string;
-  yearId?: string;
-  subjectLabel?: string;
-  yearLabel?: string;
-  messages: ChatMessage[];
-  updatedAt: number;
-};
-
-type StoredChatHistory = {
-  version: 2;
-  threads: ChatThread[];
-};
-
-type StoredDailyQuestionCount = {
-  count: number;
-  // 일일 제한 초기화를 위한 로컬 날짜 키 (YYYY-MM-DD)
-  dateKey: string;
 };
 
 interface ChatbotPanelProps {
@@ -137,39 +123,6 @@ const PRESET_ANSWERS: Record<string, string> = {
 - 3회차: 해설 없이 재도전
 `.trim(),
 };
-
-function getQuestionCountKey(userId: string) {
-  return `${STORAGE_KEY_PREFIX}${userId}`;
-}
-
-function getLocalDateKey(date = new Date()) {
-  const year = date.getFullYear();
-  const month = String(date.getMonth() + 1).padStart(2, "0");
-  const day = String(date.getDate()).padStart(2, "0");
-  return `${year}-${month}-${day}`;
-}
-
-function getMsUntilNextLocalMidnight(now = new Date()) {
-  const nextMidnight = new Date(now);
-  nextMidnight.setHours(24, 0, 0, 0);
-  return Math.max(0, nextMidnight.getTime() - now.getTime());
-}
-
-function getChatHistoryKey(userId: string) {
-  return `${CHAT_HISTORY_KEY_PREFIX}${userId}`;
-}
-
-function buildThreadId(subjectId?: string, yearId?: string) {
-  // 과목/연도별 대화 스레드 키
-  if (subjectId && yearId) return `${subjectId}:${yearId}`;
-  return "general";
-}
-
-function formatThreadTitle(thread: ChatThread) {
-  const subject = thread.subjectLabel ?? thread.subjectId ?? "일반";
-  const year = thread.yearLabel ?? thread.yearId ?? "-";
-  return `${subject} · ${year}`;
-}
 
 function getStoredQuestionCount(userId: string): number {
   if (typeof window === "undefined") return 0;
