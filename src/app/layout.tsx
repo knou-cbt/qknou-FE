@@ -41,7 +41,7 @@ export const metadata: Metadata = {
   description: SITE_DESC,
 
   alternates: {
-    canonical: SITE_URL,
+    canonical: "/",
   },
 
   icons: {
@@ -51,16 +51,16 @@ export const metadata: Metadata = {
   },
 
   keywords: [
-    "QKNOU",
-    "큐노",
     "방송통신대학교",
-    "KNOU",
-    "방송대",
     "기출문제",
     "기출",
     "문제풀이",
     "시험",
     "학습",
+    "방통대",
+    "QKNOU",
+    "큐노",
+    "워크북",
   ],
 
   authors: [{ name: SITE_NAME }],

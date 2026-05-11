@@ -7,6 +7,7 @@ const DESKTOP_BREAKPOINT = 768;
 
 const AD_UNIT = {
   mobile: "DAN-ctqbpCkL5AnrfFZY",
+  mobileRect: "DAN-xvCJKicUSkdeRspa",
   desktopBottom: "DAN-rjm8cuVO5tqxkcLZ",
   desktopSide: "DAN-FXMS0a38OFAgXFvs",
 } as const;
@@ -35,19 +36,32 @@ export function KakaoAd() {
 
   return (
     <>
-      {/* 모바일: 320x50 */}
+      {/* 모바일: 320x50 + 320x480 */}
       {!isDesktop && (
-        <div className="flex w-full justify-center py-2">
-          <div className="relative min-h-[50px] w-full max-w-[320px]">
-            <ins
-              className="kakao_ad_area absolute inset-0 min-h-[50px] min-w-[320px]"
-              style={{ width: "100%", maxWidth: 320 }}
-              data-ad-unit={AD_UNIT.mobile}
-              data-ad-width="320"
-              data-ad-height="50"
-            />
+        <>
+          <div className="flex w-full justify-center py-2">
+            <div className="relative min-h-[50px] w-full max-w-[320px]">
+              <ins
+                className="kakao_ad_area absolute inset-0 min-h-[50px] min-w-[320px]"
+                style={{ display: "none" }}
+                data-ad-unit={AD_UNIT.mobile}
+                data-ad-width="320"
+                data-ad-height="50"
+              />
+            </div>
           </div>
-        </div>
+          <div className="flex w-full justify-center py-2">
+            <div className="relative min-h-[480px] w-full max-w-[320px]">
+              <ins
+                className="kakao_ad_area absolute inset-0 min-h-[480px] min-w-[320px]"
+                style={{ display: "none" }}
+                data-ad-unit={AD_UNIT.mobileRect}
+                data-ad-width="320"
+                data-ad-height="480"
+              />
+            </div>
+          </div>
+        </>
       )}
 
       {/* 웹 하단 + 사이드 */}
