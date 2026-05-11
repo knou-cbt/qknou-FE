@@ -1,6 +1,7 @@
 // app/layout.tsx
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { GeistSans } from "geist/font/sans";
+import { GeistMono } from "geist/font/mono";
 import "./globals.css";
 import { QueryProvider } from "@/providers/QueryProvider";
 import { ExamProvider } from "@/contexts";
@@ -10,15 +11,6 @@ import { SiteStructuredData } from "@/components/seo";
 import { Analytics } from '@vercel/analytics/react';
 import { SITE_URL } from "@/constants";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
-});
-
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
-});
 
 const SITE_NAME = "큐노";
 const SITE_DESC =
@@ -130,7 +122,7 @@ export default function RootLayout({
 }: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang="ko">
-      <body className={`${geistSans.variable} ${geistMono.variable} antialiased`} suppressHydrationWarning>
+      <body className={`${GeistSans.variable} ${GeistMono.variable} antialiased`} suppressHydrationWarning>
         <SiteStructuredData />
         <AuthProvider>
           <QueryProvider>
