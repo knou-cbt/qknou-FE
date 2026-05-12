@@ -8,7 +8,7 @@ import { ExamProvider } from "@/contexts";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { AppContent } from "@/components";
 import { SiteStructuredData } from "@/components/seo";
-import { Analytics } from '@vercel/analytics/react';
+import { GoogleAnalytics } from '@next/third-parties/google';
 import { SITE_URL } from "@/constants";
 
 
@@ -131,7 +131,7 @@ export default function RootLayout({
             </ExamProvider>
           </QueryProvider>
         </AuthProvider>
-        <Analytics />
+        <GoogleAnalytics gaId="G-TV2FP9M67T" />
       </body>
     </html>
   );
