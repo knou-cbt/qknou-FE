@@ -12,12 +12,3 @@ export function preprocessMathText(text: string): string {
     .trim();
 }
 
-/**
- * 프리뷰용: JSON의 tmp/ 경로를 API 라우트 경로로 변환
- */
-export function transformPreviewImageUrl(url: string): string {
-  if (url.startsWith("tmp/")) {
-    return `/api/preview-image/${url.slice(4)}`;
-  }
-  return url;
-}
