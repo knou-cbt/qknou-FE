@@ -59,6 +59,9 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   return {
     title,
     description,
+    alternates: {
+      canonical: `/exam/${subjectId}/${yearId}/test-mode`,
+    },
   };
 }
 

@@ -9,7 +9,7 @@ import { ExamProvider } from "@/contexts";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { AppContent } from "@/components";
 import { SiteStructuredData } from "@/components/seo";
-import { Analytics } from '@vercel/analytics/react';
+import { GoogleAnalytics } from '@next/third-parties/google';
 import { SITE_URL } from "@/constants";
 
 
@@ -42,7 +42,7 @@ export const metadata: Metadata = {
   description: SITE_DESC,
 
   alternates: {
-    canonical: SITE_URL,
+    canonical: "/",
   },
 
   icons: {
@@ -52,16 +52,16 @@ export const metadata: Metadata = {
   },
 
   keywords: [
-    "QKNOU",
-    "큐노",
     "방송통신대학교",
-    "KNOU",
-    "방송대",
     "기출문제",
     "기출",
     "문제풀이",
     "시험",
     "학습",
+    "방통대",
+    "QKNOU",
+    "큐노",
+    "워크북",
   ],
 
   authors: [{ name: SITE_NAME }],
@@ -132,7 +132,7 @@ export default function RootLayout({
             </ExamProvider>
           </QueryProvider>
         </AuthProvider>
-        <Analytics />
+        <GoogleAnalytics gaId="G-TV2FP9M67T" />
       </body>
     </html>
   );
