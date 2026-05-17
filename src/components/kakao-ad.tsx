@@ -1,9 +1,12 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import Script from "next/script";
 
 const DESKTOP_BREAKPOINT = 768;
+const ADFIT_SCRIPT_SRC = "https://t1.daumcdn.net/kas/static/ba.min.js";
+
+/** fixed 사이드 광고(160px) + right-4(16px) + 콘텐츠 간격(16px) */
+export const DESKTOP_SIDE_AD_RESERVED_PX = 160 + 16 + 16;
 
 const AD_UNIT = {
   mobile: "DAN-ctqbpCkL5AnrfFZY",
@@ -12,10 +15,33 @@ const AD_UNIT = {
   desktopSide: "DAN-FXMS0a38OFAgXFvs",
 } as const;
 
+function removeAdfitScripts() {
+  document
+    .querySelectorAll(`script[src="${ADFIT_SCRIPT_SRC}"]`)
+    .forEach((node) => node.remove());
+}
+
+function clearAdSlots() {
+  document.querySelectorAll("ins.kakao_ad_area").forEach((el) => {
+    el.innerHTML = "";
+  });
+}
+
+function loadAdfitScript() {
+  removeAdfitScripts();
+  clearAdSlots();
+
+  const script = document.createElement("script");
+  script.src = ADFIT_SCRIPT_SRC;
+  script.async = true;
+  document.body.appendChild(script);
+}
+
 /**
  * - 모바일: 320x50 하단
- * - 웹: 728x90 하단 + 160x600 사이드 (스크립트 1회 로드)
+ * - 웹: 728x90 하단 + 160x600 사이드 (AppContent에서 우측 여백 확보)
  * - 뷰포트에 보이는 슬롯만 DOM에 넣어 "Cannot visible ad on screen" 방지
+ * - ba.min.js는 최초 1회만 스캔하므로 breakpoint 변경 시 스크립트 재주입
  */
 export function KakaoAd() {
   const [isDesktop, setIsDesktop] = useState<boolean | null>(null);
@@ -28,11 +54,19 @@ export function KakaoAd() {
     return () => mq.removeEventListener("change", set);
   }, []);
 
+  useEffect(() => {
+    if (isDesktop === null) return;
+
+    const timer = window.setTimeout(loadAdfitScript, 0);
+    return () => {
+      window.clearTimeout(timer);
+      removeAdfitScripts();
+    };
+  }, [isDesktop]);
+
   if (isDesktop === null) {
     return null;
   }
-
-  const scriptKey = isDesktop ? "desktop" : "mobile";
 
   return (
     <>
@@ -89,12 +123,6 @@ export function KakaoAd() {
           </div>
         </>
       )}
-
-      <Script
-        key={scriptKey}
-        src="https://t1.daumcdn.net/kas/static/ba.min.js"
-        strategy="lazyOnload"
-      />
     </>
   );
 }
