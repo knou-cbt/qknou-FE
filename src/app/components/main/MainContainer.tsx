@@ -12,6 +12,7 @@ import type { ISubject } from "@/app/exam/[subjectId]/year/interface";
 import { InputSearch } from "@/components/search";
 import { HelpCircle } from "lucide-react";
 
+import { SubjectUpdateNoticeModal } from "./SubjectUpdateNoticeModal";
 
 export const MainContainer = () => {
   const router = useRouter();
@@ -65,6 +66,8 @@ export const MainContainer = () => {
 
   return (
     <>
+      <SubjectUpdateNoticeModal />
+
       {/* Hero Section with Hero Image */}
       <section className="relative w-full overflow-hidden bg-gradient-to-br from-[#D8F1FF] via-[#D8F1FF] to-[#ECF8FF]">
         <div className="relative w-full max-w-[1100px] mx-auto  py-8 md:py-12 lg:py-16">
