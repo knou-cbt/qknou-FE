@@ -14,6 +14,7 @@ export interface IChoice {
   id: number;
   number: number;
   text: string;
+  imageUrls?: string[] | null;
 }
 
 /** 문제 정보 (시험모드 - 정답 제외) */
