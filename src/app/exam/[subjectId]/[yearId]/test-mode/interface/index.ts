@@ -24,6 +24,10 @@ export interface IQuestion {
   imageUrl?: string | null;
   imageUrls?: string[] | null;
   example?: string | null;
+  /** 공통 보기 텍스트 */
+  sharedExample?: string | null;
+  /** 공통 보기 이미지 */
+  sharedExampleImageUrls?: string[] | null;
   choices: IChoice[];
 }
 

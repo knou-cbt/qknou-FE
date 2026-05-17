@@ -1,9 +1,147 @@
+"use client";
+
 import * as React from "react";
+import { useState } from "react";
 import Image from "next/image";
 import { cva, type VariantProps } from "class-variance-authority";
 import ReactMarkdown from "react-markdown";
+import remarkMath from "remark-math";
+import rehypeKatex from "rehype-katex";
+import rehypeRaw from "rehype-raw";
+import type { Components } from "react-markdown";
 
 import { cn } from "@/lib/utils";
+import { preprocessMathText } from "@/lib/math-text";
+
+// inline: block 요소 제거하고 수식/HTML 렌더링
+const inlineComponents: Components = {
+  p: ({ children }) => <>{children}</>,
+  ol: ({ children }) => <>{children}</>,
+  ul: ({ children }) => <>{children}</>,
+  li: ({ children }) => <>{children}</>,
+};
+
+function InlineMathContent({ text }: { text: string }) {
+  return (
+    <ReactMarkdown
+      remarkPlugins={[remarkMath]}
+      rehypePlugins={[rehypeKatex, rehypeRaw]}
+      components={inlineComponents}
+    >
+      {text}
+    </ReactMarkdown>
+  );
+}
+
+// block: 코드/수식/HTML 포함 다중 단락 렌더링
+function BlockMathContent({ text }: { text: string }) {
+  return (
+    <div className="[&_code]:rounded [&_code]:px-1 [&_pre]:overflow-x-auto [&_pre]:rounded [&_pre]:bg-[#111827] [&_pre]:p-3 [&_pre]:text-[#F9FAFB] [&_.katex-display]:overflow-x-auto">
+      <ReactMarkdown
+        remarkPlugins={[remarkMath]}
+        rehypePlugins={[rehypeKatex, rehypeRaw]}
+      >
+        {text}
+      </ReactMarkdown>
+    </div>
+  );
+}
+
+function filterValidImageUrls(urls?: string[] | null): string[] {
+  return (urls ?? []).filter(
+    (url): url is string => typeof url === "string" && url.trim().length > 0
+  );
+}
+
+function QuestionImageList({
+  urls,
+  altPrefix,
+}: {
+  urls: string[];
+  altPrefix: string;
+}) {
+  if (urls.length === 0) return null;
+
+  return (
+    <div className="flex flex-col gap-3">
+      {urls.map((url, index) => (
+        <div
+          key={`${url}-${index}`}
+          className="relative w-full h-[70px] sm:h-[120px] overflow-hidden rounded-[12px] border border-[#E5E7EB]"
+          onContextMenu={(e) => e.preventDefault()}
+          onDragStart={(e) => e.preventDefault()}
+        >
+          <Image
+            src={url}
+            alt={`${altPrefix} ${index + 1}`}
+            fill
+            sizes="(max-width: 640px) 100vw, (max-width: 1100px) 90vw, 1100px"
+            className="object-contain p-2"
+            unoptimized
+            loading="lazy"
+            draggable={false}
+          />
+        </div>
+      ))}
+    </div>
+  );
+}
+
+// ============================================
+// Shared Example (공통 보기) Toggle
+// ============================================
+
+function SharedExampleToggle({
+  text,
+  imageUrls,
+}: {
+  text?: string | null;
+  imageUrls?: string[] | null;
+}) {
+  const [open, setOpen] = useState(false);
+  const validImageUrls = filterValidImageUrls(imageUrls);
+  const trimmedText = text?.trim() ?? "";
+
+  const rangeMatch = trimmedText.match(/\((\d+~\d+)\)/);
+  const rangeLabel = rangeMatch
+    ? `공통 보기 (${rangeMatch[1]}번)`
+    : "공통 보기";
+
+  const contentMatch = trimmedText.match(/<보기>([\s\S]*?)<\/보기>/);
+  const content = contentMatch
+    ? contentMatch[1].trim()
+    : trimmedText
+      ? preprocessMathText(trimmedText)
+      : "";
+
+  return (
+    <div className="w-full">
+      <button
+        type="button"
+        onClick={() => setOpen((v) => !v)}
+        className="flex items-center gap-2 px-4 py-2.5 w-full bg-[#F3F4F6] border border-[#E5E7EB] rounded-[12px] text-sm font-medium text-[#364153] hover:bg-[#E9EAEB] transition-colors"
+      >
+        <span className="flex-1 text-left">{rangeLabel}</span>
+        <svg
+          className={cn("w-4 h-4 shrink-0 transition-transform duration-200", open && "rotate-180")}
+          fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}
+        >
+          <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+        </svg>
+      </button>
+      {open && (
+        <div className="mt-2 px-4 py-3 bg-[#F9FAFB] border border-[#E5E7EB] rounded-[12px] text-sm text-[#364153] leading-6 break-words">
+          {content && <BlockMathContent text={content} />}
+          {validImageUrls.length > 0 && (
+            <div className={cn(content && "mt-3")}>
+              <QuestionImageList urls={validImageUrls} altPrefix="공통 보기 이미지" />
+            </div>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
 
 // ============================================
 // Tag Components
@@ -226,6 +364,7 @@ export interface IQuestionTag {
 export interface IAnswerOption {
   value: string | number;
   label: string;
+  imageUrls?: string[] | null;
 }
 
 export interface IQuestionCardProps
@@ -234,6 +373,8 @@ export interface IQuestionCardProps
   tags?: IQuestionTag[];
   question?: string;
   example?: string | null;
+  sharedExample?: string | null;
+  sharedExampleImageUrls?: string[] | null;
   imageUrls?: string[] | null;
   answers?: IAnswerOption[];
   selectedAnswer?: string | number | null;
@@ -253,6 +394,8 @@ const QuestionCard = React.forwardRef<HTMLDivElement, IQuestionCardProps>(
       tags = [],
       question,
       example,
+      sharedExample,
+      sharedExampleImageUrls,
       imageUrls,
       answers = [],
       selectedAnswer,
@@ -267,10 +410,13 @@ const QuestionCard = React.forwardRef<HTMLDivElement, IQuestionCardProps>(
     },
     ref
   ) => {
-    const hasMarkdownCodeBlock = example?.includes("```") ?? false;
-    const validImageUrls = (imageUrls ?? []).filter(
-      (url): url is string => typeof url === "string" && url.trim().length > 0
-    );
+    const processedQuestion = question ? preprocessMathText(question) : undefined;
+    const processedExample = example ? preprocessMathText(example) : undefined;
+    const validImageUrls = filterValidImageUrls(imageUrls);
+    const validSharedExampleImageUrls =
+      filterValidImageUrls(sharedExampleImageUrls);
+    const hasSharedExample =
+      Boolean(sharedExample?.trim()) || validSharedExampleImageUrls.length > 0;
 
     const getAnswerState = (
       value: string | number
@@ -304,26 +450,28 @@ const QuestionCard = React.forwardRef<HTMLDivElement, IQuestionCardProps>(
             </div>
           )}
 
+          {/* Shared Example (공통 보기) */}
+          {hasSharedExample && (
+            <div className="w-full px-4 sm:px-0">
+              <SharedExampleToggle
+                text={sharedExample}
+                imageUrls={validSharedExampleImageUrls}
+              />
+            </div>
+          )}
+
           {/* Question Text */}
-          {question && (
-            <p className="font-normal text-base sm:text-[19px] leading-6 sm:leading-[31px] text-[#101828] w-full wrap-break-word">
-              {question}
-            </p>
+          {processedQuestion && (
+            <div className="font-normal text-base sm:text-[19px] leading-6 sm:leading-[31px] text-[#101828] w-full wrap-break-word">
+              <InlineMathContent text={processedQuestion} />
+            </div>
           )}
 
           {/* Example (보기) */}
-          {example && (
+          {processedExample && (
             <div className="w-full mt-4 px-4 sm:px-0">
-              <div className="p-4 bg-[#F9FAFB] border border-[#E5E7EB] rounded-[12px]">
-                {hasMarkdownCodeBlock ? (
-                  <div className="font-normal text-sm sm:text-base leading-6 text-[#364153] break-words [&_code]:rounded [&_code]:px-1 [&_pre]:overflow-x-auto [&_pre]:rounded [&_pre]:bg-[#111827] [&_pre]:p-3 [&_pre]:text-[#F9FAFB]">
-                    <ReactMarkdown>{example}</ReactMarkdown>
-                  </div>
-                ) : (
-                  <p className="font-normal text-sm sm:text-base leading-6 text-[#364153] break-words">
-                    {example}
-                  </p>
-                )}
+              <div className="p-4 bg-[#F9FAFB] border border-[#E5E7EB] rounded-[12px] font-normal text-sm sm:text-base leading-6 text-[#364153] break-words">
+                <BlockMathContent text={processedExample} />
               </div>
             </div>
           )}
@@ -331,27 +479,7 @@ const QuestionCard = React.forwardRef<HTMLDivElement, IQuestionCardProps>(
           {/* Question Images */}
           {validImageUrls.length > 0 && (
             <div className="w-full mt-4 px-4 sm:px-0">
-              <div className="flex flex-col gap-3">
-                {validImageUrls.map((url, index) => (
-                  <div
-                    key={`${url}-${index}`}
-                    className="relative w-full h-[70px] sm:h-[120px] overflow-hidden rounded-[12px] border border-[#E5E7EB]"
-                    onContextMenu={(e) => e.preventDefault()}
-                    onDragStart={(e) => e.preventDefault()}
-                  >
-                    <Image
-                      src={url}
-                      alt={`문항 이미지 ${index + 1}`}
-                      fill
-                      sizes="(max-width: 640px) 100vw, (max-width: 1100px) 90vw, 1100px"
-                      className="object-contain p-2"
-                      unoptimized
-                      loading="lazy"
-                      draggable={false}
-                    />
-                  </div>
-                ))}
-              </div>
+              <QuestionImageList urls={validImageUrls} altPrefix="문항 이미지" />
             </div>
           )}
 
@@ -369,7 +497,30 @@ const QuestionCard = React.forwardRef<HTMLDivElement, IQuestionCardProps>(
                 state={getAnswerState(answer.value)}
                 onValueSelect={onAnswerSelect}
               >
-                {answer.label}
+                {answer.imageUrls && answer.imageUrls.length > 0 ? (
+                  <div className="flex flex-col gap-2 w-full">
+                    {answer.imageUrls.map((imgUrl, i) => (
+                      <div
+                        key={i}
+                        className="relative w-full h-[80px] sm:h-[120px] overflow-hidden rounded-[8px]"
+                        onContextMenu={(e) => e.preventDefault()}
+                        onDragStart={(e) => e.preventDefault()}
+                      >
+                        <Image
+                          src={imgUrl}
+                          alt={`선택지 ${answer.value} 이미지`}
+                          fill
+                          className="object-contain"
+                          unoptimized
+                          loading="lazy"
+                          draggable={false}
+                        />
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <InlineMathContent text={preprocessMathText(answer.label)} />
+                )}
               </AnswerChoice>
             ))}
           </div>

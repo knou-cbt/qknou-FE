@@ -3,6 +3,7 @@ import type { Metadata } from "next";
 import { GeistSans } from "geist/font/sans";
 import { GeistMono } from "geist/font/mono";
 import "./globals.css";
+import "katex/dist/katex.min.css";
 import { QueryProvider } from "@/providers/QueryProvider";
 import { ExamProvider } from "@/contexts";
 import { AuthProvider } from "@/contexts/AuthContext";
