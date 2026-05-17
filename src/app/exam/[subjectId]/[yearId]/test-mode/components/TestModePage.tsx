@@ -433,7 +433,7 @@ export const TestModePage = ({ subjectId, yearId }: Props) => {
         >
         <main className="flex-1 flex flex-col items-center px-4 py-4 sm:py-8">
           {/* 페이지 제목 */}
-          <div className={cn(examDetailMaxW[1104], "mb-4 sm:mb-6")}>
+          <div className={cn(examDetailMaxW[896], "mb-4 sm:mb-6")}>
             <h1 className="text-xl sm:text-2xl font-bold text-[#101828] mb-2">
               시험 결과
             </h1>
@@ -446,7 +446,7 @@ export const TestModePage = ({ subjectId, yearId }: Props) => {
           </div>
 
           {/* 점수 카드 */}
-          <div className={cn(examDetailMaxW[1104], "bg-white border border-[#E5E7EB] rounded-xl p-4 sm:p-6 mb-4")}>
+          <div className={cn(examDetailMaxW[896], "bg-white border border-[#E5E7EB] rounded-xl p-4 sm:p-6 mb-4")}>
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
               {/* 왼쪽: 획득 점수 */}
               <div className="flex items-center gap-3 sm:gap-4">
@@ -486,7 +486,7 @@ export const TestModePage = ({ subjectId, yearId }: Props) => {
           </div>
 
           {/* 통계 카드들 */}
-          <div className={cn(examDetailMaxW[1104], "grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4 mb-4 sm:mb-6")}>
+          <div className={cn(examDetailMaxW[896], "grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4 mb-4 sm:mb-6")}>
             {/* 총 소요 시간 */}
             <div className="bg-white border border-[#E5E7EB] rounded-xl p-3 sm:p-4 flex items-center gap-2 sm:gap-3">
               <div className="flex items-center justify-center w-8 h-8 sm:w-10 sm:h-10 bg-[#F3F4F6] rounded-full shrink-0">
@@ -528,7 +528,7 @@ export const TestModePage = ({ subjectId, yearId }: Props) => {
           </div>
 
           {/* Question Navigator */}
-          <div className={cn(examDetailMaxW[1104], "mb-4 sm:mb-6")}>
+          <div className={cn(examDetailMaxW[896], "mb-4 sm:mb-6")}>
             <QuestionNavigator
               size="full"
               totalQuestions={questions.length}
@@ -541,7 +541,7 @@ export const TestModePage = ({ subjectId, yearId }: Props) => {
           </div>
 
           {/* 문제 카드 */}
-          <div className={cn(examDetailMaxW[1104], "bg-white border border-[#E5E7EB] rounded-xl p-4 sm:p-6 mb-4 sm:mb-6")}>
+          <div className={cn(examDetailMaxW[896], "bg-white border border-[#E5E7EB] rounded-xl p-4 sm:p-6 mb-4 sm:mb-6")}>
             {currentQuestion && (
               <>
                 <QuestionCard
@@ -630,7 +630,7 @@ export const TestModePage = ({ subjectId, yearId }: Props) => {
       {/* Main Content */}
       <main className="flex-1 flex flex-col items-center px-4 py-6">
         {/* Question Info */}
-        <div className={examDetailMaxW[1100]}>
+        <div className={examDetailMaxW[896]}>
           <p className="text-sm text-[#6B7280]">
             {exam?.title ?? "-"} | 시험모드 | {currentIndex + 1} /{" "}
             {questions.length}
@@ -639,7 +639,7 @@ export const TestModePage = ({ subjectId, yearId }: Props) => {
 
         {/* Question Navigator - 모바일에서는 숨김 */}
         {!isMobile && (
-          <div className={cn(examDetailMaxW[1104], "mb-6")}>
+          <div className={cn(examDetailMaxW[896], "mb-6")}>
             <QuestionNavigator
               size="full"
               totalQuestions={questions.length}
@@ -654,7 +654,7 @@ export const TestModePage = ({ subjectId, yearId }: Props) => {
 
         {/* Question Card */}
         {currentQuestion && (
-          <div className={examDetailMaxW[1100]}>
+          <div className={examDetailMaxW[896]}>
             <QuestionCard
               size="full"
               question={questionTitle}
