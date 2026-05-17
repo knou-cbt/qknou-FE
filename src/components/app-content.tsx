@@ -2,7 +2,6 @@
 import { usePathname } from "next/navigation";
 
 import { Header, Footer, KakaoAd } from "@/components";
-import { DESKTOP_SIDE_AD_RESERVED_PX } from "@/components/kakao-ad";
 import { useExamContext } from "@/contexts";
 
 interface AppContentProps {
@@ -27,16 +26,7 @@ export function AppContent({ children }: AppContentProps) {
           variant={isExamMode ? "exam" : "default"}
         />
       )}
-      <div
-        className="md:pr-(--desktop-side-ad-reserved)"
-        style={
-          {
-            "--desktop-side-ad-reserved": `${DESKTOP_SIDE_AD_RESERVED_PX}px`,
-          } as React.CSSProperties
-        }
-      >
-        {children}
-      </div>
+      {children}
       <KakaoAd />
       <Footer />
     </div>

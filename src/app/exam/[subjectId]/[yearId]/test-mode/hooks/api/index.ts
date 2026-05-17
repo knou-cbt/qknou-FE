@@ -32,6 +32,8 @@ interface IApiQuestionWithAnswer {
   imageUrl?: string | null;
   imageUrls?: string[] | null;
   example?: string | null;
+  sharedExample?: string | null;
+  sharedExampleImageUrls?: string[] | null;
   choices: { id: number; number: number; text: string }[];
   correctAnswers?: number[]; // 복수 정답 지원
   explanation?: string;

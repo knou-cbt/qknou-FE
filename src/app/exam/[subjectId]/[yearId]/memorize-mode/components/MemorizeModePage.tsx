@@ -15,6 +15,12 @@ import {
 } from "../hooks/service";
 import type { IQuestionWithAnswer } from "../interface";
 import { useExamContext } from "@/contexts";
+import { cn } from "@/lib/utils";
+import {
+  examDetailContentAreaClassName,
+  examDetailMaxW,
+  examDetailStyle,
+} from "@/lib/exam-side-ad-layout";
 import { useCopyProtection } from "@/lib/useCopyProtection";
 import type { ITutorQuestionExplanationResponse } from "../hooks/api";
 
@@ -33,6 +39,8 @@ type QuestionMetaFields = {
   commonView?: string | null;
   commonImageUrls?: string[] | null;
   commonImageUrl?: string | null;
+  sharedExampleImageUrls?: string[] | null;
+  sharedExampleImageUrl?: string | null;
   images?: string[] | null;
 };
 
@@ -118,24 +126,35 @@ export const MemorizeModePage = ({ subjectId, yearId }: Props) => {
     currentQuestionMeta?.questionText,
     currentQuestionMeta?.question
   );
-  const normalizedExample = pickFirstText(
-    currentQuestion?.example,
-    currentQuestionMeta?.commonText,
-    currentQuestionMeta?.commonExample,
+  const normalizedSharedExample = pickFirstText(
+    currentQuestion?.sharedExample,
     currentQuestionMeta?.sharedExample,
+    currentQuestionMeta?.commonExample,
+    currentQuestionMeta?.commonText,
     currentQuestionMeta?.commonView
   );
+  const normalizedExample = pickFirstText(currentQuestion?.example);
   const questionTitle = normalizedQuestionText
     ? `${currentIndex + 1}. ${normalizedQuestionText}`
     : undefined;
+  const normalizedSharedExampleImageUrls = useMemo(() => {
+    if (!currentQuestion) return undefined;
+
+    const urls = collectImageUrls(
+      currentQuestion.sharedExampleImageUrls,
+      currentQuestionMeta?.sharedExampleImageUrls,
+      currentQuestionMeta?.sharedExampleImageUrl,
+      currentQuestionMeta?.commonImageUrls,
+      currentQuestionMeta?.commonImageUrl
+    );
+    return urls.length > 0 ? urls : undefined;
+  }, [currentQuestion, currentQuestionMeta]);
   const normalizedImageUrls = useMemo(() => {
     if (!currentQuestion) return undefined;
 
     const urls = collectImageUrls(
       currentQuestion.imageUrls,
       currentQuestion.imageUrl,
-      currentQuestionMeta?.commonImageUrls,
-      currentQuestionMeta?.commonImageUrl,
       currentQuestionMeta?.images
     );
     return urls.length > 0 ? urls : undefined;
@@ -287,9 +306,13 @@ export const MemorizeModePage = ({ subjectId, yearId }: Props) => {
 
   return (
     <div className="min-h-screen bg-white flex flex-col">
+      <div
+        style={examDetailStyle}
+        className={cn("flex flex-1 flex-col", examDetailContentAreaClassName)}
+      >
       {/* Breadcrumb */}
       <div className="w-full px-4 pt-4 pb-4">
-        <div className="w-full max-w-[1100px] mx-auto">
+        <div className={examDetailMaxW[896]}>
           <Breadcrumb
             subject={exam?.subject}
             year={exam?.year.toString() ?? ""}
@@ -301,7 +324,7 @@ export const MemorizeModePage = ({ subjectId, yearId }: Props) => {
       {/* Main Content */}
       <main className="flex-1 flex flex-col items-center px-4 py-6">
         {/* Question Info */}
-        <div className="w-full max-w-[1100px]">
+        <div className={examDetailMaxW[896]}>
           <p className="text-sm text-[#6B7280]">
              암기모드 | {currentIndex + 1} /{" "}
             {questions.length}
@@ -310,10 +333,12 @@ export const MemorizeModePage = ({ subjectId, yearId }: Props) => {
 
         {/* Question Card */}
         {currentQuestion && (
-          <div className="w-full max-w-[1100px]">
+          <div className={examDetailMaxW[896]}>
             <QuestionCard
               size="full"
               question={questionTitle}
+              sharedExample={normalizedSharedExample}
+              sharedExampleImageUrls={normalizedSharedExampleImageUrls}
               example={normalizedExample}
               imageUrls={normalizedImageUrls}
               answers={formattedAnswers}
@@ -328,7 +353,7 @@ export const MemorizeModePage = ({ subjectId, yearId }: Props) => {
 
         {/* 해설 영역 - 정답 확인 이후에만 노출 (전역 토글) */}
         {showResult && (
-          <div className="w-full max-w-[1066px] mt-6">
+          <div className={cn(examDetailMaxW[896], "mt-6")}>
             <div className="bg-[#F9FAFB] border border-[#E5E7EB] rounded-[16px] p-6">
               <div className="flex items-center justify-between mb-3">
                 <div className="flex items-center gap-3">
@@ -369,7 +394,7 @@ export const MemorizeModePage = ({ subjectId, yearId }: Props) => {
 
 
         {/* Navigation Buttons */}
-        <div className="w-full max-w-[896px] mt-8">
+        <div className={cn(examDetailMaxW[896], "mt-8")}>
           <ExamNavButtons
             onPrevClick={handlePrev}
             onAnswerClick={showResult ? handleResetQuestion : handleShowAnswer}
@@ -381,6 +406,7 @@ export const MemorizeModePage = ({ subjectId, yearId }: Props) => {
           />
         </div>
       </main>
+      </div>
 
       {/* 챗봇 - 암기 모드에서만, 현재 문제 ID 전달 */}
       <button

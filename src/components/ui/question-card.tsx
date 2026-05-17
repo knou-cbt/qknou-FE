@@ -47,18 +47,72 @@ function BlockMathContent({ text }: { text: string }) {
   );
 }
 
+function filterValidImageUrls(urls?: string[] | null): string[] {
+  return (urls ?? []).filter(
+    (url): url is string => typeof url === "string" && url.trim().length > 0
+  );
+}
+
+function QuestionImageList({
+  urls,
+  altPrefix,
+}: {
+  urls: string[];
+  altPrefix: string;
+}) {
+  if (urls.length === 0) return null;
+
+  return (
+    <div className="flex flex-col gap-3">
+      {urls.map((url, index) => (
+        <div
+          key={`${url}-${index}`}
+          className="relative w-full h-[70px] sm:h-[120px] overflow-hidden rounded-[12px] border border-[#E5E7EB]"
+          onContextMenu={(e) => e.preventDefault()}
+          onDragStart={(e) => e.preventDefault()}
+        >
+          <Image
+            src={url}
+            alt={`${altPrefix} ${index + 1}`}
+            fill
+            sizes="(max-width: 640px) 100vw, (max-width: 1100px) 90vw, 1100px"
+            className="object-contain p-2"
+            unoptimized
+            loading="lazy"
+            draggable={false}
+          />
+        </div>
+      ))}
+    </div>
+  );
+}
+
 // ============================================
 // Shared Example (공통 보기) Toggle
 // ============================================
 
-function SharedExampleToggle({ text }: { text: string }) {
+function SharedExampleToggle({
+  text,
+  imageUrls,
+}: {
+  text?: string | null;
+  imageUrls?: string[] | null;
+}) {
   const [open, setOpen] = useState(false);
+  const validImageUrls = filterValidImageUrls(imageUrls);
+  const trimmedText = text?.trim() ?? "";
 
-  const rangeMatch = text.match(/\((\d+~\d+)\)/);
-  const rangeLabel = rangeMatch ? `공통 보기 (${rangeMatch[1]}번)` : "공통 보기";
+  const rangeMatch = trimmedText.match(/\((\d+~\d+)\)/);
+  const rangeLabel = rangeMatch
+    ? `공통 보기 (${rangeMatch[1]}번)`
+    : "공통 보기";
 
-  const contentMatch = text.match(/<보기>([\s\S]*?)<\/보기>/);
-  const content = contentMatch ? contentMatch[1].trim() : preprocessMathText(text);
+  const contentMatch = trimmedText.match(/<보기>([\s\S]*?)<\/보기>/);
+  const content = contentMatch
+    ? contentMatch[1].trim()
+    : trimmedText
+      ? preprocessMathText(trimmedText)
+      : "";
 
   return (
     <div className="w-full">
@@ -77,7 +131,12 @@ function SharedExampleToggle({ text }: { text: string }) {
       </button>
       {open && (
         <div className="mt-2 px-4 py-3 bg-[#F9FAFB] border border-[#E5E7EB] rounded-[12px] text-sm text-[#364153] leading-6 break-words">
-          <BlockMathContent text={content} />
+          {content && <BlockMathContent text={content} />}
+          {validImageUrls.length > 0 && (
+            <div className={cn(content && "mt-3")}>
+              <QuestionImageList urls={validImageUrls} altPrefix="공통 보기 이미지" />
+            </div>
+          )}
         </div>
       )}
     </div>
@@ -315,6 +374,7 @@ export interface IQuestionCardProps
   question?: string;
   example?: string | null;
   sharedExample?: string | null;
+  sharedExampleImageUrls?: string[] | null;
   imageUrls?: string[] | null;
   answers?: IAnswerOption[];
   selectedAnswer?: string | number | null;
@@ -335,6 +395,7 @@ const QuestionCard = React.forwardRef<HTMLDivElement, IQuestionCardProps>(
       question,
       example,
       sharedExample,
+      sharedExampleImageUrls,
       imageUrls,
       answers = [],
       selectedAnswer,
@@ -351,9 +412,11 @@ const QuestionCard = React.forwardRef<HTMLDivElement, IQuestionCardProps>(
   ) => {
     const processedQuestion = question ? preprocessMathText(question) : undefined;
     const processedExample = example ? preprocessMathText(example) : undefined;
-    const validImageUrls = (imageUrls ?? []).filter(
-      (url): url is string => typeof url === "string" && url.trim().length > 0
-    );
+    const validImageUrls = filterValidImageUrls(imageUrls);
+    const validSharedExampleImageUrls =
+      filterValidImageUrls(sharedExampleImageUrls);
+    const hasSharedExample =
+      Boolean(sharedExample?.trim()) || validSharedExampleImageUrls.length > 0;
 
     const getAnswerState = (
       value: string | number
@@ -388,9 +451,12 @@ const QuestionCard = React.forwardRef<HTMLDivElement, IQuestionCardProps>(
           )}
 
           {/* Shared Example (공통 보기) */}
-          {sharedExample && (
+          {hasSharedExample && (
             <div className="w-full px-4 sm:px-0">
-              <SharedExampleToggle text={sharedExample} />
+              <SharedExampleToggle
+                text={sharedExample}
+                imageUrls={validSharedExampleImageUrls}
+              />
             </div>
           )}
 
@@ -413,27 +479,7 @@ const QuestionCard = React.forwardRef<HTMLDivElement, IQuestionCardProps>(
           {/* Question Images */}
           {validImageUrls.length > 0 && (
             <div className="w-full mt-4 px-4 sm:px-0">
-              <div className="flex flex-col gap-3">
-                {validImageUrls.map((url, index) => (
-                  <div
-                    key={`${url}-${index}`}
-                    className="relative w-full h-[70px] sm:h-[120px] overflow-hidden rounded-[12px] border border-[#E5E7EB]"
-                    onContextMenu={(e) => e.preventDefault()}
-                    onDragStart={(e) => e.preventDefault()}
-                  >
-                    <Image
-                      src={url}
-                      alt={`문항 이미지 ${index + 1}`}
-                      fill
-                      sizes="(max-width: 640px) 100vw, (max-width: 1100px) 90vw, 1100px"
-                      className="object-contain p-2"
-                      unoptimized
-                      loading="lazy"
-                      draggable={false}
-                    />
-                  </div>
-                ))}
-              </div>
+              <QuestionImageList urls={validImageUrls} altPrefix="문항 이미지" />
             </div>
           )}
 

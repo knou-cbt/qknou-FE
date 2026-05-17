@@ -14,6 +14,12 @@ import {
 import { API_URL } from "@/constants";
 import { useExamContext } from "@/contexts";
 import { useIsMobile } from "@/lib/useIsMobile";
+import { cn } from "@/lib/utils";
+import {
+  examDetailContentAreaClassName,
+  examDetailMaxW,
+  examDetailStyle,
+} from "@/lib/exam-side-ad-layout";
 import { useCopyProtection } from "@/lib/useCopyProtection";
 import { useExamQuestionsQuery, useExamSubmitMutation } from "../hooks/service";
 import type { IQuestion, IQuestionResult } from "../interface";
@@ -41,6 +47,8 @@ type QuestionMetaFields = {
   commonView?: string | null;
   commonImageUrls?: string[] | null;
   commonImageUrl?: string | null;
+  sharedExampleImageUrls?: string[] | null;
+  sharedExampleImageUrl?: string | null;
   images?: string[] | null;
 };
 
@@ -209,24 +217,35 @@ export const TestModePage = ({ subjectId, yearId }: Props) => {
     currentQuestionMeta?.questionText,
     currentQuestionMeta?.question
   );
-  const normalizedExample = pickFirstText(
-    currentQuestion?.example,
-    currentQuestionMeta?.commonText,
-    currentQuestionMeta?.commonExample,
+  const normalizedSharedExample = pickFirstText(
+    currentQuestion?.sharedExample,
     currentQuestionMeta?.sharedExample,
+    currentQuestionMeta?.commonExample,
+    currentQuestionMeta?.commonText,
     currentQuestionMeta?.commonView
   );
+  const normalizedExample = pickFirstText(currentQuestion?.example);
   const questionTitle = normalizedQuestionText
     ? `${currentIndex + 1}. ${normalizedQuestionText}`
     : undefined;
+  const normalizedSharedExampleImageUrls = useMemo(() => {
+    if (!currentQuestion) return undefined;
+
+    const urls = collectImageUrls(
+      currentQuestion.sharedExampleImageUrls,
+      currentQuestionMeta?.sharedExampleImageUrls,
+      currentQuestionMeta?.sharedExampleImageUrl,
+      currentQuestionMeta?.commonImageUrls,
+      currentQuestionMeta?.commonImageUrl
+    );
+    return urls.length > 0 ? urls : undefined;
+  }, [currentQuestion, currentQuestionMeta]);
   const normalizedImageUrls = useMemo(() => {
     if (!currentQuestion) return undefined;
 
     const urls = collectImageUrls(
       currentQuestion.imageUrls,
       currentQuestion.imageUrl,
-      currentQuestionMeta?.commonImageUrls,
-      currentQuestionMeta?.commonImageUrl,
       currentQuestionMeta?.images
     );
     return urls.length > 0 ? urls : undefined;
@@ -408,9 +427,13 @@ export const TestModePage = ({ subjectId, yearId }: Props) => {
   if (isSubmitted) {
     return (
       <div className="min-h-screen bg-[#F9FAFB] flex flex-col">
+        <div
+          style={examDetailStyle}
+          className={cn("flex flex-1 flex-col", examDetailContentAreaClassName)}
+        >
         <main className="flex-1 flex flex-col items-center px-4 py-4 sm:py-8">
           {/* 페이지 제목 */}
-          <div className="w-full max-w-[1104px] mb-4 sm:mb-6">
+          <div className={cn(examDetailMaxW[1104], "mb-4 sm:mb-6")}>
             <h1 className="text-xl sm:text-2xl font-bold text-[#101828] mb-2">
               시험 결과
             </h1>
@@ -423,7 +446,7 @@ export const TestModePage = ({ subjectId, yearId }: Props) => {
           </div>
 
           {/* 점수 카드 */}
-          <div className="w-full max-w-[1104px] bg-white border border-[#E5E7EB] rounded-xl p-4 sm:p-6 mb-4">
+          <div className={cn(examDetailMaxW[1104], "bg-white border border-[#E5E7EB] rounded-xl p-4 sm:p-6 mb-4")}>
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
               {/* 왼쪽: 획득 점수 */}
               <div className="flex items-center gap-3 sm:gap-4">
@@ -463,7 +486,7 @@ export const TestModePage = ({ subjectId, yearId }: Props) => {
           </div>
 
           {/* 통계 카드들 */}
-          <div className="w-full max-w-[1104px] grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4 mb-4 sm:mb-6">
+          <div className={cn(examDetailMaxW[1104], "grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4 mb-4 sm:mb-6")}>
             {/* 총 소요 시간 */}
             <div className="bg-white border border-[#E5E7EB] rounded-xl p-3 sm:p-4 flex items-center gap-2 sm:gap-3">
               <div className="flex items-center justify-center w-8 h-8 sm:w-10 sm:h-10 bg-[#F3F4F6] rounded-full shrink-0">
@@ -505,7 +528,7 @@ export const TestModePage = ({ subjectId, yearId }: Props) => {
           </div>
 
           {/* Question Navigator */}
-          <div className="w-full max-w-[1104px] mb-4 sm:mb-6">
+          <div className={cn(examDetailMaxW[1104], "mb-4 sm:mb-6")}>
             <QuestionNavigator
               size="full"
               totalQuestions={questions.length}
@@ -518,12 +541,14 @@ export const TestModePage = ({ subjectId, yearId }: Props) => {
           </div>
 
           {/* 문제 카드 */}
-          <div className="w-full max-w-[1104px] bg-white border border-[#E5E7EB] rounded-xl p-4 sm:p-6 mb-4 sm:mb-6">
+          <div className={cn(examDetailMaxW[1104], "bg-white border border-[#E5E7EB] rounded-xl p-4 sm:p-6 mb-4 sm:mb-6")}>
             {currentQuestion && (
               <>
                 <QuestionCard
                   size="full"
                   question={questionTitle}
+                  sharedExample={normalizedSharedExample}
+                  sharedExampleImageUrls={normalizedSharedExampleImageUrls}
                   example={normalizedExample}
                   imageUrls={normalizedImageUrls}
                   answers={formattedAnswers}
@@ -568,7 +593,7 @@ export const TestModePage = ({ subjectId, yearId }: Props) => {
           </div>
 
           {/* Navigation Buttons */}
-          <div className="w-full max-w-[896px]">
+          <div className={examDetailMaxW[896]}>
             <ExamNavButtons
               onPrevClick={handlePrev}
               onAnswerClick={() => void handleToggleExplanation()}
@@ -580,7 +605,7 @@ export const TestModePage = ({ subjectId, yearId }: Props) => {
           </div>
 
           {/* 홈으로 돌아가기 버튼 */}
-          <div className="w-full max-w-[896px] mt-3 sm:mt-4">
+          <div className={cn(examDetailMaxW[896], "mt-3 sm:mt-4")}>
             <Button
               onClick={() => router.push("/")}
               className="w-full cursor-pointer text-sm sm:text-base h-12"
@@ -590,6 +615,7 @@ export const TestModePage = ({ subjectId, yearId }: Props) => {
             </Button>
           </div>
         </main>
+        </div>
       </div>
     );
   }
@@ -597,10 +623,14 @@ export const TestModePage = ({ subjectId, yearId }: Props) => {
   // 시험 진행 화면
   return (
     <div className="min-h-screen bg-white flex flex-col">
+      <div
+        style={examDetailStyle}
+        className={cn("flex flex-1 flex-col", examDetailContentAreaClassName)}
+      >
       {/* Main Content */}
       <main className="flex-1 flex flex-col items-center px-4 py-6">
         {/* Question Info */}
-        <div className="w-full max-w-[1100px]">
+        <div className={examDetailMaxW[1100]}>
           <p className="text-sm text-[#6B7280]">
             {exam?.title ?? "-"} | 시험모드 | {currentIndex + 1} /{" "}
             {questions.length}
@@ -609,7 +639,7 @@ export const TestModePage = ({ subjectId, yearId }: Props) => {
 
         {/* Question Navigator - 모바일에서는 숨김 */}
         {!isMobile && (
-          <div className="w-full max-w-[1104px] mb-6">
+          <div className={cn(examDetailMaxW[1104], "mb-6")}>
             <QuestionNavigator
               size="full"
               totalQuestions={questions.length}
@@ -624,10 +654,12 @@ export const TestModePage = ({ subjectId, yearId }: Props) => {
 
         {/* Question Card */}
         {currentQuestion && (
-          <div className="w-full max-w-[1100px]">
+          <div className={examDetailMaxW[1100]}>
             <QuestionCard
               size="full"
               question={questionTitle}
+              sharedExample={normalizedSharedExample}
+              sharedExampleImageUrls={normalizedSharedExampleImageUrls}
               example={normalizedExample}
               imageUrls={normalizedImageUrls}
               answers={formattedAnswers}
@@ -641,7 +673,7 @@ export const TestModePage = ({ subjectId, yearId }: Props) => {
         )}
 
         {/* Navigation Buttons */}
-        <div className="w-full max-w-[896px] mt-6">
+        <div className={cn(examDetailMaxW[896], "mt-6")}>
           <ExamNavButtons
             onPrevClick={handlePrev}
             onNextClick={handleNext}
@@ -651,6 +683,7 @@ export const TestModePage = ({ subjectId, yearId }: Props) => {
           />
         </div>
       </main>
+      </div>
     </div>
   );
 };
