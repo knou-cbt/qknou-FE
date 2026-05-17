@@ -130,7 +130,7 @@ function SharedExampleToggle({
         </svg>
       </button>
       {open && (
-        <div className="mt-2 px-4 py-3 bg-[#F9FAFB] border border-[#E5E7EB] rounded-[12px] text-sm text-[#364153] leading-6 break-words">
+        <div className="mt-2 px-4 py-3 bg-[#F9FAFB] border border-[#E5E7EB] rounded-[12px] text-sm text-[#364153] leading-6 break-words [&_ul]:list-disc [&_ol]:list-decimal [&_li]:ml-5">
           {content && <BlockMathContent text={content} />}
           {validImageUrls.length > 0 && (
             <div className={cn(content && "mt-3")}>
@@ -470,7 +470,7 @@ const QuestionCard = React.forwardRef<HTMLDivElement, IQuestionCardProps>(
           {/* Example (보기) */}
           {processedExample && (
             <div className="w-full mt-4 px-4 sm:px-0">
-              <div className="p-4 bg-[#F9FAFB] border border-[#E5E7EB] rounded-[12px] font-normal text-sm sm:text-base leading-6 text-[#364153] break-words">
+              <div className="p-4 bg-[#F9FAFB] border border-[#E5E7EB] rounded-[12px] font-normal text-sm sm:text-base leading-6 text-[#364153] break-words [&_ul]:list-disc [&_ol]:list-decimal [&_li]:ml-5">
                 <BlockMathContent text={processedExample} />
               </div>
             </div>

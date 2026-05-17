@@ -118,6 +118,7 @@ export const MemorizeModePage = ({ subjectId, yearId }: Props) => {
     return currentQuestion.choices.map((choice) => ({
       value: choice.number,
       label: choice.text,
+      imageUrls: choice.imageUrls,
     }));
   }, [currentQuestion]);
 

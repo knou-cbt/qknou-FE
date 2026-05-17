@@ -209,6 +209,7 @@ export const TestModePage = ({ subjectId, yearId }: Props) => {
     return currentQuestion.choices.map((choice) => ({
       value: choice.number,
       label: choice.text,
+      imageUrls: choice.imageUrls,
     }));
   }, [currentQuestion]);
 
