@@ -3,15 +3,15 @@
 import React from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { API_URL } from "@/constants";
+import { API_AUTH_URL } from "@/constants";
 
 const LoginPage = () => {
   const handleGoogleLogin = () => {
-    window.location.href = `${API_URL}/auth/google`;
+    window.location.href = `${API_AUTH_URL}/auth/google`;
   };
 
   const handleKakaoLogin = () => {
-    window.location.href = `${API_URL}/auth/kakao`;
+    window.location.href = `${API_AUTH_URL}/auth/kakao`;
   };
 
   return (

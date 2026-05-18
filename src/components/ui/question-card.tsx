@@ -11,7 +11,10 @@ import rehypeRaw from "rehype-raw";
 import type { Components } from "react-markdown";
 
 import { cn } from "@/lib/utils";
-import { preprocessMathText } from "@/lib/math-text";
+import {
+  preserveLineBreaksForMarkdown,
+  preprocessMathText,
+} from "@/lib/math-text";
 
 // inline: block 요소 제거하고 수식/HTML 렌더링
 const inlineComponents: Components = {
@@ -41,7 +44,7 @@ function BlockMathContent({ text }: { text: string }) {
         remarkPlugins={[remarkMath]}
         rehypePlugins={[rehypeKatex, rehypeRaw]}
       >
-        {text}
+        {preserveLineBreaksForMarkdown(text)}
       </ReactMarkdown>
     </div>
   );
@@ -98,7 +101,7 @@ function SharedExampleToggle({
   text?: string | null;
   imageUrls?: string[] | null;
 }) {
-  const [open, setOpen] = useState(false);
+  const [open, setOpen] = useState(true);
   const validImageUrls = filterValidImageUrls(imageUrls);
   const trimmedText = text?.trim() ?? "";
 

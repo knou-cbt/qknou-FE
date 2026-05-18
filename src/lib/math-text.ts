@@ -12,3 +12,10 @@ export function preprocessMathText(text: string): string {
     .trim();
 }
 
+/**
+ * 줄바꿈을 ReactMarkdown hard line break로 변환
+ */
+export function preserveLineBreaksForMarkdown(text: string): string {
+  const normalized = text.replace(/\\n/g, "\n").replace(/\r\n/g, "\n");
+  return normalized.replace(/\n(?!\n)/g, "  \n");
+}
