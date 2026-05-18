@@ -5,7 +5,9 @@
   "scripts": {
     "dev": "next dev --turbopack",
     "build": "next build",
+    "prestart": "node scripts/verify-build.mjs",
     "start": "next start",
+    "deploy": "bash scripts/deploy.sh",
     "lint": "eslint",
     "test": "jest",
     "test:watch": "jest --watch",
