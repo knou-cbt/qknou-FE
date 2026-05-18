@@ -80,7 +80,7 @@ export const MainContainer = () => {
                 <span className="text-[#111827]">같이 준비해요</span>
               </h1>
               <p className="text-base md:text-lg lg:text-xl text-[#6B7280] max-w-[600px] md:max-w-[700px]">
-                방송통신대학교 기출문제를 한곳에서 체계적으로 학습하세요.
+                방송통신대학교 기출문제를 한곳에서 체계적으로 학습하세요
               </p>
             </div>
 
@@ -183,9 +183,9 @@ export const MainContainer = () => {
             </Link>
           </div>
           <p className="text-base md:text-lg text-center text-[#6B7280] max-w-[700px]">
-            과목명을 클릭하면 연도별 기출 문제를 선택하여 풀이하고 연습할 수 있습니다.
+            과목명을 클릭하면 연도별 기출 문제를 선택하여 풀이하고 연습할 수 있습니다
             <br />
-            흩어져 있던 방통대 기출 문제를 한 곳에서 체계적으로 학습하세요.
+            흩어져 있던 방통대 기출 문제를 한 곳에서 체계적으로 학습하세요
           </p>
         </div>
 
