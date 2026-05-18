@@ -19,7 +19,6 @@ jobs:
           script: |
             cd /home/ec2-user/qknou-FE
             git pull origin main
-            npm ci
             npm run build
-            pm2 restart qknou-fe
+            pm2 restart ecosystem.config.js --env production --update-env
             echo "✅ 배포 완료!"
