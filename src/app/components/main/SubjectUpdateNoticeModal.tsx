@@ -9,13 +9,13 @@ import { cn } from "@/lib/utils";
 /** localStorage 값: 다음 로컬 00:00 시각(ms) */
 const NOTICE_STORAGE_KEY = "qknou:subject-update-notice:dismissed-until";
 
-export const UPDATED_SUBJECTS = [
-  "정보통신망",
-  "소프트웨어공학",
-  "알고리즘",
-  "운영체제",
-  "이산수학",
-] as const;
+// export const UPDATED_SUBJECTS = [
+//   "정보통신망",
+//   "소프트웨어공학",
+//   "알고리즘",
+//   "운영체제",
+//   "이산수학",
+// ] as const;
 
 const CONFETTI_DOTS = [
   { className: "top-0 left-2 size-2 bg-[#F9A8D4]" },
@@ -25,13 +25,13 @@ const CONFETTI_DOTS = [
   { className: "bottom-0 left-6 size-1 bg-[#FDA4AF]" },
 ] as const;
 
-const SUBJECT_CARD_ACCENTS = [
-  { border: "border-l-[#155DFC]", badge: "bg-[#EFF6FF] text-[#155DFC]" },
-  { border: "border-l-[#F472B6]", badge: "bg-[#FDF2F8] text-[#DB2777]" },
-  { border: "border-l-[#8B5CF6]", badge: "bg-[#F5F3FF] text-[#7C3AED]" },
-  { border: "border-l-[#22C55E]", badge: "bg-[#F0FDF4] text-[#16A34A]" },
-  { border: "border-l-[#F59E0B]", badge: "bg-[#FFFBEB] text-[#D97706]" },
-] as const;
+// const SUBJECT_CARD_ACCENTS = [
+//   { border: "border-l-[#155DFC]", badge: "bg-[#EFF6FF] text-[#155DFC]" },
+//   { border: "border-l-[#F472B6]", badge: "bg-[#FDF2F8] text-[#DB2777]" },
+//   { border: "border-l-[#8B5CF6]", badge: "bg-[#F5F3FF] text-[#7C3AED]" },
+//   { border: "border-l-[#22C55E]", badge: "bg-[#F0FDF4] text-[#16A34A]" },
+//   { border: "border-l-[#F59E0B]", badge: "bg-[#FFFBEB] text-[#D97706]" },
+// ] as const;
 
 function getNextLocalMidnightMs() {
   const next = new Date();
@@ -114,13 +114,16 @@ export const SubjectUpdateNoticeModal = () => {
           </div>
         </div>
 
-        <h2 className="mt-2 text-[1.35rem] font-bold leading-snug text-[#101828]">
-          업데이트 과목
-        </h2>
-        <p className="mt-2 text-xs leading-relaxed text-[#6B7280]">
-          여러분 큐노 이용해주셔서 감사합니다. <br /> 시험기간 화이팅입니다!
+        {/* <h2 className="mt-2 text-[1.35rem] font-bold leading-snug text-[#101828]">
+          응원합니다
+        </h2> */}
+        <p className="mt-3 text-sm leading-relaxed text-[#6B7280]">
+          여러분 큐노 이용해주셔서 감사합니다.
+          <br />
+          시험 기간 화이팅입니다!
         </p>
 
+        {/* 업데이트 과목 안내 — 임시 비활성화
         <div className="mt-5">
           <ul className="flex flex-col gap-2">
             {UPDATED_SUBJECTS.map((subject, index) => {
@@ -156,6 +159,7 @@ export const SubjectUpdateNoticeModal = () => {
         <p className="mt-4 text-xs text-[#9CA3AF]">
           과목명을 선택해 연도별 문제를 확인하세요
         </p>
+        */}
 
         <label className="mt-5 flex cursor-pointer select-none items-center justify-center gap-2.5 text-sm text-[#6B7280]">
           <input
