@@ -36,7 +36,10 @@ jest.mock("../hooks/service", () => ({
 }));
 
 jest.mock("@/constants", () => ({
-  API_URL: "https://api.example.com",
+  TutorApiPaths: {
+    explanation: (questionId: string | number) =>
+      `https://api.example.com/api/tutor/questions/${questionId}/explanation`,
+  },
 }));
 
 jest.mock("@/components/ui", () => ({

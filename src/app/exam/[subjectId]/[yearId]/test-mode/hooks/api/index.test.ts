@@ -3,6 +3,7 @@ import {
   getExamQuestionsWithAnswers,
   postExamSubmit,
 } from "./index";
+import { ExamApiPaths } from "@/constants";
 
 describe("test-mode api", () => {
   beforeEach(() => {
@@ -38,7 +39,7 @@ describe("test-mode api", () => {
     const result = await getExamQuestions("2025");
 
     expect(global.fetch).toHaveBeenCalledWith(
-      "https://api.qknou.kr/api/exams/2025/questions?mode=test"
+      ExamApiPaths.questions("2025", "test")
     );
     expect(result.questions[0].text).toBe("문제");
   });
@@ -71,7 +72,7 @@ describe("test-mode api", () => {
     const result = await getExamQuestionsWithAnswers("2025");
 
     expect(global.fetch).toHaveBeenCalledWith(
-      "https://api.qknou.kr/api/exams/2025/questions?mode=study"
+      ExamApiPaths.questions("2025", "study")
     );
     expect(result.questions[0].correctAnswers).toEqual([]);
   });
@@ -103,7 +104,7 @@ describe("test-mode api", () => {
     const result = await postExamSubmit("2025", payload);
 
     expect(global.fetch).toHaveBeenCalledWith(
-      "https://api.qknou.kr/api/exams/2025/submit",
+      ExamApiPaths.submit("2025"),
       {
         method: "POST",
         headers: {
@@ -133,4 +134,3 @@ describe("test-mode api", () => {
     ).rejects.toThrow("시험 제출 실패");
   });
 });
-

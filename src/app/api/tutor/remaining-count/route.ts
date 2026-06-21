@@ -1,7 +1,5 @@
 import { NextResponse } from "next/server";
-
-const TUTOR_REMAINING_COUNT_URL =
-  "https://api.qknou.kr/api/tutor/remaining-count";
+import { TutorApiPaths } from "@/constants";
 
 export async function GET(req: Request) {
   try {
@@ -11,7 +9,7 @@ export async function GET(req: Request) {
       headers.Authorization = authorization;
     }
 
-    const response = await fetch(TUTOR_REMAINING_COUNT_URL, {
+    const response = await fetch(TutorApiPaths.remainingCount, {
       method: "GET",
       headers,
       cache: "no-store",

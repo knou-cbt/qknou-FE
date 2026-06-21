@@ -4,7 +4,7 @@
  */
 
 const DEFAULT_SITE_URL = "https://www.qknou.kr";
-const DEFAULT_API_URL = "https://api.qknou.kr";
+export const DEFAULT_API_URL = "https://qknou-be.onrender.com";
 
 export const SITE_URL =
   process.env.NEXT_PUBLIC_SITE_URL?.replace(/\/$/, "") ?? DEFAULT_SITE_URL;
