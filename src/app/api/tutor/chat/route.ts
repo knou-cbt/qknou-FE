@@ -1,6 +1,5 @@
 import { NextResponse } from "next/server";
-
-const TUTOR_CHAT_URL = "https://api.qknou.kr/api/tutor/chat";
+import { TutorApiPaths } from "@/constants";
 
 export async function POST(req: Request) {
   try {
@@ -13,7 +12,7 @@ export async function POST(req: Request) {
       headers.Authorization = authorization;
     }
 
-    const response = await fetch(TUTOR_CHAT_URL, {
+    const response = await fetch(TutorApiPaths.chat, {
       method: "POST",
       headers,
       body: JSON.stringify(body),

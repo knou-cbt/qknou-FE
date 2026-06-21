@@ -49,3 +49,13 @@ export const ExamApiPaths = {
    */
   submit: (examId: string | number) => `${EXAMS_BASE}/${examId}/submit`,
 } as const;
+
+// AI 튜터 API
+const TUTOR_BASE = `${SERVER_URL}/api/tutor`;
+
+export const TutorApiPaths = {
+  chat: `${TUTOR_BASE}/chat`,
+  remainingCount: `${TUTOR_BASE}/remaining-count`,
+  explanation: (questionId: string | number) =>
+    `${TUTOR_BASE}/questions/${questionId}/explanation`,
+} as const;

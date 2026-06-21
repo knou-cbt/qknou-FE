@@ -14,7 +14,6 @@ module.exports = {
       env: {
         NODE_ENV: "production",
         PORT: 3000,
-        API_PROXY_TARGET: "https://api.qknou.kr",
       },
     },
   ],

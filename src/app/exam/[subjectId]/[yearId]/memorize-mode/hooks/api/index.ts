@@ -1,4 +1,4 @@
-import { API_URL } from "@/constants";
+import { TutorApiPaths } from "@/constants";
 
 // 암기모드 API - test-mode의 API 재사용
 export { getExamQuestionsWithAnswers } from "@/app/exam/[subjectId]/[yearId]/test-mode/hooks/api";
@@ -15,7 +15,7 @@ export const getTutorQuestionExplanation = async (
   questionId: number
 ): Promise<ITutorQuestionExplanationResponse> => {
   const response = await fetch(
-    `${API_URL}/api/tutor/questions/${questionId}/explanation`,
+    TutorApiPaths.explanation(questionId),
     {
       method: "GET",
       cache: "no-store",

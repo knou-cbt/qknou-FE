@@ -1,4 +1,5 @@
 import { getTutorQuestionExplanation } from "./index";
+import { TutorApiPaths } from "@/constants";
 
 describe("memorize-mode api", () => {
   beforeEach(() => {
@@ -20,7 +21,7 @@ describe("memorize-mode api", () => {
     const result = await getTutorQuestionExplanation(101);
 
     expect(global.fetch).toHaveBeenCalledWith(
-      "https://api.qknou.kr/api/tutor/questions/101/explanation",
+      TutorApiPaths.explanation(101),
       {
         method: "GET",
         cache: "no-store",

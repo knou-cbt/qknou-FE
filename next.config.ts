@@ -1,7 +1,8 @@
 import type { NextConfig } from "next";
+import { DEFAULT_API_URL } from "./src/constants/urls";
 
 const apiProxyTarget =
-  process.env.API_PROXY_TARGET?.replace(/\/$/, "") ?? "https://api.qknou.kr";
+  process.env.API_PROXY_TARGET?.replace(/\/$/, "") ?? DEFAULT_API_URL;
 
 const nextConfig: NextConfig = {
   turbopack: {

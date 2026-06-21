@@ -11,7 +11,7 @@ import {
   type TQuestionState,
   Button,
 } from "@/components/ui";
-import { API_URL } from "@/constants";
+import { TutorApiPaths } from "@/constants";
 import { useExamContext } from "@/contexts";
 import { useIsMobile } from "@/lib/useIsMobile";
 import { cn } from "@/lib/utils";
@@ -366,7 +366,7 @@ export const TestModePage = ({ subjectId, yearId }: Props) => {
 
     try {
       const response = await fetch(
-        `${API_URL}/api/tutor/questions/${questionId}/explanation`,
+        TutorApiPaths.explanation(questionId),
         {
           method: "GET",
           cache: "no-store",
