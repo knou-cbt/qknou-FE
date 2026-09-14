@@ -15,9 +15,10 @@ import {
   type Row,
 } from "@tanstack/react-table"
 import { cva, type VariantProps } from "class-variance-authority"
-import { ChevronUp, ChevronDown, ChevronsUpDown, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight } from "lucide-react"
+import { ChevronUp, ChevronDown, ChevronsUpDown } from "lucide-react"
 
 import { cn } from "@/lib/utils"
+import { Pagination } from "./pagination"
 
 // ============================================================================
 // Table Container Variants
@@ -255,90 +256,6 @@ const SortHeader: React.FC<ISortHeaderProps> = ({
 }
 
 // ============================================================================
-// Pagination Component
-// ============================================================================
-
-interface IPaginationProps<TData> {
-  table: ReturnType<typeof useReactTable<TData>>
-  pageSizeOptions: number[]
-}
-
-function Pagination<TData>({ table, pageSizeOptions }: IPaginationProps<TData>) {
-  const pageIndex = table.getState().pagination.pageIndex
-  const pageSize = table.getState().pagination.pageSize
-  const pageCount = table.getPageCount()
-
-  return (
-    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 px-3 sm:px-4 py-3 border-t border-[#E5E7EB] bg-white">
-      {/* Page Size Selector */}
-      <div className="flex items-center gap-2 text-xs sm:text-sm text-[#6B7280]">
-        <span className="whitespace-nowrap">페이지당</span>
-        <select
-          value={pageSize}
-          onChange={(e) => table.setPageSize(Number(e.target.value))}
-          className="h-7 sm:h-8 px-2 rounded border border-[#D1D5DB] bg-white text-[#374151] text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-[#3B82F6] focus:border-transparent"
-        >
-          {pageSizeOptions.map((size) => (
-            <option key={size} value={size}>
-              {size}
-            </option>
-          ))}
-        </select>
-        <span className="whitespace-nowrap">행</span>
-      </div>
-
-      {/* Page Info */}
-      <div className="flex items-center justify-center sm:justify-end gap-2 sm:gap-6">
-        {/* Page Navigation */}
-        <div className="flex items-center gap-0.5 sm:gap-1">
-          <button
-            type="button"
-            onClick={() => table.setPageIndex(0)}
-            disabled={!table.getCanPreviousPage()}
-            className="p-1 sm:p-1.5 rounded hover:bg-[#F3F4F6] disabled:opacity-50 disabled:cursor-not-allowed transition-colors cursor-pointer"
-            aria-label="첫 페이지"
-          >
-            <ChevronsLeft className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-[#6B7280]" />
-          </button>
-          <button
-            type="button"
-            onClick={() => table.previousPage()}
-            disabled={!table.getCanPreviousPage()}
-            className="p-1 sm:p-1.5 rounded hover:bg-[#F3F4F6] disabled:opacity-50 disabled:cursor-not-allowed transition-colors cursor-pointer"
-            aria-label="이전 페이지"
-          >
-            <ChevronLeft className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-[#6B7280]" />
-          </button>
-
-          <span className="px-2 sm:px-3 text-xs sm:text-sm text-[#374151] whitespace-nowrap">
-            {pageIndex + 1} / {pageCount || 1}
-          </span>
-
-          <button
-            type="button"
-            onClick={() => table.nextPage()}
-            disabled={!table.getCanNextPage()}
-            className="p-1 sm:p-1.5 rounded hover:bg-[#F3F4F6] disabled:opacity-50 disabled:cursor-not-allowed transition-colors cursor-pointer"
-            aria-label="다음 페이지"
-          >
-            <ChevronRight className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-[#6B7280]" />
-          </button>
-          <button
-            type="button"
-            onClick={() => table.setPageIndex(pageCount - 1)}
-            disabled={!table.getCanNextPage()}
-            className="p-1 sm:p-1.5 rounded hover:bg-[#F3F4F6] disabled:opacity-50 disabled:cursor-not-allowed transition-colors cursor-pointer"
-            aria-label="마지막 페이지"
-          >
-            <ChevronsRight className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-[#6B7280]" />
-          </button>
-        </div>
-      </div>
-    </div>
-  )
-}
-
-// ============================================================================
 // Loading Skeleton
 // ============================================================================
 
@@ -529,7 +446,14 @@ function Table<TData>({
       </div>
 
       {enablePagination && !isLoading && data.length > 0 && (
-        <Pagination table={table} pageSizeOptions={pageSizeOptions} />
+        <Pagination
+          pageIndex={table.getState().pagination.pageIndex}
+          pageCount={table.getPageCount()}
+          onPageIndexChange={(idx) => table.setPageIndex(idx)}
+          pageSize={table.getState().pagination.pageSize}
+          onPageSizeChange={(size) => table.setPageSize(size)}
+          pageSizeOptions={pageSizeOptions}
+        />
       )}
     </div>
   )
