@@ -1,8 +1,9 @@
 "use client";
 import { usePathname } from "next/navigation";
 
-import { Header, Footer, KakaoAd } from "@/components";
+import { Header, Footer, KakaoAd, Toaster } from "@/components";
 import { useExamContext } from "@/contexts";
+import { DevLoginButton } from "@/components/dev/DevLoginButton";
 
 interface AppContentProps {
   children: React.ReactNode;
@@ -19,7 +20,7 @@ export function AppContent({ children }: AppContentProps) {
   const shouldHideHeader = pathname === "/auth/success";
 
   return (
-    <div className="flex min-h-screen flex-col overflow-y-auto bg-white">
+    <div className="flex min-h-screen flex-col overflow-y-auto bg-[#F0F4FF]">
       {!shouldHideHeader && (
         <Header
           key={isExamMode ? "exam" : "default"}
@@ -29,6 +30,8 @@ export function AppContent({ children }: AppContentProps) {
       {children}
       <KakaoAd />
       <Footer />
+      <Toaster />
+      {process.env.NODE_ENV === "development" && <DevLoginButton />}
     </div>
   );
 }

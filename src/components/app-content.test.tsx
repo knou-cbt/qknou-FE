@@ -17,6 +17,7 @@ jest.mock("@/components", () => ({
   ),
   Footer: () => <div data-testid="footer">footer</div>,
   KakaoAd: () => <div data-testid="kakao-ad">ad</div>,
+  Toaster: () => <div data-testid="toaster">toaster</div>,
 }));
 
 const mockedUsePathname = usePathname as jest.MockedFunction<typeof usePathname>;
