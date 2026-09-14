@@ -3,6 +3,9 @@
 import React, { createContext, useContext, useState, useEffect, useCallback } from "react";
 import type { User, AuthState } from "@/types/auth";
 import { decodeToken, isTokenExpired } from "@/utils/jwt";
+import { TOKEN_KEY, POST_LOGIN_REDIRECT_KEY } from "@/lib/auth-token";
+import { setUnauthorizedHandler } from "@/lib/api-client";
+import { toast } from "@/components/ui/toast";
 
 interface AuthContextType extends AuthState {
   login: (token: string) => void;
@@ -10,8 +13,6 @@ interface AuthContextType extends AuthState {
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
-
-const TOKEN_KEY = "qknou_auth_token";
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
   children,
@@ -140,6 +141,20 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
       isLoading: false,
     });
   }, []);
+
+  // 401 응답 공통 처리: 로그아웃 + 안내 + 복귀 경로 저장
+  useEffect(() => {
+    setUnauthorizedHandler(() => {
+      logout();
+      if (typeof window !== "undefined") {
+        sessionStorage.setItem(
+          POST_LOGIN_REDIRECT_KEY,
+          window.location.pathname + window.location.search
+        );
+      }
+      toast.error("로그인이 만료되었습니다. 다시 로그인해 주세요.");
+    });
+  }, [logout]);
 
   return (
     <AuthContext.Provider value={{ ...authState, login, logout }}>
