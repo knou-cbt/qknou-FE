@@ -4,6 +4,7 @@ import {
   postExamSubmit,
 } from "./index";
 import { ExamApiPaths } from "@/constants";
+import { ApiError } from "@/lib/api-client";
 
 describe("test-mode api", () => {
   beforeEach(() => {
@@ -80,22 +81,24 @@ describe("test-mode api", () => {
   it("posts exam answers and normalizes missing result correct answers", async () => {
     (global.fetch as jest.Mock).mockResolvedValue({
       ok: true,
-      json: async () => ({
-        success: true,
-        data: {
-          examId: "2025",
-          totalQuestions: 2,
-          correctCount: 1,
-          score: 50,
-          results: [
-            {
-              questionId: 10,
-              selectedAnswer: 2,
-              isCorrect: true,
-            },
-          ],
-        },
-      }),
+      status: 200,
+      text: async () =>
+        JSON.stringify({
+          success: true,
+          data: {
+            examId: "2025",
+            totalQuestions: 2,
+            correctCount: 1,
+            score: 50,
+            results: [
+              {
+                questionId: 10,
+                selectedAnswer: 2,
+                isCorrect: true,
+              },
+            ],
+          },
+        }),
     });
 
     const payload = {
@@ -127,10 +130,12 @@ describe("test-mode api", () => {
   it("throws when exam submit fails", async () => {
     (global.fetch as jest.Mock).mockResolvedValue({
       ok: false,
+      status: 400,
+      json: async () => undefined,
     });
 
-    await expect(
-      postExamSubmit("2025", { answers: [] })
-    ).rejects.toThrow("시험 제출 실패");
+    await expect(postExamSubmit("2025", { answers: [] })).rejects.toThrow(
+      ApiError
+    );
   });
 });

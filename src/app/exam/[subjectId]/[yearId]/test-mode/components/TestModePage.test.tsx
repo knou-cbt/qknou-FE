@@ -40,9 +40,38 @@ jest.mock("@/constants", () => ({
     explanation: (questionId: string | number) =>
       `https://api.example.com/api/tutor/questions/${questionId}/explanation`,
   },
+  UserQueryKeys: {
+    examHistory: () => ["user", "exam-history"],
+  },
+}));
+
+jest.mock("@tanstack/react-query", () => ({
+  useQueryClient: () => ({ invalidateQueries: jest.fn() }),
+}));
+
+jest.mock("@/lib/api-client", () => ({
+  ApiError: class ApiError extends Error {
+    status: number;
+    constructor(status: number) {
+      super(`API ${status}`);
+      this.status = status;
+    }
+  },
+}));
+
+jest.mock("@/components/feedback/FeedbackModal", () => ({
+  useFeedbackModal: () => ({
+    feedbackModalOpen: false,
+    feedbackModalDefaultType: undefined,
+    feedbackModalQuestionId: undefined,
+    openFeedbackModal: jest.fn(),
+    closeFeedbackModal: jest.fn(),
+  }),
+  FeedbackModal: () => null,
 }));
 
 jest.mock("@/components/ui", () => ({
+  toast: { success: jest.fn(), error: jest.fn(), info: jest.fn() },
   Button: ({
     children,
     onClick,

@@ -1,5 +1,6 @@
 import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { usePathname, useRouter } from "next/navigation";
 import { ExamProvider } from "@/contexts";
 import { AppContent } from "@/components/app-content";
@@ -65,6 +66,7 @@ jest.mock("@/app/exam/[subjectId]/[yearId]/test-mode/hooks/service", () => ({
 }));
 
 jest.mock("@/components/ui", () => ({
+  toast: { success: jest.fn(), error: jest.fn(), info: jest.fn() },
   Button: ({
     children,
     onClick,
@@ -206,6 +208,17 @@ jest.mock("@/components/ui", () => ({
   ),
 }));
 
+jest.mock("@/components/feedback/FeedbackModal", () => ({
+  useFeedbackModal: () => ({
+    feedbackModalOpen: false,
+    feedbackModalDefaultType: undefined,
+    feedbackModalQuestionId: undefined,
+    openFeedbackModal: jest.fn(),
+    closeFeedbackModal: jest.fn(),
+  }),
+  FeedbackModal: () => null,
+}));
+
 jest.mock("@/components", () => {
   const actualHeader = jest.requireActual("@/components/header");
 
@@ -213,6 +226,7 @@ jest.mock("@/components", () => {
     Header: actualHeader.Header,
     Footer: () => <div data-testid="footer">footer</div>,
     KakaoAd: () => <div data-testid="kakao-ad">ad</div>,
+    Toaster: () => null,
   };
 });
 
@@ -299,13 +313,18 @@ describe("exam flow integration", () => {
 
   it("lets a user answer, submit from the exam header, and land on the result state", async () => {
     const user = userEvent.setup();
+    const queryClient = new QueryClient({
+      defaultOptions: { queries: { retry: false }, mutations: { retry: false } },
+    });
 
     render(
-      <ExamProvider>
-        <AppContent>
-          <TestModePage subjectId="subject" yearId="2025" />
-        </AppContent>
-      </ExamProvider>
+      <QueryClientProvider client={queryClient}>
+        <ExamProvider>
+          <AppContent>
+            <TestModePage subjectId="subject" yearId="2025" />
+          </AppContent>
+        </ExamProvider>
+      </QueryClientProvider>
     );
 
     expect(screen.getByRole("button", { name: "시험 종료" })).toBeInTheDocument();

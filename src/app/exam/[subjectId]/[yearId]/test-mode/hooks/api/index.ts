@@ -1,4 +1,5 @@
 import { ExamApiPaths } from "@/constants";
+import { authorizedFetch } from "@/lib/api-client";
 
 import type {
   IExamQuestionsResponse,
@@ -85,25 +86,28 @@ interface IApiExamSubmitResponse {
   results: IApiQuestionResult[];
 }
 
-/** 시험 답안 제출 및 채점 */
+/**
+ * 시험 답안 제출 및 채점
+ * 로그인(인증 헤더) 상태로 제출하면 백엔드가 최근 풀이 기록으로 저장한다.
+ * 비로그인 시에는 헤더 없이 지금과 동일하게 채점만 수행된다.
+ */
 export const postExamSubmit = async (
   examId: string,
   data: IExamSubmitRequest
 ): Promise<IExamSubmitResponse> => {
-  const response = await fetch(ExamApiPaths.submit(examId), {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify(data),
-  });
-  if (!response.ok) throw new Error("시험 제출 실패");
-
-  const result: IApiResponse<IApiExamSubmitResponse> = await response.json();
+  const result = await authorizedFetch<IApiExamSubmitResponse>(
+    ExamApiPaths.submit(examId),
+    {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(data),
+      requireAuth: false,
+    }
+  );
 
   return {
-    ...result.data,
-    results: result.data.results.map((r) => ({
+    ...result,
+    results: result.results.map((r) => ({
       ...r,
       correctAnswers: r.correctAnswers ?? [],
     })),

@@ -1,7 +1,8 @@
 "use client";
 import { useState, useCallback, useEffect, useMemo, useRef } from "react";
 import { useRouter } from "next/navigation";
-import { CheckCircle, XCircle, Clock, BookOpen } from "lucide-react";
+import { useQueryClient } from "@tanstack/react-query";
+import { CheckCircle, XCircle, Clock, BookOpen, Flag } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 
 import {
@@ -10,9 +11,15 @@ import {
   ExamNavButtons,
   type TQuestionState,
   Button,
+  toast,
 } from "@/components/ui";
-import { TutorApiPaths } from "@/constants";
+import { TutorApiPaths, UserQueryKeys } from "@/constants";
 import { useExamContext } from "@/contexts";
+import { ApiError } from "@/lib/api-client";
+import {
+  FeedbackModal,
+  useFeedbackModal,
+} from "@/components/feedback/FeedbackModal";
 import { useIsMobile } from "@/lib/useIsMobile";
 import { cn } from "@/lib/utils";
 import {
@@ -77,6 +84,7 @@ const collectImageUrls = (...values: unknown[]): string[] => {
 
 export const TestModePage = ({ subjectId, yearId }: Props) => {
   const router = useRouter();
+  const queryClient = useQueryClient();
 
   const examId = yearId;
 
@@ -88,6 +96,13 @@ export const TestModePage = ({ subjectId, yearId }: Props) => {
     setIsSubmitted: setContextIsSubmitted,
   } = useExamContext();
   useCopyProtection();
+  const {
+    feedbackModalOpen,
+    feedbackModalDefaultType,
+    feedbackModalQuestionId,
+    openFeedbackModal,
+    closeFeedbackModal,
+  } = useFeedbackModal();
 
   const [currentIndex, setCurrentIndex] = useState(0);
   const [answers, setAnswers] = useState<
@@ -159,8 +174,15 @@ export const TestModePage = ({ subjectId, yearId }: Props) => {
       setElapsedTime(Math.floor((Date.now() - startTime) / 1000));
       // 결과 화면에서 첫 번째 문제로 포커스
       setCurrentIndex(0);
+      queryClient.invalidateQueries({ queryKey: UserQueryKeys.examHistory() });
     } catch (error) {
+      if (error instanceof ApiError && error.status === 401) {
+        // 전역 401 핸들러(AuthContext)가 로그아웃/안내를 이미 처리
+        toast.error("다시 로그인 후 제출해 주세요.");
+        return;
+      }
       console.error("시험 제출 실패:", error);
+      toast.error("시험 제출에 실패했습니다. 다시 시도해 주세요.");
     }
   }, [
     questions,
@@ -169,6 +191,7 @@ export const TestModePage = ({ subjectId, yearId }: Props) => {
     submitMutation,
     startTime,
     setContextIsSubmitted,
+    queryClient,
   ]);
 
   // handleSubmit을 ref로 관리하여 의존성 문제 해결
@@ -403,7 +426,7 @@ export const TestModePage = ({ subjectId, yearId }: Props) => {
 
   if (!examId) {
     return (
-      <div className="min-h-screen bg-white flex items-center justify-center">
+      <div className="min-h-screen bg-[#F0F4FF] flex items-center justify-center">
         <p className="text-red-500">시험 정보가 올바르지 않습니다.</p>
       </div>
     );
@@ -411,7 +434,7 @@ export const TestModePage = ({ subjectId, yearId }: Props) => {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-white flex items-center justify-center">
+      <div className="min-h-screen bg-[#F0F4FF] flex items-center justify-center">
         <p className="text-[#6B7280]">문제를 불러오는 중...</p>
       </div>
     );
@@ -419,7 +442,7 @@ export const TestModePage = ({ subjectId, yearId }: Props) => {
 
   if (isError || questions.length === 0) {
     return (
-      <div className="min-h-screen bg-white flex items-center justify-center">
+      <div className="min-h-screen bg-[#F0F4FF] flex items-center justify-center">
         <p className="text-red-500">문제를 불러오는데 실패했습니다.</p>
       </div>
     );
@@ -427,7 +450,7 @@ export const TestModePage = ({ subjectId, yearId }: Props) => {
   // 시험 결과 화면
   if (isSubmitted) {
     return (
-      <div className="min-h-screen bg-[#F9FAFB] flex flex-col">
+      <div className="min-h-screen bg-[#F0F4FF] flex flex-col">
         <div
           style={examDetailStyle}
           className={cn("flex flex-1 flex-col", examDetailContentAreaClassName)}
@@ -623,7 +646,7 @@ export const TestModePage = ({ subjectId, yearId }: Props) => {
 
   // 시험 진행 화면
   return (
-    <div className="min-h-screen bg-white flex flex-col">
+    <div className="min-h-screen bg-[#F0F4FF] flex flex-col">
       <div
         style={examDetailStyle}
         className={cn("flex flex-1 flex-col", examDetailContentAreaClassName)}
@@ -631,11 +654,31 @@ export const TestModePage = ({ subjectId, yearId }: Props) => {
       {/* Main Content */}
       <main className="flex-1 flex flex-col items-center px-4 py-6">
         {/* Question Info */}
-        <div className={examDetailMaxW[896]}>
+        <div
+          className={cn(
+            examDetailMaxW[896],
+            "flex items-center justify-between"
+          )}
+        >
           <p className="text-sm text-[#6B7280]">
             {exam?.title ?? "-"} | 시험모드 | {currentIndex + 1} /{" "}
             {questions.length}
           </p>
+          {currentQuestion && (
+            <button
+              type="button"
+              onClick={() =>
+                openFeedbackModal({
+                  type: "question_bug",
+                  questionId: currentQuestion.id,
+                })
+              }
+              aria-label="문항 오류 제보"
+              className="flex size-8 items-center justify-center rounded-full text-[#6B7280] transition-colors cursor-pointer hover:bg-[#F3F4F6]"
+            >
+              <Flag className="size-4" />
+            </button>
+          )}
         </div>
 
         {/* Question Navigator - 모바일에서는 숨김 */}
@@ -685,6 +728,13 @@ export const TestModePage = ({ subjectId, yearId }: Props) => {
         </div>
       </main>
       </div>
+
+      <FeedbackModal
+        open={feedbackModalOpen}
+        onClose={closeFeedbackModal}
+        defaultType={feedbackModalDefaultType}
+        questionId={feedbackModalQuestionId}
+      />
     </div>
   );
 };
