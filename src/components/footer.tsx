@@ -1,11 +1,22 @@
+"use client"
+
 import * as React from "react"
 
 import { cn } from "@/lib/utils"
+import { FeedbackModal, useFeedbackModal } from "@/components/feedback/FeedbackModal"
 
 export interface IFooterProps extends React.HTMLAttributes<HTMLElement> { } // eslint-disable-line @typescript-eslint/no-empty-object-type
 
 const Footer = React.forwardRef<HTMLElement, IFooterProps>(
   ({ className, ...props }, ref) => {
+    const {
+      feedbackModalOpen,
+      feedbackModalDefaultType,
+      feedbackModalQuestionId,
+      openFeedbackModal,
+      closeFeedbackModal,
+    } = useFeedbackModal();
+
     return (
       <footer
         ref={ref}
@@ -29,16 +40,25 @@ const Footer = React.forwardRef<HTMLElement, IFooterProps>(
             >
               방송통신대학교(KNOU)
             </a>
-            에 있으며, 관련 피드백은 아래 주소로 작성해주세요.{" "}
-            <a
-              href="https://docs.google.com/forms/d/e/1FAIpQLSdprHhSm4FteqbpWRfl5L67Db-_ypR2Yy_GW8ukiDG18QHHpA/viewform?pli=1"
-              className="text-blue-600 hover:underline"
+            에 있으며, 사이트 이용 중 발견한 오류나 의견은{" "}
+            <button
+              type="button"
+              onClick={() => openFeedbackModal()}
+              className="text-blue-600 hover:underline cursor-pointer"
             >
-              구글 폼 링크
-            </a>
+              피드백 보내기
+            </button>
+            로 알려주세요.
           </p>
           <p className="mt-4">© 2025 QKNOU. All rights reserved.</p>
         </div>
+
+        <FeedbackModal
+          open={feedbackModalOpen}
+          onClose={closeFeedbackModal}
+          defaultType={feedbackModalDefaultType}
+          questionId={feedbackModalQuestionId}
+        />
       </footer>
     )
   }
@@ -46,4 +66,3 @@ const Footer = React.forwardRef<HTMLElement, IFooterProps>(
 Footer.displayName = "Footer"
 
 export { Footer }
-
