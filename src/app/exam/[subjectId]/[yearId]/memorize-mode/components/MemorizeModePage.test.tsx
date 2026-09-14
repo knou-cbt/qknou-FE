@@ -1,11 +1,12 @@
 import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { MemorizeModePage } from "./MemorizeModePage";
-import { useExamContext } from "@/contexts";
+import { useExamContext, useAuth } from "@/contexts";
 import {
   useExamQuestionsWithAnswersQuery,
   useTutorQuestionExplanationMutation,
 } from "../hooks/service";
+import { useBookmarkListQuery } from "@/components/bookmark/hooks/service";
 
 jest.mock("next/image", () => ({
   __esModule: true,
@@ -33,11 +34,31 @@ jest.mock("@/lib/useCopyProtection", () => ({
 
 jest.mock("@/contexts", () => ({
   useExamContext: jest.fn(),
+  useAuth: jest.fn(),
 }));
 
 jest.mock("../hooks/service", () => ({
   useExamQuestionsWithAnswersQuery: jest.fn(),
   useTutorQuestionExplanationMutation: jest.fn(),
+}));
+
+jest.mock("@/components/bookmark/hooks/service", () => ({
+  useBookmarkListQuery: jest.fn(),
+}));
+
+jest.mock("@/components/question-actions/QuestionActionIcons", () => ({
+  QuestionActionIcons: () => <div data-testid="question-action-icons" />,
+}));
+
+jest.mock("@/components/feedback/FeedbackModal", () => ({
+  useFeedbackModal: () => ({
+    feedbackModalOpen: false,
+    feedbackModalDefaultType: undefined,
+    feedbackModalQuestionId: undefined,
+    openFeedbackModal: jest.fn(),
+    closeFeedbackModal: jest.fn(),
+  }),
+  FeedbackModal: () => null,
 }));
 
 jest.mock("@/components/chatbot", () => ({
@@ -148,6 +169,10 @@ const mockedUseTutorQuestionExplanationMutation =
   useTutorQuestionExplanationMutation as jest.MockedFunction<
     typeof useTutorQuestionExplanationMutation
   >;
+const mockedUseAuth = useAuth as jest.MockedFunction<typeof useAuth>;
+const mockedUseBookmarkListQuery = useBookmarkListQuery as jest.MockedFunction<
+  typeof useBookmarkListQuery
+>;
 
 const questions = [
   {
@@ -214,6 +239,17 @@ describe("MemorizeModePage", () => {
         conceptTags: ["핵심"],
       }),
     } as ReturnType<typeof useTutorQuestionExplanationMutation>);
+    mockedUseAuth.mockReturnValue({
+      isAuthenticated: false,
+      user: null,
+      token: null,
+      isLoading: false,
+      login: jest.fn(),
+      logout: jest.fn(),
+    } as ReturnType<typeof useAuth>);
+    mockedUseBookmarkListQuery.mockReturnValue({
+      data: undefined,
+    } as ReturnType<typeof useBookmarkListQuery>);
   });
 
   it("renders the current question and stores the post-login redirect path", () => {

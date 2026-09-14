@@ -1,0 +1,146 @@
+"use client";
+
+import { useMemo } from "react";
+import { notFound } from "next/navigation";
+import ReactMarkdown from "react-markdown";
+
+import { Breadcrumb, QuestionCard } from "@/components/ui";
+import { QuestionActionIcons } from "@/components/question-actions/QuestionActionIcons";
+import {
+  FeedbackModal,
+  useFeedbackModal,
+} from "@/components/feedback/FeedbackModal";
+import { SITE_URL } from "@/constants";
+import { ApiError } from "@/lib/api-client";
+import { cn } from "@/lib/utils";
+import {
+  examDetailContentAreaClassName,
+  examDetailMaxW,
+  examDetailStyle,
+} from "@/lib/exam-side-ad-layout";
+import { useCopyProtection } from "@/lib/useCopyProtection";
+
+import { useQuestionQuery } from "../hooks/service";
+
+type Props = {
+  questionId: string;
+};
+
+export const SharedQuestionPage = ({ questionId }: Props) => {
+  useCopyProtection();
+  const { data, isLoading, isError, error } = useQuestionQuery(questionId);
+  const {
+    feedbackModalOpen,
+    feedbackModalDefaultType,
+    feedbackModalQuestionId,
+    openFeedbackModal,
+    closeFeedbackModal,
+  } = useFeedbackModal();
+
+  const formattedAnswers = useMemo(() => {
+    if (!data?.choices) return [];
+    return data.choices.map((choice) => ({
+      value: choice.number,
+      label: choice.text,
+      imageUrls: choice.imageUrls,
+    }));
+  }, [data]);
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-[#F0F4FF] flex items-center justify-center">
+        <p className="text-[#6B7280]">문제를 불러오는 중...</p>
+      </div>
+    );
+  }
+
+  if (isError && error instanceof ApiError && error.status === 404) {
+    notFound();
+  }
+
+  if (isError || !data) {
+    return (
+      <div className="min-h-screen bg-[#F0F4FF] flex items-center justify-center">
+        <p className="text-red-500">문제를 불러오는데 실패했습니다.</p>
+      </div>
+    );
+  }
+
+  const shareUrl = `${SITE_URL}/memorize/${data.id}`;
+
+  return (
+    <div className="min-h-screen bg-[#F0F4FF] flex flex-col">
+      <div
+        style={examDetailStyle}
+        className={cn("flex flex-1 flex-col", examDetailContentAreaClassName)}
+      >
+        <div className="w-full px-4 pt-4 pb-4">
+          <div className={examDetailMaxW[896]}>
+            <Breadcrumb
+              subject={data.exam.subject}
+              year={data.exam.title}
+              subjectHref="/"
+            />
+          </div>
+        </div>
+
+        <main className="flex-1 flex flex-col items-center px-4 py-6">
+          <div
+            className={cn(
+              examDetailMaxW[896],
+              "flex items-center justify-between"
+            )}
+          >
+            <p className="text-sm text-[#6B7280]">
+              {data.exam.title} | 문항 {data.questionNumber}번
+            </p>
+            <QuestionActionIcons
+              questionId={data.id}
+              shareUrl={shareUrl}
+              bookmarkActive={Boolean(data.isBookmarked)}
+              onReport={() =>
+                openFeedbackModal({
+                  type: "question_bug",
+                  questionId: data.id,
+                })
+              }
+            />
+          </div>
+
+          <div className={examDetailMaxW[896]}>
+            <QuestionCard
+              size="full"
+              question={`${data.questionNumber}. ${data.text}`}
+              sharedExample={data.sharedExample}
+              example={data.example}
+              imageUrls={data.imageUrls}
+              answers={formattedAnswers}
+              selectedAnswer={null}
+              correctAnswer={data.correctAnswers}
+              showResult
+              actionButtonText=""
+            />
+          </div>
+
+          {data.explanation && (
+            <div className={cn(examDetailMaxW[896], "mt-6")}>
+              <div className="bg-[#F9FAFB] border border-[#E5E7EB] rounded-[16px] p-6">
+                <h3 className="font-semibold text-[#101828] mb-3">해설</h3>
+                <div className="text-[#364153] leading-7 [&_a]:text-[#155DFC] [&_a]:underline [&_li]:ml-5 [&_ol]:list-decimal [&_p]:mb-3 [&_ul]:list-disc">
+                  <ReactMarkdown>{data.explanation}</ReactMarkdown>
+                </div>
+              </div>
+            </div>
+          )}
+        </main>
+      </div>
+
+      <FeedbackModal
+        open={feedbackModalOpen}
+        onClose={closeFeedbackModal}
+        defaultType={feedbackModalDefaultType}
+        questionId={feedbackModalQuestionId}
+      />
+    </div>
+  );
+};

@@ -14,8 +14,9 @@ import {
   useTutorQuestionExplanationMutation,
 } from "../hooks/service";
 import type { IQuestionWithAnswer } from "../interface";
-import { useExamContext } from "@/contexts";
+import { useExamContext, useAuth } from "@/contexts";
 import { cn } from "@/lib/utils";
+import { SITE_URL } from "@/constants";
 import {
   examDetailContentAreaClassName,
   examDetailMaxW,
@@ -23,6 +24,12 @@ import {
 } from "@/lib/exam-side-ad-layout";
 import { useCopyProtection } from "@/lib/useCopyProtection";
 import type { ITutorQuestionExplanationResponse } from "../hooks/api";
+import { useBookmarkListQuery } from "@/components/bookmark/hooks/service";
+import { QuestionActionIcons } from "@/components/question-actions/QuestionActionIcons";
+import {
+  FeedbackModal,
+  useFeedbackModal,
+} from "@/components/feedback/FeedbackModal";
 
 type Props = {
   subjectId?: string;
@@ -101,6 +108,21 @@ export const MemorizeModePage = ({ subjectId, yearId }: Props) => {
   const { data, isLoading, isError } = useExamQuestionsWithAnswersQuery(
     examId ?? ""
   );
+
+  // 북마크 초기 상태: 목록 응답에 플래그가 없어 로그인 시 1회 병행 조회
+  const { isAuthenticated } = useAuth();
+  const { data: bookmarks } = useBookmarkListQuery();
+  const bookmarkedIds = useMemo(
+    () => new Set((bookmarks ?? []).map((b) => b.questionId)),
+    [bookmarks]
+  );
+  const {
+    feedbackModalOpen,
+    feedbackModalDefaultType,
+    feedbackModalQuestionId,
+    openFeedbackModal,
+    closeFeedbackModal,
+  } = useFeedbackModal();
 
   const exam = data?.exam;
   const questions = data?.questions ?? [];
@@ -291,7 +313,7 @@ export const MemorizeModePage = ({ subjectId, yearId }: Props) => {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-white flex items-center justify-center">
+      <div className="min-h-screen bg-[#F0F4FF] flex items-center justify-center">
         <p className="text-[#6B7280]">문제를 불러오는 중...</p>
       </div>
     );
@@ -299,14 +321,14 @@ export const MemorizeModePage = ({ subjectId, yearId }: Props) => {
 
   if (isError || questions.length === 0) {
     return (
-      <div className="min-h-screen bg-white flex items-center justify-center">
+      <div className="min-h-screen bg-[#F0F4FF] flex items-center justify-center">
         <p className="text-red-500">문제를 불러오는데 실패했습니다.</p>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-white flex flex-col">
+    <div className="min-h-screen bg-[#F0F4FF] flex flex-col">
       <div
         style={examDetailStyle}
         className={cn("flex flex-1 flex-col", examDetailContentAreaClassName)}
@@ -325,11 +347,31 @@ export const MemorizeModePage = ({ subjectId, yearId }: Props) => {
       {/* Main Content */}
       <main className="flex-1 flex flex-col items-center px-4 py-6">
         {/* Question Info */}
-        <div className={examDetailMaxW[896]}>
+        <div
+          className={cn(
+            examDetailMaxW[896],
+            "flex items-center justify-between"
+          )}
+        >
           <p className="text-sm text-[#6B7280]">
              암기모드 | {currentIndex + 1} /{" "}
             {questions.length}
           </p>
+          {currentQuestion && (
+            <QuestionActionIcons
+              questionId={currentQuestion.id}
+              shareUrl={`${SITE_URL}/memorize/${currentQuestion.id}`}
+              bookmarkActive={
+                isAuthenticated && bookmarkedIds.has(currentQuestion.id)
+              }
+              onReport={() =>
+                openFeedbackModal({
+                  type: "question_bug",
+                  questionId: currentQuestion.id,
+                })
+              }
+            />
+          )}
         </div>
 
         {/* Question Card */}
@@ -432,6 +474,13 @@ export const MemorizeModePage = ({ subjectId, yearId }: Props) => {
         yearId={yearId}
         subjectLabel={exam?.subject}
         yearLabel={exam?.year ? `${exam.year}년도` : undefined}
+      />
+
+      <FeedbackModal
+        open={feedbackModalOpen}
+        onClose={closeFeedbackModal}
+        defaultType={feedbackModalDefaultType}
+        questionId={feedbackModalQuestionId}
       />
     </div>
   );
