@@ -2,10 +2,18 @@
 
 import React, { useState, useRef, useEffect } from "react";
 import Image from "next/image";
-import { LogOut, ChevronDown, Book, Loader2 } from "lucide-react";
+import { LogOut, ChevronDown, FileUp, Loader2, User, MessageSquare, X } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { cn } from "@/lib/utils";
 import { useRouter } from "next/navigation";
+import {
+  FeedbackModal,
+  useFeedbackModal,
+} from "@/components/feedback/FeedbackModal";
+import {
+  ExamSubmissionModal,
+  useExamSubmissionModal,
+} from "@/components/exam-submission/ExamSubmissionModal";
 
 export const UserMenu = () => {
   const router = useRouter();
@@ -13,6 +21,18 @@ export const UserMenu = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [isLoggingOut, setIsLoggingOut] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
+  const {
+    feedbackModalOpen,
+    feedbackModalDefaultType,
+    feedbackModalQuestionId,
+    openFeedbackModal,
+    closeFeedbackModal,
+  } = useFeedbackModal();
+  const {
+    examSubmissionModalOpen,
+    openExamSubmissionModal,
+    closeExamSubmissionModal,
+  } = useExamSubmissionModal();
 
   // 외부 클릭 감지
   useEffect(() => {
@@ -25,6 +45,16 @@ export const UserMenu = () => {
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
+
+  // 모바일 전체화면 메뉴가 열려있는 동안 배경 스크롤 방지
+  useEffect(() => {
+    if (!isOpen) return;
+    const original = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.body.style.overflow = original;
+    };
+  }, [isOpen]);
 
   const handleLogout = async () => {
     setIsLoggingOut(true);
@@ -72,40 +102,60 @@ export const UserMenu = () => {
         />
       </button>
 
-      {/* 드롭다운 메뉴 */}
+      {/* 드롭다운 메뉴: 모바일/태블릿(md 미만)에서는 화면 전체를 덮는 패널, md 이상에서는 기존 팝오버 */}
       {isOpen && (
-        <div className="absolute right-0 mt-2 w-56 bg-white rounded-lg shadow-lg border border-gray-200 py-1 z-50">
-          {/* 사용자 정보 */}
-          {/* <div className="px-4 py-3 border-b border-gray-100">
-            <p className="text-sm font-medium text-gray-900">{user.name || "사용자"}</p>
-            {user.email && (
-              <p className="text-xs text-gray-500 mt-1">{user.email}</p>
-            )}
-          </div> */}
+        <div
+          className={cn(
+            "fixed inset-0 z-50 flex flex-col bg-white p-4",
+            "md:absolute md:inset-auto md:right-0 md:top-full md:mt-2 md:w-56 md:rounded-lg md:border md:border-gray-200 md:bg-white md:p-0 md:shadow-lg"
+          )}
+        >
+          {/* 모바일 전용 상단바 */}
+          <div className="mb-2 flex items-center justify-between md:hidden">
+            <span className="text-base font-semibold text-gray-900">메뉴</span>
+            <button
+              type="button"
+              onClick={() => setIsOpen(false)}
+              className="rounded-full p-2 hover:bg-gray-100"
+              aria-label="닫기"
+            >
+              <X className="w-5 h-5 text-gray-600" />
+            </button>
+          </div>
 
           {/* 메뉴 항목들 */}
           <div className="py-1">
-            {/* 마이페이지 (추후 구현) */}
-            {/* <button
+            <button
               onClick={() => {
                 setIsOpen(false);
-                // navigate to profile
+                router.push("/mypage");
               }}
-              className="w-full flex items-center gap-3 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
+              className="w-full flex items-center gap-3 px-2 py-3 text-base text-gray-700 hover:bg-gray-50 transition-colors rounded-lg md:px-4 md:py-2 md:text-sm md:rounded-none"
             >
-              <User className="w-4 h-4" />
+              <User className="w-5 h-5 md:w-4 md:h-4" />
               마이페이지
-            </button> */}
+            </button>
 
-              <button
+            <button
               onClick={() => {
                 setIsOpen(false);
-                router.push("/about");
+                openFeedbackModal();
               }}
-              className="w-full flex items-center gap-3 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
+              className="w-full flex items-center gap-3 px-2 py-3 text-base text-gray-700 hover:bg-gray-50 transition-colors rounded-lg md:px-4 md:py-2 md:text-sm md:rounded-none"
             >
-              <Book className="w-4 h-4" />
-              사용 가이드
+              <MessageSquare className="w-5 h-5 md:w-4 md:h-4" />
+              피드백
+            </button>
+
+            <button
+              onClick={() => {
+                setIsOpen(false);
+                openExamSubmissionModal();
+              }}
+              className="w-full flex items-center gap-3 px-2 py-3 text-base text-gray-700 hover:bg-gray-50 transition-colors rounded-lg md:px-4 md:py-2 md:text-sm md:rounded-none"
+            >
+              <FileUp className="w-5 h-5 md:w-4 md:h-4" />
+              시험지 등록
             </button>
 
             {/* 로그아웃 */}
@@ -113,18 +163,18 @@ export const UserMenu = () => {
               onClick={handleLogout}
               disabled={isLoggingOut}
               className={cn(
-                "w-full flex items-center gap-3 px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition-colors",
+                "w-full flex items-center gap-3 px-2 py-3 text-base text-red-600 hover:bg-red-50 transition-colors rounded-lg md:px-4 md:py-2 md:text-sm md:rounded-none",
                 isLoggingOut && "opacity-50 cursor-not-allowed"
               )}
             >
               {isLoggingOut ? (
                 <>
-                  <Loader2 className="w-4 h-4 animate-spin" />
+                  <Loader2 className="w-5 h-5 md:w-4 md:h-4 animate-spin" />
                   로그아웃 중...
                 </>
               ) : (
                 <>
-                  <LogOut className="w-4 h-4" />
+                  <LogOut className="w-5 h-5 md:w-4 md:h-4" />
                   로그아웃
                 </>
               )}
@@ -132,6 +182,17 @@ export const UserMenu = () => {
           </div>
         </div>
       )}
+
+      <FeedbackModal
+        open={feedbackModalOpen}
+        onClose={closeFeedbackModal}
+        defaultType={feedbackModalDefaultType}
+        questionId={feedbackModalQuestionId}
+      />
+      <ExamSubmissionModal
+        open={examSubmissionModalOpen}
+        onClose={closeExamSubmissionModal}
+      />
     </div>
   );
 };
