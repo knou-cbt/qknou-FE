@@ -109,7 +109,7 @@ export const ExamYearPage = ({ subjectId }: Props) => {
   return (
     <>
       {/* Hero Section */}
-      <section className="flex flex-col items-center px-4 md:px-8 lg:px-16 pt-4 md:pt-4 pb-8 md:pb-12 w-full bg-gradient-to-br from-[#EFF6FF] to-white">
+      <section className="flex flex-col items-center px-4 md:px-8 lg:px-16 pt-4 md:pt-4 pb-8 md:pb-12 w-full bg-gradient-to-b from-[#DCE7FF] to-[#F0F4FF]">
         {/* Breadcrumb */}
         <div className="w-full max-w-[1100px] pb-12">
           <Breadcrumb
@@ -129,7 +129,7 @@ export const ExamYearPage = ({ subjectId }: Props) => {
       </section>
 
       {/* Main Content */}
-      <main className="flex-1 flex flex-col items-center px-4 pb-8  md:pt-4 md:pb-8 bg-white">
+      <main className="flex-1 flex flex-col items-center px-4 pb-8  md:pt-4 md:pb-8 bg-[#F0F4FF]">
         {/* Year Table */}
         <div className="relative w-full max-w-[1100px] mx-auto">
           <Table
