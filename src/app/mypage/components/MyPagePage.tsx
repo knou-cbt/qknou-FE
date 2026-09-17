@@ -7,9 +7,11 @@ import Image from "next/image";
 import { useAuth } from "@/contexts";
 import { cn } from "@/lib/utils";
 import { POST_LOGIN_REDIRECT_KEY } from "@/lib/auth-token";
+import { useBookmarkListQuery } from "@/components/bookmark/hooks/service";
 
 import { ExamHistorySection } from "./ExamHistorySection";
 import { BookmarkListSection } from "./BookmarkListSection";
+import { useExamHistoryQuery } from "../hooks/service";
 
 type TTab = "history" | "bookmarks";
 
@@ -22,6 +24,13 @@ export const MyPagePage = () => {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { user, isAuthenticated, isLoading } = useAuth();
+  const { data: bookmarks } = useBookmarkListQuery();
+  const { data: examHistory } = useExamHistoryQuery();
+
+  const correctRate =
+    examHistory && examHistory.totalQuestions > 0
+      ? Math.round((examHistory.correctCount / examHistory.totalQuestions) * 100)
+      : null;
 
   const activeTab: TTab =
     searchParams.get("tab") === "bookmarks" ? "bookmarks" : "history";
@@ -63,27 +72,51 @@ export const MyPagePage = () => {
         <div className="flex flex-col gap-6 md:flex-row">
           {/* 사이드바 */}
           <aside className="flex shrink-0 flex-col md:w-[260px]">
-            <div className="flex flex-row items-center gap-4 rounded-xl bg-white p-3 text-left shadow-sm md:h-72 md:flex-col md:justify-center md:gap-3 md:border md:border-[#E5E7EB] md:p-6 md:text-center md:shadow-none">
-              <div className="flex size-14 shrink-0 items-center justify-center overflow-hidden rounded-full bg-gradient-to-br from-[#5B93FF] to-[#0B45D1] text-lg font-semibold text-white shadow-[0_6px_16px_rgba(21,93,252,0.35)] ring-4 ring-white md:size-20 md:text-2xl">
-                {user?.profileImage ? (
-                  <Image
-                    src={user.profileImage}
-                    alt={user.name ?? "프로필"}
-                    width={80}
-                    height={80}
-                    className="size-full object-cover"
-                  />
-                ) : (
-                  <span>{user?.name?.charAt(0) ?? "?"}</span>
-                )}
+            <div className="flex flex-col gap-4 rounded-xl border border-[#E5E7EB] bg-white p-4 text-left shadow-sm md:p-6">
+              {/* 유저 아이콘 + 유저 정보: 항상 가로 배치 */}
+              <div className="flex flex-row items-center gap-4">
+                <div className="flex size-14 shrink-0 items-center justify-center overflow-hidden rounded-full bg-gradient-to-br from-[#5B93FF] to-[#0B45D1] text-lg font-semibold text-white shadow-[0_6px_16px_rgba(21,93,252,0.35)] ring-4 ring-white md:size-16 md:text-xl">
+                  {user?.profileImage ? (
+                    <Image
+                      src={user.profileImage}
+                      alt={user.name ?? "프로필"}
+                      width={64}
+                      height={64}
+                      className="size-full object-cover"
+                    />
+                  ) : (
+                    <span>{user?.name?.charAt(0) ?? "?"}</span>
+                  )}
+                </div>
+                <div className="min-w-0">
+                  <p className="truncate font-semibold text-[#101828] md:text-base">
+                    {user?.name ?? "사용자"}
+                  </p>
+                  {user?.email && (
+                    <p className="truncate text-xs text-[#9CA3AF]">{user.email}</p>
+                  )}
+                  {/* 모바일: 한 줄 요약 */}
+                  <p className="mt-1 truncate text-xs text-[#6B7280] md:hidden">
+                    북마크 {bookmarks?.length ?? 0}개
+                    {correctRate !== null && <> · 최근 정답률 {correctRate}%</>}
+                  </p>
+                </div>
               </div>
-              <div className="min-w-0">
-                <p className="truncate font-semibold text-[#101828]">
-                  {user?.name ?? "사용자"}
-                </p>
-                {user?.email && (
-                  <p className="truncate text-xs text-[#9CA3AF]">{user.email}</p>
-                )}
+
+              {/* 데스크탑: 통계 타일 */}
+              <div className="hidden grid-cols-2 gap-2 md:grid">
+                <div className="rounded-lg bg-[#F3F4F6] px-3 py-2.5 text-center">
+                  <p className="text-lg font-bold text-[#101828]">
+                    {bookmarks?.length ?? 0}
+                  </p>
+                  <p className="text-xs text-[#6B7280]">북마크</p>
+                </div>
+                <div className="rounded-lg bg-[#F3F4F6] px-3 py-2.5 text-center">
+                  <p className="text-lg font-bold text-[#101828]">
+                    {correctRate !== null ? `${correctRate}%` : "-"}
+                  </p>
+                  <p className="text-xs text-[#6B7280]">최근 정답률</p>
+                </div>
               </div>
             </div>
           </aside>
