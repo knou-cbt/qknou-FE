@@ -6,11 +6,9 @@ import { useRouter } from "next/navigation";
 import { Pagination } from "@/components/ui";
 import { BookmarkButton } from "@/components/bookmark/BookmarkButton";
 import { useBookmarkListQuery } from "@/components/bookmark/hooks/service";
-import { DEV_MOCK_BOOKMARKS } from "@/lib/dev-mock-data";
 
 import { MyPageCard } from "./MyPageCard";
 
-const IS_DEV = process.env.NODE_ENV === "development";
 const PAGE_SIZE_OPTIONS = [10, 20, 30, 50];
 
 function formatDate(iso: string) {
@@ -28,8 +26,7 @@ export const BookmarkListSection = () => {
   const [pageIndex, setPageIndex] = useState(0);
   const [pageSize, setPageSize] = useState(PAGE_SIZE_OPTIONS[0]);
 
-  const source = data && data.length > 0 ? data : IS_DEV ? DEV_MOCK_BOOKMARKS : [];
-  const bookmarks = source.filter((b) => !hiddenIds.has(b.questionId));
+  const bookmarks = (data ?? []).filter((b) => !hiddenIds.has(b.questionId));
 
   const pageCount = Math.max(Math.ceil(bookmarks.length / pageSize), 1);
   const clampedPageIndex = Math.min(pageIndex, pageCount - 1);

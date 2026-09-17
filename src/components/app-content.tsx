@@ -3,7 +3,6 @@ import { usePathname } from "next/navigation";
 
 import { Header, Footer, KakaoAd, Toaster } from "@/components";
 import { useExamContext } from "@/contexts";
-import { DevLoginButton } from "@/components/dev/DevLoginButton";
 
 interface AppContentProps {
   children: React.ReactNode;
@@ -31,7 +30,6 @@ export function AppContent({ children }: AppContentProps) {
       <KakaoAd />
       <Footer />
       <Toaster />
-      {process.env.NODE_ENV === "development" && <DevLoginButton />}
     </div>
   );
 }
