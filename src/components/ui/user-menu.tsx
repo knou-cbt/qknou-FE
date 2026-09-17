@@ -76,7 +76,7 @@ export const UserMenu = () => {
       <button
         onClick={() => setIsOpen(!isOpen)}
         className={cn(
-          "flex items-center gap-2 px-3 py-2 rounded-lg transition-colors duration-200",
+          "flex items-center gap-2 px-3 py-2 rounded-lg transition-colors duration-200 cursor-pointer",
           "hover:bg-gray-100",
           isOpen && "bg-gray-100"
         )}
@@ -116,7 +116,7 @@ export const UserMenu = () => {
             <button
               type="button"
               onClick={() => setIsOpen(false)}
-              className="rounded-full p-2 hover:bg-gray-100"
+              className="rounded-full p-2 hover:bg-gray-100 cursor-pointer"
               aria-label="닫기"
             >
               <X className="w-5 h-5 text-gray-600" />
@@ -130,7 +130,7 @@ export const UserMenu = () => {
                 setIsOpen(false);
                 router.push("/mypage");
               }}
-              className="w-full flex items-center gap-3 px-2 py-3 text-base text-gray-700 hover:bg-gray-50 transition-colors rounded-lg md:px-4 md:py-2 md:text-sm md:rounded-none"
+              className="w-full flex items-center gap-3 px-2 py-3 text-base text-gray-700 hover:bg-gray-50 transition-colors rounded-lg cursor-pointer md:px-4 md:py-2 md:text-sm md:rounded-none"
             >
               <User className="w-5 h-5 md:w-4 md:h-4" />
               마이페이지
@@ -141,7 +141,7 @@ export const UserMenu = () => {
                 setIsOpen(false);
                 openFeedbackModal();
               }}
-              className="w-full flex items-center gap-3 px-2 py-3 text-base text-gray-700 hover:bg-gray-50 transition-colors rounded-lg md:px-4 md:py-2 md:text-sm md:rounded-none"
+              className="w-full flex items-center gap-3 px-2 py-3 text-base text-gray-700 hover:bg-gray-50 transition-colors rounded-lg cursor-pointer md:px-4 md:py-2 md:text-sm md:rounded-none"
             >
               <MessageSquare className="w-5 h-5 md:w-4 md:h-4" />
               피드백
@@ -152,7 +152,7 @@ export const UserMenu = () => {
                 setIsOpen(false);
                 openExamSubmissionModal();
               }}
-              className="w-full flex items-center gap-3 px-2 py-3 text-base text-gray-700 hover:bg-gray-50 transition-colors rounded-lg md:px-4 md:py-2 md:text-sm md:rounded-none"
+              className="w-full flex items-center gap-3 px-2 py-3 text-base text-gray-700 hover:bg-gray-50 transition-colors rounded-lg cursor-pointer md:px-4 md:py-2 md:text-sm md:rounded-none"
             >
               <FileUp className="w-5 h-5 md:w-4 md:h-4" />
               시험지 등록
@@ -163,7 +163,7 @@ export const UserMenu = () => {
               onClick={handleLogout}
               disabled={isLoggingOut}
               className={cn(
-                "w-full flex items-center gap-3 px-2 py-3 text-base text-red-600 hover:bg-red-50 transition-colors rounded-lg md:px-4 md:py-2 md:text-sm md:rounded-none",
+                "w-full flex items-center gap-3 px-2 py-3 text-base text-red-600 hover:bg-red-50 transition-colors rounded-lg cursor-pointer md:px-4 md:py-2 md:text-sm md:rounded-none",
                 isLoggingOut && "opacity-50 cursor-not-allowed"
               )}
             >
