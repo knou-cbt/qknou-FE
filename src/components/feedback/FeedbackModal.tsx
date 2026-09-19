@@ -159,7 +159,6 @@ const FeedbackModalBody = ({
   };
 
   const isValid = Boolean(type) && content.trim().length > 0;
-  const isQuestionIdLocked = Boolean(questionId);
 
   return (
     <ModalContent size="md">
@@ -207,12 +206,8 @@ const FeedbackModalBody = ({
             inputMode="numeric"
             value={questionIdInput}
             onChange={(e) => setQuestionIdInput(e.target.value)}
-            disabled={isQuestionIdLocked}
             placeholder="해당하는 경우에만 입력해주세요"
-            className={cn(
-              "w-full rounded-md border border-input px-3 py-2 text-sm shadow-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring hover:border-[#9CA3AF]",
-              isQuestionIdLocked && "bg-[#F3F4F6] text-[#6B7280]"
-            )}
+            className="w-full rounded-md border border-input px-3 py-2 text-sm shadow-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring hover:border-[#9CA3AF]"
           />
         </div>
 
