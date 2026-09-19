@@ -8,6 +8,9 @@ export const metadata: Metadata = {
   robots: { index: false, follow: false },
 };
 
+// 로그인 상태/쿼리스트링(tab)에 의존하는 페이지라 정적 프리렌더링 대상에서 제외
+export const dynamic = "force-dynamic";
+
 export default function Page() {
   return (
     <Suspense
