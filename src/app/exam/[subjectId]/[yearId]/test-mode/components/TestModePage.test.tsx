@@ -70,6 +70,10 @@ jest.mock("@/components/feedback/FeedbackModal", () => ({
   FeedbackModal: () => null,
 }));
 
+jest.mock("@/components/ads/ExplanationGate", () => ({
+  ExplanationGate: ({ children }: { children: React.ReactNode }) => children,
+}));
+
 jest.mock("@/components/ui", () => ({
   toast: { success: jest.fn(), error: jest.fn(), info: jest.fn() },
   Button: ({

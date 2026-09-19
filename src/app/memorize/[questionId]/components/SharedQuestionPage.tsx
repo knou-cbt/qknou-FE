@@ -10,6 +10,7 @@ import {
   FeedbackModal,
   useFeedbackModal,
 } from "@/components/feedback/FeedbackModal";
+import { ExplanationGate } from "@/components/ads/ExplanationGate";
 import { SITE_URL } from "@/constants";
 import { ApiError } from "@/lib/api-client";
 import { cn } from "@/lib/utils";
@@ -126,9 +127,11 @@ export const SharedQuestionPage = ({ questionId }: Props) => {
             <div className={cn(examDetailMaxW[896], "mt-6")}>
               <div className="bg-[#F9FAFB] border border-[#E5E7EB] rounded-[16px] p-6">
                 <h3 className="font-semibold text-[#101828] mb-3">해설</h3>
-                <div className="text-[#364153] leading-7 [&_a]:text-[#155DFC] [&_a]:underline [&_li]:ml-5 [&_ol]:list-decimal [&_p]:mb-3 [&_ul]:list-disc">
-                  <ReactMarkdown>{data.explanation}</ReactMarkdown>
-                </div>
+                <ExplanationGate>
+                  <div className="text-[#364153] leading-7 [&_a]:text-[#155DFC] [&_a]:underline [&_li]:ml-5 [&_ol]:list-decimal [&_p]:mb-3 [&_ul]:list-disc">
+                    <ReactMarkdown>{data.explanation}</ReactMarkdown>
+                  </div>
+                </ExplanationGate>
               </div>
             </div>
           )}

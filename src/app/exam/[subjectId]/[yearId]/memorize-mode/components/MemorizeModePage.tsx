@@ -30,6 +30,7 @@ import {
   FeedbackModal,
   useFeedbackModal,
 } from "@/components/feedback/FeedbackModal";
+import { ExplanationGate } from "@/components/ads/ExplanationGate";
 
 type Props = {
   subjectId?: string;
@@ -415,21 +416,23 @@ export const MemorizeModePage = ({ subjectId, yearId }: Props) => {
                 <p className="text-sm text-red-500">{explanationError}</p>
               )}
               {isExplanationVisible && explanationText && (
-                <div className="text-[#364153] leading-7 [&_a]:text-[#155DFC] [&_a]:underline [&_code]:rounded [&_code]:bg-[#F3F4F6] [&_code]:px-1 [&_li]:ml-5 [&_ol]:list-decimal [&_p]:mb-3 [&_ul]:list-disc">
-                  <ReactMarkdown>{explanationText}</ReactMarkdown>
-                  {conceptTags.length > 0 && (
-                    <div className="mt-4 flex flex-wrap gap-2">
-                      {conceptTags.map((tag) => (
-                        <span
-                          key={tag}
-                          className="rounded-full bg-[#EEF2FF] text-[#3730A3] px-3 py-1 text-xs font-medium"
-                        >
-                          #{tag}
-                        </span>
-                      ))}
-                    </div>
-                  )}
-                </div>
+                <ExplanationGate>
+                  <div className="text-[#364153] leading-7 [&_a]:text-[#155DFC] [&_a]:underline [&_code]:rounded [&_code]:bg-[#F3F4F6] [&_code]:px-1 [&_li]:ml-5 [&_ol]:list-decimal [&_p]:mb-3 [&_ul]:list-disc">
+                    <ReactMarkdown>{explanationText}</ReactMarkdown>
+                    {conceptTags.length > 0 && (
+                      <div className="mt-4 flex flex-wrap gap-2">
+                        {conceptTags.map((tag) => (
+                          <span
+                            key={tag}
+                            className="rounded-full bg-[#EEF2FF] text-[#3730A3] px-3 py-1 text-xs font-medium"
+                          >
+                            #{tag}
+                          </span>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                </ExplanationGate>
               )}
             </div>
           </div>
