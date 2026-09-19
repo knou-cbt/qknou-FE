@@ -1,6 +1,6 @@
-import { API_URL } from "../urls";
+import { NEW_API_URL } from "../urls";
 
-const BOOKMARKS_BASE = `${API_URL}/api/bookmarks`;
+const BOOKMARKS_BASE = `${NEW_API_URL}/api/bookmarks`;
 
 export const BookmarkApiPaths = {
   /** 북마크 목록 조회 */
