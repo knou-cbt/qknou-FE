@@ -5,6 +5,8 @@ import { Bookmark } from "lucide-react";
 
 import { cn } from "@/lib/utils";
 import { useRequireAuth } from "@/lib/useRequireAuth";
+import { ApiError } from "@/lib/api-client";
+import { toast } from "@/components/ui/toast";
 
 import { useToggleBookmarkMutation } from "./hooks/service";
 
@@ -53,7 +55,15 @@ export const BookmarkButton = ({
       mutation.mutate(
         { questionId, next },
         {
-          onError: () => setOptimisticActive(!next),
+          onError: (error) => {
+            setOptimisticActive(!next);
+            if (error instanceof ApiError && error.status === 401) return; // 전역 401 핸들러가 처리
+            toast.error(
+              next
+                ? "북마크에 실패했습니다. 잠시 후 다시 시도해 주세요."
+                : "북마크 해제에 실패했습니다. 잠시 후 다시 시도해 주세요."
+            );
+          },
           onSuccess: () => onToggled?.(next),
         }
       );
