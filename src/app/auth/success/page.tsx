@@ -1,9 +1,15 @@
 "use client";
 
 import React, { useEffect, Suspense } from "react";
+import dynamic from "next/dynamic";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useAuth } from "@/contexts/AuthContext";
-import { DotLottieReact } from "@lottiefiles/dotlottie-react";
+
+// 캔버스 기반 라이브러리라 SSR 시 크래시(Internal Server Error) 남 — 클라이언트 전용으로 로드
+const DotLottieReact = dynamic(
+  () => import("@lottiefiles/dotlottie-react").then((mod) => mod.DotLottieReact),
+  { ssr: false }
+);
 
 const POST_LOGIN_REDIRECT_KEY = "qknou_post_login_redirect";
 
