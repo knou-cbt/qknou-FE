@@ -43,10 +43,12 @@ async function validatePdfFile(file: File): Promise<string | null> {
   return null;
 }
 
-const currentYear = new Date().getFullYear();
-const YEAR_OPTIONS = Array.from({ length: 12 }, (_, i) => currentYear - i).map(
-  (year) => ({ value: String(year), label: `${year}년` })
-);
+const MAX_EXAM_YEAR = 2019;
+const MIN_EXAM_YEAR = 2013;
+const YEAR_OPTIONS = Array.from(
+  { length: MAX_EXAM_YEAR - MIN_EXAM_YEAR + 1 },
+  (_, i) => MAX_EXAM_YEAR - i
+).map((year) => ({ value: String(year), label: `${year}년` }));
 
 /** 헤더 유저메뉴 등에서 재사용하는 시험지 등록 모달 오픈 훅 */
 export function useExamSubmissionModal() {
