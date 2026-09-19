@@ -2,7 +2,8 @@
 
 import { useEffect, useState } from "react";
 
-const DESKTOP_BREAKPOINT = 768;
+// 고정(fixed) 사이드 광고가 콘텐츠를 가리지 않으려면 태블릿보다 넓은 화면이 필요 — Tailwind `xl`과 동일
+const DESKTOP_BREAKPOINT = 1280;
 const ADFIT_SCRIPT_SRC = "https://t1.daumcdn.net/kas/static/ba.min.js";
 
 /** fixed 사이드 광고(160px) + right-4(16px) + 콘텐츠 간격(16px) */
@@ -12,7 +13,7 @@ export const examSideAdContentStyle = {
   "--desktop-side-ad-reserved": `${DESKTOP_SIDE_AD_RESERVED_PX}px`,
 } as React.CSSProperties;
 
-const AD_UNIT = {
+export const AD_UNIT = {
   mobile: "DAN-ctqbpCkL5AnrfFZY",
   mobileRect: "DAN-xvCJKicUSkdeRspa",
   desktopBottom: "DAN-rjm8cuVO5tqxkcLZ",
@@ -31,7 +32,7 @@ function clearAdSlots() {
   });
 }
 
-function loadAdfitScript() {
+export function loadAdfitScript() {
   removeAdfitScripts();
   clearAdSlots();
 

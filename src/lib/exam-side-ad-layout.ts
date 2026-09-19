@@ -9,7 +9,7 @@ export const examDetailStyle = examSideAdContentStyle;
  * (자식 max-w만 줄이면 items-center 기준으로 광고와 겹침)
  */
 export const examDetailContentAreaClassName =
-  "w-full md:w-[calc(100%-var(--desktop-side-ad-reserved))]";
+  "w-full xl:w-[calc(100%-var(--desktop-side-ad-reserved))]";
 
 const contentMaxW = (px: number) =>
   cn("w-full mx-auto", `max-w-[${px}px]`);
