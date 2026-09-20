@@ -121,6 +121,7 @@ export const MemorizeModePage = ({ subjectId, yearId }: Props) => {
     feedbackModalOpen,
     feedbackModalDefaultType,
     feedbackModalQuestionId,
+    feedbackModalQuestionDisplayNumber,
     openFeedbackModal,
     closeFeedbackModal,
   } = useFeedbackModal();
@@ -369,6 +370,7 @@ export const MemorizeModePage = ({ subjectId, yearId }: Props) => {
                 openFeedbackModal({
                   type: "question_bug",
                   questionId: currentQuestion.id,
+                  questionDisplayNumber: currentIndex + 1,
                 })
               }
             />
@@ -484,6 +486,7 @@ export const MemorizeModePage = ({ subjectId, yearId }: Props) => {
         onClose={closeFeedbackModal}
         defaultType={feedbackModalDefaultType}
         questionId={feedbackModalQuestionId}
+        questionDisplayNumber={feedbackModalQuestionDisplayNumber}
       />
     </div>
   );

@@ -34,6 +34,7 @@ export const SharedQuestionPage = ({ questionId }: Props) => {
     feedbackModalOpen,
     feedbackModalDefaultType,
     feedbackModalQuestionId,
+    feedbackModalQuestionDisplayNumber,
     openFeedbackModal,
     closeFeedbackModal,
   } = useFeedbackModal();
@@ -103,6 +104,7 @@ export const SharedQuestionPage = ({ questionId }: Props) => {
                 openFeedbackModal({
                   type: "question_bug",
                   questionId: data.id,
+                  questionDisplayNumber: data.questionNumber,
                 })
               }
             />
@@ -143,6 +145,7 @@ export const SharedQuestionPage = ({ questionId }: Props) => {
         onClose={closeFeedbackModal}
         defaultType={feedbackModalDefaultType}
         questionId={feedbackModalQuestionId}
+        questionDisplayNumber={feedbackModalQuestionDisplayNumber}
       />
     </div>
   );

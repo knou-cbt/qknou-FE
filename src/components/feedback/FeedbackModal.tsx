@@ -29,6 +29,8 @@ const MAX_CONTENT_LENGTH = 5000;
 interface IFeedbackModalOpenOptions {
   type?: TFeedbackType;
   questionId?: number;
+  /** 사용자가 화면에서 본 문제 번호(예: "8/25"의 8, 실제 시험지의 41번 등) — 있으면 문항 ID 대신 이 번호를 보여준다 */
+  questionDisplayNumber?: number;
 }
 
 /** Footer/암기모드/시험모드 진입점에서 재사용하는 피드백 모달 오픈 훅 */
@@ -37,6 +39,7 @@ export function useFeedbackModal() {
     open: boolean;
     type?: TFeedbackType;
     questionId?: number;
+    questionDisplayNumber?: number;
   }>({ open: false });
   const requireAuth = useRequireAuth();
 
@@ -47,6 +50,7 @@ export function useFeedbackModal() {
           open: true,
           type: options?.type,
           questionId: options?.questionId,
+          questionDisplayNumber: options?.questionDisplayNumber,
         })
       );
     },
@@ -61,6 +65,7 @@ export function useFeedbackModal() {
     feedbackModalOpen: state.open,
     feedbackModalDefaultType: state.type,
     feedbackModalQuestionId: state.questionId,
+    feedbackModalQuestionDisplayNumber: state.questionDisplayNumber,
     openFeedbackModal,
     closeFeedbackModal,
   };
@@ -71,6 +76,7 @@ interface IFeedbackModalProps {
   onClose: () => void;
   defaultType?: TFeedbackType;
   questionId?: number;
+  questionDisplayNumber?: number;
 }
 
 /**
@@ -83,6 +89,7 @@ export const FeedbackModal = ({
   onClose,
   defaultType,
   questionId,
+  questionDisplayNumber,
 }: IFeedbackModalProps) => {
   return (
     <Modal open={open} onClose={onClose}>
@@ -91,6 +98,7 @@ export const FeedbackModal = ({
           onClose={onClose}
           defaultType={defaultType}
           questionId={questionId}
+          questionDisplayNumber={questionDisplayNumber}
         />
       )}
     </Modal>
@@ -101,14 +109,19 @@ interface IFeedbackModalBodyProps {
   onClose: () => void;
   defaultType?: TFeedbackType;
   questionId?: number;
+  questionDisplayNumber?: number;
 }
 
 const FeedbackModalBody = ({
   onClose,
   defaultType,
   questionId,
+  questionDisplayNumber,
 }: IFeedbackModalBodyProps) => {
   const [type, setType] = useState<TFeedbackType | undefined>(defaultType);
+  // 화면에 보여줄 문제 번호가 있으면(=특정 문제에서 진입) 내부 DB id는 숨기고
+  // 그 번호만 읽기 전용으로 보여준다. 없으면(전역 피드백 진입) 직접 입력하게 둔다.
+  const hasDisplayNumber = questionDisplayNumber !== undefined;
   const [questionIdInput, setQuestionIdInput] = useState(
     questionId ? String(questionId) : ""
   );
@@ -128,9 +141,11 @@ const FeedbackModalBody = ({
   const handleSubmit = async () => {
     if (!type || content.trim().length === 0 || mutation.isPending) return;
 
-    const parsedQuestionId = questionIdInput.trim()
-      ? Number(questionIdInput.trim())
-      : undefined;
+    const resolvedQuestionId = hasDisplayNumber
+      ? questionId
+      : questionIdInput.trim()
+        ? Number(questionIdInput.trim())
+        : undefined;
 
     try {
       await mutation.mutateAsync({
@@ -138,9 +153,9 @@ const FeedbackModalBody = ({
         content: content.trim(),
         questionId:
           showQuestionId &&
-          parsedQuestionId !== undefined &&
-          !Number.isNaN(parsedQuestionId)
-            ? parsedQuestionId
+          resolvedQuestionId !== undefined &&
+          !Number.isNaN(resolvedQuestionId)
+            ? resolvedQuestionId
             : undefined,
         pageUrl: showPageUrl
           ? pageUrlInput.trim().slice(0, 2000) || undefined
@@ -199,24 +214,33 @@ const FeedbackModalBody = ({
           </div>
         </div>
 
-        {/* 문항 ID */}
+        {/* 문항 번호 */}
         {showQuestionId && (
           <div>
             <label
               htmlFor="feedback-question-id"
               className="mb-1.5 block text-sm font-medium text-[#374151]"
             >
-              문항 ID
+              문항 번호
             </label>
-            <input
-              id="feedback-question-id"
-              type="number"
-              inputMode="numeric"
-              value={questionIdInput}
-              onChange={(e) => setQuestionIdInput(e.target.value)}
-              placeholder="해당하는 경우에만 입력해주세요"
-              className="w-full rounded-md border border-input px-3 py-2 text-sm shadow-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring hover:border-[#9CA3AF]"
-            />
+            {hasDisplayNumber ? (
+              <p
+                id="feedback-question-id"
+                className="w-full rounded-md border border-input bg-[#F9FAFB] px-3 py-2 text-sm text-[#374151]"
+              >
+                {questionDisplayNumber}번
+              </p>
+            ) : (
+              <input
+                id="feedback-question-id"
+                type="number"
+                inputMode="numeric"
+                value={questionIdInput}
+                onChange={(e) => setQuestionIdInput(e.target.value)}
+                placeholder="해당하는 경우에만 입력해주세요"
+                className="w-full rounded-md border border-input px-3 py-2 text-sm shadow-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring hover:border-[#9CA3AF]"
+              />
+            )}
           </div>
         )}
 
