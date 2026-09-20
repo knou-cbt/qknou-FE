@@ -118,6 +118,9 @@ const FeedbackModalBody = ({
   const [content, setContent] = useState("");
   const mutation = useFeedbackMutation();
 
+  const showQuestionId = type === "question_bug";
+  const showPageUrl = type === "question_bug" || type === "site_bug";
+
   const resetAndClose = () => {
     onClose();
   };
@@ -134,10 +137,14 @@ const FeedbackModalBody = ({
         type,
         content: content.trim(),
         questionId:
-          parsedQuestionId !== undefined && !Number.isNaN(parsedQuestionId)
+          showQuestionId &&
+          parsedQuestionId !== undefined &&
+          !Number.isNaN(parsedQuestionId)
             ? parsedQuestionId
             : undefined,
-        pageUrl: pageUrlInput.trim().slice(0, 2000) || undefined,
+        pageUrl: showPageUrl
+          ? pageUrlInput.trim().slice(0, 2000) || undefined
+          : undefined,
       });
       // integrationStatus가 failed여도 접수(DB) 자체는 성공 — 동일 문구로 안내
       toast.success("제보가 접수되었습니다. 확인 후 반영하겠습니다.");
@@ -193,40 +200,44 @@ const FeedbackModalBody = ({
         </div>
 
         {/* 문항 ID */}
-        <div>
-          <label
-            htmlFor="feedback-question-id"
-            className="mb-1.5 block text-sm font-medium text-[#374151]"
-          >
-            문항 ID
-          </label>
-          <input
-            id="feedback-question-id"
-            type="number"
-            inputMode="numeric"
-            value={questionIdInput}
-            onChange={(e) => setQuestionIdInput(e.target.value)}
-            placeholder="해당하는 경우에만 입력해주세요"
-            className="w-full rounded-md border border-input px-3 py-2 text-sm shadow-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring hover:border-[#9CA3AF]"
-          />
-        </div>
+        {showQuestionId && (
+          <div>
+            <label
+              htmlFor="feedback-question-id"
+              className="mb-1.5 block text-sm font-medium text-[#374151]"
+            >
+              문항 ID
+            </label>
+            <input
+              id="feedback-question-id"
+              type="number"
+              inputMode="numeric"
+              value={questionIdInput}
+              onChange={(e) => setQuestionIdInput(e.target.value)}
+              placeholder="해당하는 경우에만 입력해주세요"
+              className="w-full rounded-md border border-input px-3 py-2 text-sm shadow-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring hover:border-[#9CA3AF]"
+            />
+          </div>
+        )}
 
         {/* 관련 페이지 URL */}
-        <div>
-          <label
-            htmlFor="feedback-page-url"
-            className="mb-1.5 block text-sm font-medium text-[#374151]"
-          >
-            관련 페이지 URL
-          </label>
-          <input
-            id="feedback-page-url"
-            type="text"
-            value={pageUrlInput}
-            onChange={(e) => setPageUrlInput(e.target.value)}
-            className="w-full rounded-md border border-input px-3 py-2 text-sm shadow-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring hover:border-[#9CA3AF]"
-          />
-        </div>
+        {showPageUrl && (
+          <div>
+            <label
+              htmlFor="feedback-page-url"
+              className="mb-1.5 block text-sm font-medium text-[#374151]"
+            >
+              관련 페이지 URL
+            </label>
+            <input
+              id="feedback-page-url"
+              type="text"
+              value={pageUrlInput}
+              onChange={(e) => setPageUrlInput(e.target.value)}
+              className="w-full rounded-md border border-input px-3 py-2 text-sm shadow-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring hover:border-[#9CA3AF]"
+            />
+          </div>
+        )}
 
         {/* 내용 */}
         <div>
