@@ -3,7 +3,7 @@
  * API 엔드포인트를 중앙에서 관리합니다.
  */
 
-import { API_URL } from '../urls';
+import { API_URL, NEW_API_URL } from '../urls';
 
 const SERVER_URL = API_URL;
 
@@ -46,8 +46,10 @@ export const ExamApiPaths = {
    * 시험 답안 제출 및 채점
    * POST /api/exams/:id/submit
    *
+   * 로그인 상태로 제출하면 마이페이지 풀이내역(신규 API)에도 저장되므로,
+   * 풀이내역 조회(UserApiPaths.examHistory)와 같은 백엔드를 타도록 신규 API 베이스를 쓴다.
    */
-  submit: (examId: string | number) => `${EXAMS_BASE}/${examId}/submit`,
+  submit: (examId: string | number) => `${NEW_API_URL}/api/exams/${examId}/submit`,
 } as const;
 
 // AI 튜터 API
