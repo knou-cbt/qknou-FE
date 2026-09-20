@@ -2,6 +2,8 @@
 
 import { useEffect, useState } from "react";
 
+import { CoupangDisclosure } from "@/components/coupang-ad";
+
 // 고정(fixed) 사이드 광고가 콘텐츠를 가리지 않으려면 태블릿보다 넓은 화면이 필요 — Tailwind `xl`과 동일
 const DESKTOP_BREAKPOINT = 1280;
 const ADFIT_SCRIPT_SRC = "https://t1.daumcdn.net/kas/static/ba.min.js";
@@ -16,9 +18,11 @@ export const examSideAdContentStyle = {
 export const AD_UNIT = {
   mobile: "DAN-ctqbpCkL5AnrfFZY",
   mobileRect: "DAN-xvCJKicUSkdeRspa",
-  desktopBottom: "DAN-rjm8cuVO5tqxkcLZ",
-  desktopSide: "DAN-FXMS0a38OFAgXFvs",
 } as const;
+
+/** 웹(데스크탑) 하단/사이드는 쿠팡 파트너스로 전환 */
+const COUPANG_DESKTOP_SIDE_WIDGET_SRC = "https://coupa.ng/cpDlpC";
+const COUPANG_DESKTOP_BOTTOM_LINK = "https://link.coupang.com/a/hcpv2rzXPg";
 
 function removeAdfitScripts() {
   document
@@ -43,8 +47,8 @@ export function loadAdfitScript() {
 }
 
 /**
- * - 모바일: 320x50 하단
- * - 웹: 728x90 하단 + 160x600 사이드 (전 페이지)
+ * - 모바일: 320x50 하단 + 320x480 사각 배너 (카카오 애드핏)
+ * - 웹: 하단 + 사이드 (쿠팡 파트너스)
  * - 콘텐츠 max-w 반응형은 시험/암기모드 상세에서 examDetailMaxW로 처리
  * - ba.min.js는 최초 1회만 스캔하므로 breakpoint 변경 시 스크립트 재주입
  */
@@ -103,28 +107,36 @@ export function KakaoAd() {
         </>
       )}
 
-      {/* 웹 하단 + 사이드 */}
+      {/* 웹 하단 + 사이드: 쿠팡 파트너스 */}
       {isDesktop && (
         <>
-          <div className="flex w-full justify-center py-2">
-            <div className="relative h-[90px] w-[728px]">
-              <ins
-                className="kakao_ad_area absolute inset-0 h-[90px] w-[728px]"
-                data-ad-unit={AD_UNIT.desktopBottom}
-                data-ad-width="728"
-                data-ad-height="90"
-              />
-            </div>
+          <div className="flex w-full flex-col items-center gap-2 py-2">
+            <a
+              href={COUPANG_DESKTOP_BOTTOM_LINK}
+              target="_blank"
+              rel="noopener sponsored"
+              referrerPolicy="unsafe-url"
+              className="flex h-[90px] w-[728px] flex-col items-center justify-center gap-1 rounded-[12px] bg-gradient-to-br from-[#F0F4FF] to-[#DCE6FF] text-center transition-opacity hover:opacity-90"
+            >
+              <span className="text-sm font-semibold text-[#155DFC]">
+                쿠팡 파트너스
+              </span>
+              <span className="text-base font-bold text-[#1F2937]">
+                지금 쿠팡에서 특가 상품 보러가기
+              </span>
+            </a>
+            <CoupangDisclosure />
           </div>
-          <div className="fixed right-4 top-24 z-40 h-[600px] w-[160px]">
-            <div className="relative h-full w-full">
-              <ins
-                className="kakao_ad_area absolute inset-0 h-[600px] w-[160px]"
-                data-ad-unit={AD_UNIT.desktopSide}
-                data-ad-width="160"
-                data-ad-height="600"
-              />
-            </div>
+          <div className="fixed right-4 top-24 z-40 flex w-[160px] justify-center">
+            <iframe
+              src={COUPANG_DESKTOP_SIDE_WIDGET_SRC}
+              width={120}
+              height={240}
+              frameBorder="0"
+              scrolling="no"
+              referrerPolicy="unsafe-url"
+              title="쿠팡 파트너스 광고"
+            />
           </div>
         </>
       )}

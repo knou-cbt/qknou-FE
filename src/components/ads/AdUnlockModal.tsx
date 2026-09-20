@@ -5,7 +5,7 @@ import { useEffect, useState } from "react";
 import { Modal, ModalContent, ModalHeader, Button } from "@/components/ui";
 import { CoupangDisclosure } from "@/components/coupang-ad";
 
-const COUPANG_WIDGET_SRC = "https://coupa.ng/cpDlpC";
+const COUPANG_WIDGET_SRC = "https://coupa.ng/cpDlEB";
 
 interface IAdUnlockModalProps {
   open: boolean;
