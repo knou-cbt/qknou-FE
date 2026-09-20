@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 // 고정(fixed) 사이드 광고가 콘텐츠를 가리지 않으려면 태블릿보다 넓은 화면이 필요 — Tailwind `xl`과 동일
 const DESKTOP_BREAKPOINT = 1280;
@@ -94,14 +94,21 @@ function CoupangBanner({ banner }: { banner: ICoupangBanner | null }) {
  * - 각 슬롯은 쿠팡 파트너스에서 발급받은 배너(COUPANG_BANNERS)로 채워진다
  */
 export function CoupangAd() {
-  const [isDesktop] = useState(
-    () =>
-      typeof window !== "undefined" &&
-      window.matchMedia(`(min-width: ${DESKTOP_BREAKPOINT}px)`).matches
-  );
+  // 서버 렌더링 시점엔 window가 없어 화면 폭을 알 수 없다. null로 시작해
+  // 마운트 전까지는 아무것도 그리지 않아야 SSR과 클라이언트 첫 렌더가
+  // 일치해서 하이드레이션 불일치(Hydration failed)가 나지 않는다.
+  const [isDesktop, setIsDesktop] = useState<boolean | null>(null);
+
+  useEffect(() => {
+    const mq = window.matchMedia(`(min-width: ${DESKTOP_BREAKPOINT}px)`);
+    const set = () => setIsDesktop(mq.matches);
+    set();
+    mq.addEventListener("change", set);
+    return () => mq.removeEventListener("change", set);
+  }, []);
 
   const hasAnyBanner = Object.values(COUPANG_BANNERS).some(Boolean);
-  if (!hasAnyBanner) return null;
+  if (!hasAnyBanner || isDesktop === null) return null;
 
   return (
     <div className="flex w-full flex-col items-center gap-1">
