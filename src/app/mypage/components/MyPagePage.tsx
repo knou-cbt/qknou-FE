@@ -27,9 +27,10 @@ export const MyPagePage = () => {
   const { data: bookmarks } = useBookmarkListQuery();
   const { data: examHistory } = useExamHistoryQuery();
 
+  const latestExam = examHistory?.items[0];
   const correctRate =
-    examHistory && examHistory.totalQuestions > 0
-      ? Math.round((examHistory.correctCount / examHistory.totalQuestions) * 100)
+    latestExam && latestExam.totalQuestions > 0
+      ? Math.round((latestExam.correctCount / latestExam.totalQuestions) * 100)
       : null;
 
   const activeTab: TTab =

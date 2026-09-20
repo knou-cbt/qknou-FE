@@ -1,21 +1,16 @@
 "use client";
 
+import { useState } from "react";
 import { useRouter } from "next/navigation";
 
-import {
-  Button,
-  TableRoot,
-  TableHeader,
-  TableBody,
-  TableRow,
-  TableHead,
-  TableCell,
-} from "@/components/ui";
+import { Button, Pagination } from "@/components/ui";
 import { cn } from "@/lib/utils";
 
 import { MyPageCard } from "./MyPageCard";
 import { useExamHistoryQuery } from "../hooks/service";
 import { EXAM_TYPE_LABEL } from "../interface";
+
+const PAGE_SIZE_OPTIONS = [10, 20, 30, 50];
 
 function formatDate(iso: string) {
   const date = new Date(iso);
@@ -40,6 +35,17 @@ function rateBarClass(rate: number) {
 export const ExamHistorySection = () => {
   const router = useRouter();
   const { data, isLoading } = useExamHistoryQuery();
+  const [pageIndex, setPageIndex] = useState(0);
+  const [pageSize, setPageSize] = useState(PAGE_SIZE_OPTIONS[0]);
+
+  const history = data?.items ?? [];
+
+  const pageCount = Math.max(Math.ceil(history.length / pageSize), 1);
+  const clampedPageIndex = Math.min(pageIndex, pageCount - 1);
+  const pageItems = history.slice(
+    clampedPageIndex * pageSize,
+    clampedPageIndex * pageSize + pageSize
+  );
 
   if (isLoading) {
     return (
@@ -64,7 +70,7 @@ export const ExamHistorySection = () => {
     );
   }
 
-  if (!data || !data.exam) {
+  if (history.length === 0) {
     return (
       <div className="flex flex-col items-center gap-4 rounded-xl border border-[#E5E7EB] bg-white p-10 text-center">
         <p className="text-[#6B7280]">아직 제출한 시험이 없어요.</p>
@@ -73,98 +79,72 @@ export const ExamHistorySection = () => {
     );
   }
 
-  const { exam, totalQuestions, correctCount, wrongCount, submittedAt, answers } =
-    data;
-  const correctRate =
-    totalQuestions > 0 ? Math.round((correctCount / totalQuestions) * 100) : 0;
-  const examTypeLabel = EXAM_TYPE_LABEL[exam.examType] ?? "";
-
   return (
-    <div className="flex flex-col gap-6">
-      {/* 요약 카드 */}
+    <div className="flex flex-col gap-4">
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-        <MyPageCard onClick={() => router.push(`/exam/_/${exam.id}/test-mode`)}>
-          <div className="flex items-start justify-between gap-2">
-            <div className="flex min-w-0 items-baseline gap-2">
-              <p className="shrink-0 truncate text-sm font-semibold text-[#101828]">
-                {exam.subject}
-              </p>
-              <p className="truncate text-xs text-[#9CA3AF]">
-                {exam.year}년 · {examTypeLabel}
-              </p>
-            </div>
-            <span
-              className={cn(
-                "shrink-0 rounded-full px-2 py-0.5 text-xs font-semibold",
-                rateBadgeClass(correctRate)
-              )}
+        {pageItems.map((item) => {
+          const correctRate =
+            item.totalQuestions > 0
+              ? Math.round((item.correctCount / item.totalQuestions) * 100)
+              : 0;
+          const examTypeLabel = EXAM_TYPE_LABEL[item.examType] ?? "";
+
+          return (
+            <MyPageCard
+              key={item.id}
+              onClick={() => router.push(`/exam/_/${item.examId}/test-mode`)}
             >
-              {correctRate}%
-            </span>
-          </div>
-
-          <div className="h-1.5 w-full overflow-hidden rounded-full bg-[#E5E7EB]">
-            <div
-              className={cn("h-full rounded-full", rateBarClass(correctRate))}
-              style={{ width: `${correctRate}%` }}
-            />
-          </div>
-
-          <p className="text-xs text-[#9CA3AF]">
-            제출일 {formatDate(submittedAt)} · {correctCount}/{totalQuestions}문항 정답
-          </p>
-        </MyPageCard>
-      </div>
-
-      {/* 정오표 */}
-      <div>
-        <h3 className="mb-3 text-sm font-semibold text-[#101828]">
-          정오표 (정답 {correctCount} · 오답 {wrongCount})
-        </h3>
-        <TableRoot className="w-full overflow-hidden rounded-lg border border-[#E5E7EB] bg-white text-sm">
-          <TableHeader>
-            <TableRow className="hover:bg-transparent">
-              <TableHead className="w-14">번호</TableHead>
-              <TableHead>지문</TableHead>
-              <TableHead className="w-20">내 답</TableHead>
-              <TableHead className="w-20">정답</TableHead>
-              <TableHead className="w-16 text-center">정오</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {answers.map((answer) => (
-              <TableRow key={answer.questionId}>
-                <TableCell className="text-[#6B7280]">
-                  {answer.questionNumber}
-                </TableCell>
-                <TableCell className="max-w-0 truncate">
-                  {answer.questionText}
-                </TableCell>
-                <TableCell>
-                  {answer.userAnswer === null ? (
-                    <span className="text-[#9CA3AF]">미선택</span>
-                  ) : (
-                    answer.userAnswer
+              <div className="flex items-start justify-between gap-2">
+                <div className="flex min-w-0 items-baseline gap-2">
+                  <p className="shrink-0 truncate text-sm font-semibold text-[#101828]">
+                    {item.subjectName}
+                  </p>
+                  <p className="truncate text-xs text-[#9CA3AF]">
+                    {item.year}년 · {examTypeLabel}
+                  </p>
+                </div>
+                <span
+                  className={cn(
+                    "shrink-0 rounded-full px-2 py-0.5 text-xs font-semibold",
+                    rateBadgeClass(correctRate)
                   )}
-                </TableCell>
-                <TableCell>{answer.correctAnswers.join(", ")}</TableCell>
-                <TableCell className="text-center">
-                  <span
-                    className={cn(
-                      "inline-flex h-6 w-6 items-center justify-center rounded-full text-xs font-semibold",
-                      answer.isCorrect
-                        ? "bg-[#DCFCE7] text-[#22C55E]"
-                        : "bg-[#FEE2E2] text-[#EF4444]"
-                    )}
-                  >
-                    {answer.isCorrect ? "O" : "X"}
-                  </span>
-                </TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </TableRoot>
+                >
+                  {correctRate}%
+                </span>
+              </div>
+
+              <p className="truncate text-xs text-[#9CA3AF]">{item.examTitle}</p>
+
+              <div className="h-1.5 w-full overflow-hidden rounded-full bg-[#E5E7EB]">
+                <div
+                  className={cn("h-full rounded-full", rateBarClass(correctRate))}
+                  style={{ width: `${correctRate}%` }}
+                />
+              </div>
+
+              <p className="text-xs text-[#9CA3AF]">
+                제출일 {formatDate(item.submittedAt)} · {item.correctCount}/
+                {item.totalQuestions}문항 정답
+              </p>
+            </MyPageCard>
+          );
+        })}
       </div>
+
+      {history.length > 0 && (
+        <Pagination
+          pageIndex={clampedPageIndex}
+          pageCount={pageCount}
+          onPageIndexChange={setPageIndex}
+          pageSize={pageSize}
+          onPageSizeChange={(size) => {
+            setPageSize(size);
+            setPageIndex(0);
+          }}
+          pageSizeOptions={PAGE_SIZE_OPTIONS}
+          bare
+        />
+      )}
     </div>
   );
 };
