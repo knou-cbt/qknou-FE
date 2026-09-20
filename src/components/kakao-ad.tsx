@@ -127,7 +127,7 @@ export function KakaoAd() {
             </a>
             <CoupangDisclosure />
           </div>
-          <div className="fixed right-4 top-24 z-40 flex w-[160px] justify-center">
+          <div className="fixed right-4 top-24 z-40 flex w-[160px] justify-center rounded-[12px] bg-white">
             <iframe
               src={COUPANG_DESKTOP_SIDE_WIDGET_SRC}
               width={160}
