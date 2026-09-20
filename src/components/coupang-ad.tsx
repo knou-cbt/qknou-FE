@@ -14,7 +14,7 @@ export const examSideAdContentStyle = {
 
 /**
  * 쿠팡 파트너스 활동으로 발급받은 딥링크. 배너/광고 클릭 시 이 중 하나로 랜덤 이동한다.
- * (쿠팡 파트너스 위젯을 쓰는 자리는 COUPANG_WIDGET_SRC의 iframe src로 대체 예정)
+ * (페이지 배너는 COUPANG_BANNERS의 이미지+링크를 그대로 사용)
  */
 export const COUPANG_PARTNER_LINKS = [
   "https://link.coupang.com/a/hcmIpWXoJ2",
@@ -27,16 +27,32 @@ export function pickRandomCoupangLink(): string {
   return COUPANG_PARTNER_LINKS[index];
 }
 
+interface ICoupangBanner {
+  href: string;
+  imgSrc: string;
+  width: number;
+  height: number;
+}
+
 /**
- * 쿠팡 파트너스 사이트에서 발급받은 배너 위젯의 iframe src를 슬롯별로 채워 넣는다.
- * 빈 문자열인 슬롯은 렌더링하지 않는다 (위젯 코드 등록 전 레이아웃 깨짐 방지).
+ * 쿠팡 파트너스에서 발급받은 배너(이미지 + 딥링크)를 슬롯별로 채워 넣는다.
+ * null인 슬롯은 렌더링하지 않는다 (배너 등록 전 레이아웃 깨짐 방지).
  */
-export const COUPANG_WIDGET_SRC = {
-  mobile: "",
-  mobileRect: "",
-  desktopBottom: "",
-  desktopSide: "",
-} as const;
+export const COUPANG_BANNERS: Record<
+  "mobile" | "mobileRect" | "desktopBottom" | "desktopSide",
+  ICoupangBanner | null
+> = {
+  mobile: null,
+  mobileRect: null,
+  desktopBottom: {
+    href: "https://link.coupang.com/a/hcmYkPk9kG",
+    imgSrc:
+      "https://ads-partners.coupang.com/banners/1031443?trackingCode=AF2198707&subId=&traceId=V0-301-879dd1202e5c73b2-I1031443&w=728&h=90",
+    width: 728,
+    height: 90,
+  },
+  desktopSide: null,
+};
 
 /** 쿠팡 파트너스 활동 관련 공정거래위원회 고시 의무 표기 문구 */
 export const COUPANG_DISCLOSURE_TEXT =
@@ -50,27 +66,24 @@ export function CoupangDisclosure({ className }: { className?: string }) {
   );
 }
 
-function CoupangWidget({
-  src,
-  width,
-  height,
-}: {
-  src: string;
-  width: number;
-  height: number;
-}) {
-  if (!src) return null;
+function CoupangBanner({ banner }: { banner: ICoupangBanner | null }) {
+  if (!banner) return null;
 
   return (
-    <iframe
-      src={src}
-      width={width}
-      height={height}
-      frameBorder="0"
-      scrolling="no"
+    <a
+      href={banner.href}
+      target="_blank"
+      rel="noopener sponsored"
       referrerPolicy="unsafe-url"
-      title="쿠팡 파트너스 광고"
-    />
+    >
+      {/* eslint-disable-next-line @next/next/no-img-element -- 쿠팡 파트너스가 직접 제공하는 트래킹 이미지 URL */}
+      <img
+        src={banner.imgSrc}
+        alt=""
+        width={banner.width}
+        height={banner.height}
+      />
+    </a>
   );
 }
 
@@ -78,7 +91,7 @@ function CoupangWidget({
  * - 모바일: 320x50 하단 + 320x480 사각 배너
  * - 웹: 728x90 하단 + 160x600 사이드 (전 페이지)
  * - 콘텐츠 max-w 반응형은 시험/암기모드 상세에서 examDetailMaxW로 처리
- * - 각 슬롯은 쿠팡 파트너스 위젯 iframe(COUPANG_WIDGET_SRC)으로 채워진다
+ * - 각 슬롯은 쿠팡 파트너스에서 발급받은 배너(COUPANG_BANNERS)로 채워진다
  */
 export function CoupangAd() {
   const [isDesktop] = useState(
@@ -87,8 +100,8 @@ export function CoupangAd() {
       window.matchMedia(`(min-width: ${DESKTOP_BREAKPOINT}px)`).matches
   );
 
-  const hasAnyWidget = Object.values(COUPANG_WIDGET_SRC).some(Boolean);
-  if (!hasAnyWidget) return null;
+  const hasAnyBanner = Object.values(COUPANG_BANNERS).some(Boolean);
+  if (!hasAnyBanner) return null;
 
   return (
     <div className="flex w-full flex-col items-center gap-1">
@@ -97,20 +110,12 @@ export function CoupangAd() {
         <>
           <div className="flex w-full justify-center py-2">
             <div className="relative min-h-[50px] w-full max-w-[320px]">
-              <CoupangWidget
-                src={COUPANG_WIDGET_SRC.mobile}
-                width={320}
-                height={50}
-              />
+              <CoupangBanner banner={COUPANG_BANNERS.mobile} />
             </div>
           </div>
           <div className="flex w-full justify-center py-2">
             <div className="relative min-h-[480px] w-full max-w-[320px]">
-              <CoupangWidget
-                src={COUPANG_WIDGET_SRC.mobileRect}
-                width={320}
-                height={480}
-              />
+              <CoupangBanner banner={COUPANG_BANNERS.mobileRect} />
             </div>
           </div>
         </>
@@ -121,19 +126,11 @@ export function CoupangAd() {
         <>
           <div className="flex w-full justify-center py-2">
             <div className="relative h-[90px] w-[728px]">
-              <CoupangWidget
-                src={COUPANG_WIDGET_SRC.desktopBottom}
-                width={728}
-                height={90}
-              />
+              <CoupangBanner banner={COUPANG_BANNERS.desktopBottom} />
             </div>
           </div>
           <div className="fixed right-4 top-24 z-40 h-[600px] w-[160px]">
-            <CoupangWidget
-              src={COUPANG_WIDGET_SRC.desktopSide}
-              width={160}
-              height={600}
-            />
+            <CoupangBanner banner={COUPANG_BANNERS.desktopSide} />
           </div>
         </>
       )}
