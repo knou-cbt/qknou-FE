@@ -131,7 +131,7 @@ export function KakaoAd() {
             <iframe
               src={COUPANG_DESKTOP_SIDE_WIDGET_SRC}
               width={160}
-              height={600}
+              height={480}
               frameBorder="0"
               scrolling="no"
               referrerPolicy="unsafe-url"
