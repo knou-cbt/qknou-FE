@@ -34,18 +34,12 @@ function rateBarClass(rate: number) {
 
 export const ExamHistorySection = () => {
   const router = useRouter();
-  const { data, isLoading } = useExamHistoryQuery();
   const [pageIndex, setPageIndex] = useState(0);
   const [pageSize, setPageSize] = useState(PAGE_SIZE_OPTIONS[0]);
+  const { data, isLoading } = useExamHistoryQuery(pageIndex + 1, pageSize);
 
   const history = data?.items ?? [];
-
-  const pageCount = Math.max(Math.ceil(history.length / pageSize), 1);
-  const clampedPageIndex = Math.min(pageIndex, pageCount - 1);
-  const pageItems = history.slice(
-    clampedPageIndex * pageSize,
-    clampedPageIndex * pageSize + pageSize
-  );
+  const pageCount = Math.max(Math.ceil((data?.total ?? 0) / pageSize), 1);
 
   if (isLoading) {
     return (
@@ -82,7 +76,7 @@ export const ExamHistorySection = () => {
   return (
     <div className="flex flex-col gap-4">
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-        {pageItems.map((item) => {
+        {history.map((item) => {
           const correctRate =
             item.totalQuestions > 0
               ? Math.round((item.correctCount / item.totalQuestions) * 100)
@@ -133,7 +127,7 @@ export const ExamHistorySection = () => {
 
       {history.length > 0 && (
         <Pagination
-          pageIndex={clampedPageIndex}
+          pageIndex={pageIndex}
           pageCount={pageCount}
           onPageIndexChange={setPageIndex}
           pageSize={pageSize}
