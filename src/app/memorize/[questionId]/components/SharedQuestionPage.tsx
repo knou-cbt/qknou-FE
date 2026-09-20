@@ -79,7 +79,7 @@ export const SharedQuestionPage = ({ questionId }: Props) => {
           <div className={examDetailMaxW[896]}>
             <Breadcrumb
               subject={data.exam.subject}
-              year={data.exam.title}
+              year={data.exam.year.toString()}
               subjectHref="/"
             />
           </div>
@@ -93,7 +93,7 @@ export const SharedQuestionPage = ({ questionId }: Props) => {
             )}
           >
             <p className="text-sm text-[#6B7280]">
-              {data.exam.title} | 문항 {data.questionNumber}번
+              {data.exam.subject} {data.exam.year}년 | 문항 {data.questionNumber}번
             </p>
             <QuestionActionIcons
               questionId={data.id}

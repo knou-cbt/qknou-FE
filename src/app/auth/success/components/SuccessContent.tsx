@@ -1,15 +1,9 @@
 "use client";
 
 import { useEffect, Suspense } from "react";
-import dynamic from "next/dynamic";
 import { useRouter, useSearchParams } from "next/navigation";
+import { CheckCircle2 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
-
-// 캔버스 기반 라이브러리라 SSR 시 크래시(Internal Server Error) 남 — 클라이언트 전용으로 로드
-const DotLottieReact = dynamic(
-  () => import("@lottiefiles/dotlottie-react").then((mod) => mod.DotLottieReact),
-  { ssr: false }
-);
 
 const POST_LOGIN_REDIRECT_KEY = "qknou_post_login_redirect";
 
@@ -74,12 +68,7 @@ const SuccessInner = () => {
     <div className="min-h-screen flex items-center justify-center">
       <div className="text-center">
         <div className="flex items-center justify-center mb-4">
-          <DotLottieReact
-            src="https://lottie.host/42c54b62-8c5c-420a-b6ee-c1ccbb807a8c/R81ZrMWu9A.lottie"
-            loop
-            autoplay
-            className="w-32 h-32"
-          />
+          <CheckCircle2 className="w-24 h-24 text-[#22C55E]" strokeWidth={1.5} />
         </div>
         <h1 className="text-2xl font-bold text-gray-900 mb-2">
           로그인 성공!

@@ -14,7 +14,7 @@ interface IApiResponse<T> {
 
 interface IQuestionMeta {
   questionNumber: number;
-  exam: { title: string; subject: string };
+  exam: { subject: string; year: number };
 }
 
 async function getQuestionMeta(questionId: string): Promise<IQuestionMeta | null> {
@@ -37,10 +37,10 @@ export async function generateMetadata({
   const meta = await getQuestionMeta(questionId);
 
   const title = meta
-    ? `${meta.exam.subject} ${meta.exam.title} ${meta.questionNumber}번 문항`
+    ? `${meta.exam.subject} ${meta.exam.year}년 ${meta.questionNumber}번 문항`
     : "공유된 문항";
   const description = meta
-    ? `${meta.exam.subject} · ${meta.exam.title} 기출문제 ${meta.questionNumber}번 문항을 큐노에서 확인하세요.`
+    ? `${meta.exam.subject} · ${meta.exam.year}년 기출문제 ${meta.questionNumber}번 문항을 큐노에서 확인하세요.`
     : "큐노에서 공유된 기출문제 문항을 확인하세요.";
 
   return {
