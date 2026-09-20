@@ -225,7 +225,7 @@ jest.mock("@/components", () => {
   return {
     Header: actualHeader.Header,
     Footer: () => <div data-testid="footer">footer</div>,
-    CoupangAd: () => <div data-testid="coupang-ad">ad</div>,
+    KakaoAd: () => <div data-testid="kakao-ad">ad</div>,
     Toaster: () => null,
   };
 });

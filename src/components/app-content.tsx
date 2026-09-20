@@ -1,7 +1,7 @@
 "use client";
 import { usePathname } from "next/navigation";
 
-import { Header, Footer, CoupangAd, Toaster } from "@/components";
+import { Header, Footer, KakaoAd, Toaster } from "@/components";
 import { useExamContext } from "@/contexts";
 
 interface AppContentProps {
@@ -27,7 +27,7 @@ export function AppContent({ children }: AppContentProps) {
         />
       )}
       {children}
-      <CoupangAd />
+      <KakaoAd />
       <Footer />
       <Toaster />
     </div>

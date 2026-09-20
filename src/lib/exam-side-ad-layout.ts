@@ -1,5 +1,5 @@
 import { cn } from "@/lib/utils";
-import { examSideAdContentStyle } from "@/components/coupang-ad";
+import { examSideAdContentStyle } from "@/components/kakao-ad";
 
 /** CSS 변수(--desktop-side-ad-reserved) 설정용 */
 export const examDetailStyle = examSideAdContentStyle;
