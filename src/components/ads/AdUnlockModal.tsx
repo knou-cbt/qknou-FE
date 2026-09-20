@@ -3,7 +3,10 @@
 import { useEffect, useState } from "react";
 
 import { Modal, ModalContent, ModalHeader, Button } from "@/components/ui";
-import { AD_UNIT, loadAdfitScript } from "@/components/kakao-ad";
+import {
+  CoupangDisclosure,
+  pickRandomCoupangLink,
+} from "@/components/coupang-ad";
 
 interface IAdUnlockModalProps {
   open: boolean;
@@ -30,15 +33,11 @@ const AdUnlockModalBody = ({
   onClose: () => void;
   onUnlocked: () => void;
 }) => {
-  // 광고는 교차 출처 iframe이라 실제 클릭 이벤트를 직접 감지할 수 없다.
-  // 대신 "광고를 클릭 → 새 탭/광고주 페이지로 이동 → 이 창으로 복귀"할 때
-  // 발생하는 탭 비활성화→재활성화를 클릭의 근사 신호로 사용한다.
+  // 새 탭으로 열리는 쿠팡 파트너스 링크라 실제 클릭 이벤트를 직접 감지할 수 없다.
+  // 대신 "링크를 클릭 → 새 탭으로 이동 → 이 창으로 복귀"할 때 발생하는
+  // 탭 비활성화→재활성화를 클릭의 근사 신호로 사용한다.
   const [hasLeftAndReturned, setHasLeftAndReturned] = useState(false);
-
-  useEffect(() => {
-    const timer = window.setTimeout(loadAdfitScript, 0);
-    return () => window.clearTimeout(timer);
-  }, []);
+  const [adLink] = useState(() => pickRandomCoupangLink());
 
   useEffect(() => {
     let hasLeft = false;
@@ -73,22 +72,26 @@ const AdUnlockModalBody = ({
       </ModalHeader>
 
       <p className="mb-4 text-sm text-[#6B7280]">
-        아래 광고를 <strong className="text-[#374151]">클릭</strong>하면 30분
-        동안 모든 해설을 무제한으로 볼 수 있어요. 광고 클릭 후 이 창으로
-        돌아오면 버튼이 활성화돼요.
+        아래 배너를 <strong className="text-[#374151]">클릭</strong>하면 30분
+        동안 모든 해설을 무제한으로 볼 수 있어요. 클릭 후 이 창으로 돌아오면
+        버튼이 활성화돼요.
       </p>
 
-      <div className="flex justify-center py-2">
-        <div className="relative min-h-[480px] w-full max-w-[320px]">
-          <ins
-            className="kakao_ad_area absolute inset-0 min-h-[480px] min-w-[320px]"
-            style={{ display: "none" }}
-            data-ad-unit={AD_UNIT.mobileRect}
-            data-ad-width="320"
-            data-ad-height="480"
-          />
-        </div>
-      </div>
+      <a
+        href={adLink}
+        target="_blank"
+        rel="noopener noreferrer sponsored"
+        className="flex min-h-[160px] w-full flex-col items-center justify-center gap-2 rounded-[12px] bg-gradient-to-br from-[#F0F4FF] to-[#DCE6FF] px-4 py-8 text-center transition-opacity hover:opacity-90"
+      >
+        <span className="text-sm font-semibold text-[#155DFC]">
+          쿠팡 파트너스
+        </span>
+        <span className="text-base font-bold text-[#1F2937]">
+          지금 쿠팡에서 특가 상품 보러가기
+        </span>
+      </a>
+
+      <CoupangDisclosure className="mt-2" />
 
       <Button
         onClick={onUnlocked}

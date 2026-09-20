@@ -16,7 +16,7 @@ jest.mock("@/components", () => ({
     <div data-testid="header">{variant}</div>
   ),
   Footer: () => <div data-testid="footer">footer</div>,
-  KakaoAd: () => <div data-testid="kakao-ad">ad</div>,
+  CoupangAd: () => <div data-testid="coupang-ad">ad</div>,
   Toaster: () => <div data-testid="toaster">toaster</div>,
 }));
 
@@ -52,7 +52,7 @@ describe("AppContent", () => {
     expect(screen.getByTestId("header")).toHaveTextContent("exam");
     expect(screen.getByText("content")).toBeInTheDocument();
     expect(screen.getByTestId("footer")).toBeInTheDocument();
-    expect(screen.getByTestId("kakao-ad")).toBeInTheDocument();
+    expect(screen.getByTestId("coupang-ad")).toBeInTheDocument();
   });
 
   it("falls back to the default header after submission", () => {
@@ -84,7 +84,7 @@ describe("AppContent", () => {
 
     expect(screen.queryByTestId("header")).not.toBeInTheDocument();
     expect(screen.getByTestId("footer")).toBeInTheDocument();
-    expect(screen.getByTestId("kakao-ad")).toBeInTheDocument();
+    expect(screen.getByTestId("coupang-ad")).toBeInTheDocument();
   });
 });
 
