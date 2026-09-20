@@ -130,8 +130,8 @@ export function KakaoAd() {
           <div className="fixed right-4 top-24 z-40 flex w-[160px] justify-center">
             <iframe
               src={COUPANG_DESKTOP_SIDE_WIDGET_SRC}
-              width={120}
-              height={240}
+              width={160}
+              height={600}
               frameBorder="0"
               scrolling="no"
               referrerPolicy="unsafe-url"
