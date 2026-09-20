@@ -1,7 +1,4 @@
-/**
- * 해설 30분 무제한 잠금 해제(AdUnlockModal) 전용 쿠팡 파트너스 자료.
- * 사이트 배너 광고는 kakao-ad.tsx(KakaoAd)를 그대로 유지한다.
- */
+import { cn } from "@/lib/utils";
 
 /** 쿠팡 파트너스 활동 관련 공정거래위원회 고시 의무 표기 문구 */
 export const COUPANG_DISCLOSURE_TEXT =
@@ -9,7 +6,7 @@ export const COUPANG_DISCLOSURE_TEXT =
 
 export function CoupangDisclosure({ className }: { className?: string }) {
   return (
-    <p className={`text-center text-xs text-[#9CA3AF] ${className ?? ""}`}>
+    <p className={cn("text-center text-xs text-[#9CA3AF]", className)}>
       {COUPANG_DISCLOSURE_TEXT}
     </p>
   );
