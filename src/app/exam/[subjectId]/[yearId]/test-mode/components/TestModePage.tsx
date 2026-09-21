@@ -679,6 +679,7 @@ export const TestModePage = ({ subjectId, yearId }: Props) => {
                 })
               }
               aria-label="문항 오류 제보"
+              title="문항 오류 제보"
               className="flex size-8 items-center justify-center rounded-full text-[#6B7280] transition-colors cursor-pointer hover:bg-[#F3F4F6]"
             >
               <Flag className="size-4" />

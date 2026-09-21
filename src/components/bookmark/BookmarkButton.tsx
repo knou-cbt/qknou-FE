@@ -76,6 +76,7 @@ export const BookmarkButton = ({
       onClick={handleClick}
       aria-pressed={optimisticActive}
       aria-label={optimisticActive ? "북마크 해제" : "북마크에 추가"}
+      title={optimisticActive ? "북마크 해제" : "북마크에 추가"}
       className={cn(
         "flex items-center justify-center rounded-full transition-colors cursor-pointer hover:bg-[#F3F4F6]",
         sizeClass[size],
