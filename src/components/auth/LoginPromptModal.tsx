@@ -2,10 +2,18 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import { Check } from "lucide-react";
 
 import { Modal, ModalContent, ModalHeader, ModalFooter, Button } from "@/components/ui";
 import { hideLoginPrompt, subscribeLoginPrompt } from "@/lib/loginPrompt";
 import { POST_LOGIN_REDIRECT_KEY } from "@/lib/auth-token";
+
+const LOGIN_FEATURES = [
+  "문항 북마크",
+  "문제/해설 오류 제보",
+  "시험지 등록",
+  "마이페이지에서 풀이 내역 확인",
+];
 
 /** AppContent에 한 번 마운트 — useRequireAuth가 비로그인 시 여는 안내 모달 */
 export const LoginPromptModal = () => {
@@ -30,11 +38,23 @@ export const LoginPromptModal = () => {
       {open && (
         <ModalContent size="sm">
           <ModalHeader showCloseButton onClose={hideLoginPrompt}>
-            로그인이 필요해요
+            로그인 안내
           </ModalHeader>
           <p className="text-sm leading-6 text-[#374151]">
-            로그인 후 가능한 기능입니다.
-            <br />
+            로그인하면 아래 기능을 이용할 수 있어요.
+          </p>
+          <ul className="mt-3 flex flex-col gap-2">
+            {LOGIN_FEATURES.map((feature) => (
+              <li
+                key={feature}
+                className="flex items-center gap-2 text-sm text-[#374151]"
+              >
+                <Check className="size-4 shrink-0 text-[#155DFC]" />
+                {feature}
+              </li>
+            ))}
+          </ul>
+          <p className="mt-4 text-sm leading-6 text-[#374151]">
             로그인 하시겠습니까?
           </p>
           <ModalFooter className="mt-6">
