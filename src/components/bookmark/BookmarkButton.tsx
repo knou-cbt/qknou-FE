@@ -87,7 +87,7 @@ export const BookmarkButton = ({
           iconSizeClass[size],
           optimisticActive
             ? "fill-[#155DFC] text-[#155DFC]"
-            : "text-[#9CA3AF]"
+            : "text-[#6B7280]"
         )}
       />
     </button>

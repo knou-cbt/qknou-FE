@@ -263,9 +263,8 @@ const FeedbackModalBody = ({
             onChange={(e) =>
               setContent(e.target.value.slice(0, MAX_CONTENT_LENGTH))
             }
-            // 문제 본문 복사 방지(useCopyProtection)는 document 전역에 paste를
-            // 막는 방식이라, 여기서 버블링을 막아 이 입력창만 예외로 붙여넣기를 허용한다.
-            onPaste={(e) => e.stopPropagation()}
+            // 전역 복사 방지(useCopyProtection)의 paste 차단 예외 대상으로 표시
+            data-allow-paste
             placeholder="불편했던 점이나 제안하고 싶은 내용을 자유롭게 적어주세요."
             rows={6}
             className="w-full resize-none rounded-md border border-input px-3 py-2 text-sm shadow-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring hover:border-[#9CA3AF]"
