@@ -10,6 +10,7 @@ import {
   ModalFooter,
   Button,
   Select,
+  SearchableSelect,
   toast,
 } from "@/components/ui";
 import { EXAM_TYPE_OPTIONS } from "@/constants";
@@ -204,11 +205,12 @@ const ExamSubmissionModalBody = ({ onClose }: { onClose: () => void }) => {
           <label className="mb-1.5 block text-sm font-medium text-[#374151]">
             과목명
           </label>
-          <Select
+          <SearchableSelect
             options={subjectOptions}
             value={subjectId}
             onChange={setSubjectId}
             placeholder={isSubjectsLoading ? "불러오는 중..." : "과목을 선택해주세요"}
+            searchPlaceholder="과목명 검색"
             disabled={isSubjectsLoading}
             className="h-11 text-sm"
           />
