@@ -154,7 +154,7 @@ const FeedbackModalBody = ({
           : undefined,
       });
       // integrationStatus가 failed여도 접수(DB) 자체는 성공 — 동일 문구로 안내
-      toast.success("제보가 접수되었습니다. 확인 후 반영하겠습니다.");
+      toast.success("접수되었습니다. 확인 후 반영하겠습니다.");
       resetAndClose();
     } catch (error) {
       if (error instanceof ApiError) {
