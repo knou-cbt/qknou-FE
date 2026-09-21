@@ -30,10 +30,12 @@ export const LoginPromptModal = () => {
       {open && (
         <ModalContent size="sm">
           <ModalHeader showCloseButton onClose={hideLoginPrompt}>
-            알림
+            로그인이 필요해요
           </ModalHeader>
-          <p className="text-sm text-[#374151]">
-            로그인 후 가능한 기능입니다. 로그인 하시겠습니까?
+          <p className="text-sm leading-6 text-[#374151]">
+            로그인 후 가능한 기능입니다.
+            <br />
+            로그인 하시겠습니까?
           </p>
           <ModalFooter className="mt-6">
             <Button variant="outline" onClick={hideLoginPrompt} className="flex-1">
