@@ -18,7 +18,7 @@ import { useFeedbackMutation } from "./hooks/service";
 import type { TFeedbackType } from "./interface";
 
 const FEEDBACK_TYPE_OPTIONS: { value: TFeedbackType; label: string }[] = [
-  { value: "question_bug", label: "문제 오류" },
+  { value: "question_bug", label: "문제/해설 오류" },
   { value: "site_bug", label: "사이트 버그" },
   { value: "suggestion", label: "기능 제안" },
   { value: "other", label: "기타" },
@@ -118,12 +118,15 @@ const FeedbackModalBody = ({
   questionId,
   questionDisplayNumber,
 }: IFeedbackModalBodyProps) => {
-  const [type, setType] = useState<TFeedbackType | undefined>(defaultType);
-  // 화면에 보여줄 문제 번호가 있으면(=특정 문제에서 진입) 내부 DB id는 숨기고
-  // 그 번호만 읽기 전용으로 보여준다. 없으면(전역 피드백 진입) 직접 입력하게 둔다.
+  // 화면에 보여줄 문제 번호가 있을 때만(=문제 페이지에서 진입) 문제/해설 오류
+  // 카테고리 자체를 노출한다 — 맥락 없이 열린 경우 사용자가 직접 입력해도
+  // 어떤 시험지의 몇 번인지 특정할 수 없어 실효성이 없기 때문.
   const hasDisplayNumber = questionDisplayNumber !== undefined;
-  const [questionIdInput, setQuestionIdInput] = useState(
-    questionId ? String(questionId) : ""
+  const typeOptions = hasDisplayNumber
+    ? FEEDBACK_TYPE_OPTIONS
+    : FEEDBACK_TYPE_OPTIONS.filter((option) => option.value !== "question_bug");
+  const [type, setType] = useState<TFeedbackType | undefined>(
+    hasDisplayNumber || defaultType !== "question_bug" ? defaultType : undefined
   );
   const [pageUrlInput, setPageUrlInput] = useState(
     typeof window !== "undefined" ? window.location.href : ""
@@ -131,7 +134,7 @@ const FeedbackModalBody = ({
   const [content, setContent] = useState("");
   const mutation = useFeedbackMutation();
 
-  const showQuestionId = type === "question_bug";
+  const showQuestionId = type === "question_bug" && hasDisplayNumber;
   const showPageUrl = type === "question_bug" || type === "site_bug";
 
   const resetAndClose = () => {
@@ -141,22 +144,11 @@ const FeedbackModalBody = ({
   const handleSubmit = async () => {
     if (!type || content.trim().length === 0 || mutation.isPending) return;
 
-    const resolvedQuestionId = hasDisplayNumber
-      ? questionId
-      : questionIdInput.trim()
-        ? Number(questionIdInput.trim())
-        : undefined;
-
     try {
       await mutation.mutateAsync({
         type,
         content: content.trim(),
-        questionId:
-          showQuestionId &&
-          resolvedQuestionId !== undefined &&
-          !Number.isNaN(resolvedQuestionId)
-            ? resolvedQuestionId
-            : undefined,
+        questionId: showQuestionId ? questionId : undefined,
         pageUrl: showPageUrl
           ? pageUrlInput.trim().slice(0, 2000) || undefined
           : undefined,
@@ -196,7 +188,7 @@ const FeedbackModalBody = ({
             <span className="ml-0.5 text-destructive">*</span>
           </p>
           <div className="grid grid-cols-2 gap-2">
-            {FEEDBACK_TYPE_OPTIONS.map((option) => (
+            {typeOptions.map((option) => (
               <button
                 key={option.value}
                 type="button"
@@ -223,24 +215,12 @@ const FeedbackModalBody = ({
             >
               문항 번호
             </label>
-            {hasDisplayNumber ? (
-              <p
-                id="feedback-question-id"
-                className="w-full rounded-md border border-input bg-[#F9FAFB] px-3 py-2 text-sm text-[#374151]"
-              >
-                {questionDisplayNumber}번
-              </p>
-            ) : (
-              <input
-                id="feedback-question-id"
-                type="number"
-                inputMode="numeric"
-                value={questionIdInput}
-                onChange={(e) => setQuestionIdInput(e.target.value)}
-                placeholder="해당하는 경우에만 입력해주세요"
-                className="w-full rounded-md border border-input px-3 py-2 text-sm shadow-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring hover:border-[#9CA3AF]"
-              />
-            )}
+            <p
+              id="feedback-question-id"
+              className="w-full rounded-md border border-input bg-[#F9FAFB] px-3 py-2 text-sm text-[#374151]"
+            >
+              {questionDisplayNumber}번
+            </p>
           </div>
         )}
 
@@ -283,10 +263,16 @@ const FeedbackModalBody = ({
             onChange={(e) =>
               setContent(e.target.value.slice(0, MAX_CONTENT_LENGTH))
             }
+            // 문제 본문 복사 방지(useCopyProtection)는 document 전역에 paste를
+            // 막는 방식이라, 여기서 버블링을 막아 이 입력창만 예외로 붙여넣기를 허용한다.
+            onPaste={(e) => e.stopPropagation()}
             placeholder="불편했던 점이나 제안하고 싶은 내용을 자유롭게 적어주세요."
             rows={6}
             className="w-full resize-none rounded-md border border-input px-3 py-2 text-sm shadow-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring hover:border-[#9CA3AF]"
           />
+          <p className="mt-1.5 text-xs text-[#9CA3AF]">
+            문제 본문은 복사가 제한되어 있지만, 이 입력창에는 붙여넣기를 사용하실 수 있어요.
+          </p>
         </div>
       </div>
 
