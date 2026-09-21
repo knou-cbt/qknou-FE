@@ -3,6 +3,7 @@ import { usePathname } from "next/navigation";
 
 import { Header, Footer, KakaoAd, Toaster } from "@/components";
 import { useExamContext } from "@/contexts";
+import { LoginPromptModal } from "@/components/auth/LoginPromptModal";
 
 interface AppContentProps {
   children: React.ReactNode;
@@ -30,6 +31,7 @@ export function AppContent({ children }: AppContentProps) {
       <KakaoAd />
       <Footer />
       <Toaster />
+      <LoginPromptModal />
     </div>
   );
 }

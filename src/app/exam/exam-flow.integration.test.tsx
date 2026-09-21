@@ -219,6 +219,10 @@ jest.mock("@/components/feedback/FeedbackModal", () => ({
   FeedbackModal: () => null,
 }));
 
+jest.mock("@/components/auth/LoginPromptModal", () => ({
+  LoginPromptModal: () => null,
+}));
+
 jest.mock("@/components", () => {
   const actualHeader = jest.requireActual("@/components/header");
 
