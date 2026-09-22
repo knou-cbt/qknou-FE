@@ -1,15 +1,24 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 
-import { Pagination } from "@/components/ui";
+import { Button } from "@/components/ui";
 import { BookmarkButton } from "@/components/bookmark/BookmarkButton";
 import { useBookmarkListQuery } from "@/components/bookmark/hooks/service";
+import type { IBookmarkItem } from "@/components/bookmark/interface";
+import { EXAM_TYPE_LABEL } from "@/constants";
 
 import { MyPageCard } from "./MyPageCard";
 
-const PAGE_SIZE_OPTIONS = [10, 20, 30, 50];
+/** 내부 파일명(examTitle) 대신 보여줄 라벨. year/examType이 아직 없으면 examTitle로 대체 */
+function examLabel(bookmark: IBookmarkItem) {
+  if (bookmark.year === undefined || bookmark.examType === undefined) {
+    return bookmark.examTitle;
+  }
+  const typeLabel = EXAM_TYPE_LABEL[bookmark.examType] ?? "";
+  return `${bookmark.year}년 · ${typeLabel}`;
+}
 
 function formatDate(iso: string) {
   const date = new Date(iso);
@@ -19,21 +28,27 @@ function formatDate(iso: string) {
   ).padStart(2, "0")}`;
 }
 
+/** 과목별로 묶는다 — 처음 등장한 순서를 그대로 그룹 순서로 쓴다 */
+function groupBySubject(bookmarks: IBookmarkItem[]) {
+  const groups = new Map<string, IBookmarkItem[]>();
+  for (const bookmark of bookmarks) {
+    const list = groups.get(bookmark.subjectName);
+    if (list) {
+      list.push(bookmark);
+    } else {
+      groups.set(bookmark.subjectName, [bookmark]);
+    }
+  }
+  return Array.from(groups.entries());
+}
+
 export const BookmarkListSection = () => {
   const router = useRouter();
   const { data, isLoading } = useBookmarkListQuery();
   const [hiddenIds, setHiddenIds] = useState<Set<number>>(new Set());
-  const [pageIndex, setPageIndex] = useState(0);
-  const [pageSize, setPageSize] = useState(PAGE_SIZE_OPTIONS[0]);
 
   const bookmarks = (data ?? []).filter((b) => !hiddenIds.has(b.questionId));
-
-  const pageCount = Math.max(Math.ceil(bookmarks.length / pageSize), 1);
-  const clampedPageIndex = Math.min(pageIndex, pageCount - 1);
-  const pageItems = bookmarks.slice(
-    clampedPageIndex * pageSize,
-    clampedPageIndex * pageSize + pageSize
-  );
+  const groups = useMemo(() => groupBySubject(bookmarks), [bookmarks]);
 
   if (isLoading) {
     return (
@@ -70,57 +85,64 @@ export const BookmarkListSection = () => {
   }
 
   return (
-    <div className="flex flex-col gap-4">
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-        {pageItems.map((bookmark) => (
-          <MyPageCard
-            key={bookmark.questionId}
-            onClick={() => router.push(`/memorize/${bookmark.questionId}`)}
-          >
-            <div className="flex items-start justify-between gap-2">
-              <div className="flex min-w-0 items-baseline gap-2">
-                <p className="shrink-0 truncate text-sm font-semibold text-[#101828]">
-                  {bookmark.subjectName}
-                </p>
-                <p className="truncate text-xs text-[#9CA3AF]">{bookmark.examTitle}</p>
-              </div>
-              <BookmarkButton
-                questionId={bookmark.questionId}
-                active
-                size="sm"
-                onToggled={(next) => {
-                  if (!next) {
-                    setHiddenIds((prev) => new Set(prev).add(bookmark.questionId));
-                  }
-                }}
-              />
-            </div>
-
-            <p className="border-l-2 border-[#E5E7EB] pl-3 text-sm leading-6 text-[#374153] line-clamp-2">
-              {bookmark.questionText}
-            </p>
-
-            <p className="text-xs text-[#9CA3AF]">
-              {formatDate(bookmark.bookmarkedAt)}
-            </p>
-          </MyPageCard>
-        ))}
+    <div className="flex flex-col gap-8">
+      <div className="flex items-center justify-between">
+        <p className="text-sm text-[#6B7280]">총 {bookmarks.length}개</p>
+        <Button
+          size="sm"
+          onClick={() => router.push("/mypage/bookmarks/review")}
+        >
+          전체 복습
+        </Button>
       </div>
 
-      {bookmarks.length > 0 && (
-        <Pagination
-          pageIndex={clampedPageIndex}
-          pageCount={pageCount}
-          onPageIndexChange={setPageIndex}
-          pageSize={pageSize}
-          onPageSizeChange={(size) => {
-            setPageSize(size);
-            setPageIndex(0);
-          }}
-          pageSizeOptions={PAGE_SIZE_OPTIONS}
-          bare
-        />
-      )}
+      {groups.map(([subjectName, items]) => (
+        <div key={subjectName}>
+          <h3 className="mb-3 text-sm font-semibold text-[#101828]">
+            {subjectName}{" "}
+            <span className="font-normal text-[#9CA3AF]">({items.length})</span>
+          </h3>
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+            {items.map((bookmark) => (
+              <MyPageCard
+                key={bookmark.questionId}
+                onClick={() => router.push(`/memorize/${bookmark.questionId}`)}
+              >
+                <div className="flex items-start justify-between gap-2">
+                  <div className="flex min-w-0 items-baseline gap-2">
+                    <p className="shrink-0 truncate text-sm font-semibold text-[#101828]">
+                      {bookmark.subjectName}
+                    </p>
+                    <p className="truncate text-xs text-[#9CA3AF]">
+                      {examLabel(bookmark)}
+                    </p>
+                  </div>
+                  <BookmarkButton
+                    questionId={bookmark.questionId}
+                    active
+                    size="sm"
+                    onToggled={(next) => {
+                      if (!next) {
+                        setHiddenIds((prev) =>
+                          new Set(prev).add(bookmark.questionId)
+                        );
+                      }
+                    }}
+                  />
+                </div>
+
+                <p className="border-l-2 border-[#E5E7EB] pl-3 text-sm leading-6 text-[#374153] line-clamp-2">
+                  {bookmark.questionText}
+                </p>
+
+                <p className="text-xs text-[#9CA3AF]">
+                  {formatDate(bookmark.bookmarkedAt)}
+                </p>
+              </MyPageCard>
+            ))}
+          </div>
+        </div>
+      ))}
     </div>
   );
 };

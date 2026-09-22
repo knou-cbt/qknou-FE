@@ -84,10 +84,7 @@ export const ExamHistorySection = () => {
           const examTypeLabel = EXAM_TYPE_LABEL[item.examType] ?? "";
 
           return (
-            <MyPageCard
-              key={item.id}
-              onClick={() => router.push(`/exam/_/${item.examId}/test-mode`)}
-            >
+            <MyPageCard key={item.id}>
               <div className="flex items-start justify-between gap-2">
                 <div className="flex min-w-0 items-baseline gap-2">
                   <p className="shrink-0 truncate text-sm font-semibold text-[#101828]">
@@ -107,8 +104,6 @@ export const ExamHistorySection = () => {
                 </span>
               </div>
 
-              <p className="truncate text-xs text-[#9CA3AF]">{item.examTitle}</p>
-
               <div className="h-1.5 w-full overflow-hidden rounded-full bg-[#E5E7EB]">
                 <div
                   className={cn("h-full rounded-full", rateBarClass(correctRate))}
@@ -120,6 +115,28 @@ export const ExamHistorySection = () => {
                 제출일 {formatDate(item.submittedAt)} · {item.correctCount}/
                 {item.totalQuestions}문항 정답
               </p>
+
+              <div className="mt-1 flex gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="flex-1"
+                  disabled
+                  title="준비 중이에요"
+                >
+                  결과 보기
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="flex-1"
+                  onClick={() =>
+                    router.push(`/exam/_/${item.examId}/test-mode`)
+                  }
+                >
+                  다시 풀기
+                </Button>
+              </div>
             </MyPageCard>
           );
         })}
