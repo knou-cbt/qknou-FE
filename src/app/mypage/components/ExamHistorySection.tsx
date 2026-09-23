@@ -2,11 +2,11 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { Info } from "lucide-react";
 
 import { Button, Pagination } from "@/components/ui";
 import { cn } from "@/lib/utils";
 
-import { ExamResultModal } from "./ExamResultModal";
 import { MyPageCard } from "./MyPageCard";
 import { useExamHistoryQuery } from "../hooks/service";
 import { EXAM_TYPE_LABEL } from "../interface";
@@ -37,7 +37,6 @@ export const ExamHistorySection = () => {
   const router = useRouter();
   const [pageIndex, setPageIndex] = useState(0);
   const [pageSize, setPageSize] = useState(PAGE_SIZE_OPTIONS[0]);
-  const [resultAttemptId, setResultAttemptId] = useState<number | null>(null);
   const { data, isLoading } = useExamHistoryQuery(pageIndex + 1, pageSize);
 
   const history = data?.items ?? [];
@@ -77,6 +76,14 @@ export const ExamHistorySection = () => {
 
   return (
     <div className="flex flex-col gap-4">
+      <div className="flex items-start gap-2 rounded-lg bg-[#EFF6FF] px-3 py-2.5 text-xs text-[#1E3A8A] sm:text-sm">
+        <Info className="mt-0.5 size-4 shrink-0 text-[#3B82F6]" />
+        <p>
+          같은 과목·연도 시험을 다시 풀면 이전 기록은 이번 결과로
+          대체돼요. 과목·연도 조합당 최근 풀이 1건만 보관돼요.
+        </p>
+      </div>
+
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
         {history.map((item) => {
           const correctRate =
@@ -123,7 +130,7 @@ export const ExamHistorySection = () => {
                   variant="outline"
                   size="sm"
                   className="flex-1"
-                  onClick={() => setResultAttemptId(item.id)}
+                  onClick={() => router.push(`/mypage/history/${item.id}`)}
                 >
                   결과 보기
                 </Button>
@@ -157,11 +164,6 @@ export const ExamHistorySection = () => {
           bare
         />
       )}
-
-      <ExamResultModal
-        attemptId={resultAttemptId}
-        onClose={() => setResultAttemptId(null)}
-      />
     </div>
   );
 };

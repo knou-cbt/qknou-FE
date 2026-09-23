@@ -73,22 +73,29 @@ export const BookmarkListSection = () => {
 
   return (
     <div className="flex flex-col gap-8">
-      <div className="flex items-center justify-between">
-        <p className="text-sm text-[#6B7280]">총 {bookmarks.length}개</p>
-        <Button
-          size="sm"
-          onClick={() => router.push("/mypage/bookmarks/review")}
-        >
-          과목별 복습
-        </Button>
-      </div>
+      <p className="text-sm text-[#6B7280]">총 {bookmarks.length}개</p>
 
       {groups.map(([subjectName, items]) => (
         <div key={subjectName}>
-          <h3 className="mb-3 text-sm font-semibold text-[#101828]">
-            {subjectName}{" "}
-            <span className="font-normal text-[#9CA3AF]">({items.length})</span>
-          </h3>
+          <div className="mb-3 flex items-center justify-between">
+            <h3 className="text-sm font-semibold text-[#101828]">
+              {subjectName}{" "}
+              <span className="font-normal text-[#9CA3AF]">
+                ({items.length})
+              </span>
+            </h3>
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={() =>
+                router.push(
+                  `/mypage/bookmarks/review?subject=${encodeURIComponent(subjectName)}`
+                )
+              }
+            >
+              과목별 복습
+            </Button>
+          </div>
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             {items.map((bookmark) => (
               <MyPageCard

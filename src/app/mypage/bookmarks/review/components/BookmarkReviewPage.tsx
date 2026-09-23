@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import ReactMarkdown from "react-markdown";
 
 import { Button, ExamNavButtons, QuestionCard } from "@/components/ui";
@@ -20,12 +20,14 @@ import { sortBySubjectGroup } from "@/components/bookmark/groupBySubject";
 import { useQuestionQuery } from "@/app/memorize/[questionId]/hooks/service";
 
 /**
- * 북마크한 문항을 암기모드처럼 1/N -> 2/N 순서로 이어보는 복습 화면.
- * 목록 화면과 동일하게 같은 과목끼리 묶어서 연속으로 보여준다(과목별 복습).
+ * 북마크한 문항을 암기모드처럼 1/N -> 2/N 순서로 이어보는 복습 화면(과목별 복습).
+ * ?subject= 쿼리가 있으면 그 과목의 북마크만, 없으면 전체를 과목별로 묶어서 보여준다.
  */
 export const BookmarkReviewPage = () => {
   useCopyProtection();
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const subjectFilter = searchParams.get("subject");
   const { isAuthenticated, isLoading: isAuthLoading } = useAuth();
 
   useEffect(() => {
@@ -42,10 +44,12 @@ export const BookmarkReviewPage = () => {
 
   const { data: rawBookmarks, isLoading: isBookmarksLoading } =
     useBookmarkListQuery();
-  const bookmarks = useMemo(
-    () => sortBySubjectGroup(rawBookmarks ?? []),
-    [rawBookmarks]
-  );
+  const bookmarks = useMemo(() => {
+    const scoped = subjectFilter
+      ? (rawBookmarks ?? []).filter((b) => b.subjectName === subjectFilter)
+      : (rawBookmarks ?? []);
+    return sortBySubjectGroup(scoped);
+  }, [rawBookmarks, subjectFilter]);
 
   const [currentIndex, setCurrentIndex] = useState(0);
   const totalCount = bookmarks.length;
