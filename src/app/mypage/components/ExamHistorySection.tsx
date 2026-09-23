@@ -129,7 +129,7 @@ export const ExamHistorySection = () => {
                 <Button
                   variant="outline"
                   size="sm"
-                  className="flex-1"
+                  className="flex-1 hover:border-[#155DFC] hover:bg-[#EFF6FF] hover:text-[#155DFC]"
                   onClick={() => router.push(`/mypage/history/${item.id}`)}
                 >
                   결과 보기
@@ -137,7 +137,7 @@ export const ExamHistorySection = () => {
                 <Button
                   variant="outline"
                   size="sm"
-                  className="flex-1"
+                  className="flex-1 hover:border-[#155DFC] hover:bg-[#EFF6FF] hover:text-[#155DFC]"
                   onClick={() =>
                     router.push(`/exam/_/${item.examId}/test-mode`)
                   }
