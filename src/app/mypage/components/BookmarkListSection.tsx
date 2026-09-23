@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui";
 import { BookmarkButton } from "@/components/bookmark/BookmarkButton";
 import { useBookmarkListQuery } from "@/components/bookmark/hooks/service";
+import { groupBySubject } from "@/components/bookmark/groupBySubject";
 import type { IBookmarkItem } from "@/components/bookmark/interface";
 import { EXAM_TYPE_LABEL } from "@/constants";
 
@@ -26,20 +27,6 @@ function formatDate(iso: string) {
   return `${date.getFullYear()}.${String(date.getMonth() + 1).padStart(2, "0")}.${String(
     date.getDate()
   ).padStart(2, "0")}`;
-}
-
-/** 과목별로 묶는다 — 처음 등장한 순서를 그대로 그룹 순서로 쓴다 */
-function groupBySubject(bookmarks: IBookmarkItem[]) {
-  const groups = new Map<string, IBookmarkItem[]>();
-  for (const bookmark of bookmarks) {
-    const list = groups.get(bookmark.subjectName);
-    if (list) {
-      list.push(bookmark);
-    } else {
-      groups.set(bookmark.subjectName, [bookmark]);
-    }
-  }
-  return Array.from(groups.entries());
 }
 
 export const BookmarkListSection = () => {
@@ -92,7 +79,7 @@ export const BookmarkListSection = () => {
           size="sm"
           onClick={() => router.push("/mypage/bookmarks/review")}
         >
-          전체 복습
+          과목별 복습
         </Button>
       </div>
 

@@ -16,9 +16,13 @@ import {
 } from "@/lib/exam-side-ad-layout";
 import { useCopyProtection } from "@/lib/useCopyProtection";
 import { useBookmarkListQuery } from "@/components/bookmark/hooks/service";
+import { sortBySubjectGroup } from "@/components/bookmark/groupBySubject";
 import { useQuestionQuery } from "@/app/memorize/[questionId]/hooks/service";
 
-/** 북마크한 문항을 암기모드처럼 1/N -> 2/N 순서로 이어보는 복습 화면 */
+/**
+ * 북마크한 문항을 암기모드처럼 1/N -> 2/N 순서로 이어보는 복습 화면.
+ * 목록 화면과 동일하게 같은 과목끼리 묶어서 연속으로 보여준다(과목별 복습).
+ */
 export const BookmarkReviewPage = () => {
   useCopyProtection();
   const router = useRouter();
@@ -36,12 +40,16 @@ export const BookmarkReviewPage = () => {
     }
   }, [isAuthLoading, isAuthenticated, router]);
 
-  const { data: bookmarks, isLoading: isBookmarksLoading } =
+  const { data: rawBookmarks, isLoading: isBookmarksLoading } =
     useBookmarkListQuery();
+  const bookmarks = useMemo(
+    () => sortBySubjectGroup(rawBookmarks ?? []),
+    [rawBookmarks]
+  );
 
   const [currentIndex, setCurrentIndex] = useState(0);
-  const totalCount = bookmarks?.length ?? 0;
-  const currentBookmark = bookmarks?.[currentIndex];
+  const totalCount = bookmarks.length;
+  const currentBookmark = bookmarks[currentIndex];
 
   const { data: question, isLoading: isQuestionLoading } = useQuestionQuery(
     currentBookmark ? String(currentBookmark.questionId) : ""
@@ -116,7 +124,7 @@ export const BookmarkReviewPage = () => {
             <button
               type="button"
               onClick={() => router.push("/mypage?tab=bookmarks")}
-              className="text-sm text-[#6B7280] hover:text-[#374151]"
+              className="text-sm text-[#6B7280] hover:text-[#374151] cursor-pointer"
             >
               ← 북마크 목록으로
             </button>

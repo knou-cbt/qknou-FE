@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { Button, Pagination } from "@/components/ui";
 import { cn } from "@/lib/utils";
 
+import { ExamResultModal } from "./ExamResultModal";
 import { MyPageCard } from "./MyPageCard";
 import { useExamHistoryQuery } from "../hooks/service";
 import { EXAM_TYPE_LABEL } from "../interface";
@@ -36,6 +37,7 @@ export const ExamHistorySection = () => {
   const router = useRouter();
   const [pageIndex, setPageIndex] = useState(0);
   const [pageSize, setPageSize] = useState(PAGE_SIZE_OPTIONS[0]);
+  const [resultAttemptId, setResultAttemptId] = useState<number | null>(null);
   const { data, isLoading } = useExamHistoryQuery(pageIndex + 1, pageSize);
 
   const history = data?.items ?? [];
@@ -121,8 +123,7 @@ export const ExamHistorySection = () => {
                   variant="outline"
                   size="sm"
                   className="flex-1"
-                  disabled
-                  title="준비 중이에요"
+                  onClick={() => setResultAttemptId(item.id)}
                 >
                   결과 보기
                 </Button>
@@ -156,6 +157,11 @@ export const ExamHistorySection = () => {
           bare
         />
       )}
+
+      <ExamResultModal
+        attemptId={resultAttemptId}
+        onClose={() => setResultAttemptId(null)}
+      />
     </div>
   );
 };
