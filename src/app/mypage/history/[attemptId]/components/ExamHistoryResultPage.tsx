@@ -6,7 +6,6 @@ import ReactMarkdown from "react-markdown";
 import { BookOpen, CheckCircle, XCircle } from "lucide-react";
 
 import {
-  Button,
   ExamNavButtons,
   QuestionCard,
   QuestionNavigator,
@@ -108,7 +107,7 @@ export const ExamHistoryResultPage = ({ attemptId }: Props) => {
     );
   }
 
-  const examTypeLabel = EXAM_TYPE_LABEL[data.examType] ?? "";
+  const examTypeLabel = EXAM_TYPE_LABEL[data.exam.examType] ?? "";
 
   return (
     <div className="min-h-screen bg-[#F0F4FF] flex flex-col">
@@ -136,7 +135,7 @@ export const ExamHistoryResultPage = ({ attemptId }: Props) => {
               <div className="flex items-center gap-1">
                 <BookOpen className="w-3 h-3 sm:w-4 sm:h-4" />
                 <span>
-                  {data.subjectName} · {data.year}년 · {examTypeLabel}
+                  {data.exam.subject} · {data.exam.year}년 · {examTypeLabel}
                 </span>
               </div>
             </div>
@@ -284,17 +283,6 @@ export const ExamHistoryResultPage = ({ attemptId }: Props) => {
               nextDisabled={currentIndex === totalCount - 1}
               answerLabel={showExplanation ? "해설 숨기기" : "해설 보기"}
             />
-          </div>
-
-          {/* 마이페이지로 돌아가기 버튼 */}
-          <div className={cn(examDetailMaxW[896], "mt-3 sm:mt-4")}>
-            <Button
-              onClick={() => router.push("/mypage")}
-              className="w-full cursor-pointer text-sm sm:text-base h-12"
-              variant="black"
-            >
-              마이페이지로 돌아가기
-            </Button>
           </div>
         </main>
       </div>

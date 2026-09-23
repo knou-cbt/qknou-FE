@@ -29,7 +29,23 @@ export interface IExamHistoryAnswer {
   isCorrect: boolean;
 }
 
-export interface IExamHistoryDetail extends IExamHistoryItem {
+/**
+ * 목록(IExamHistoryItem)과 달리 subject/year/examType이 exam 객체로 중첩돼 온다.
+ * 실제 응답 예시: { id, exam: { id, title, subject, year, examType }, totalQuestions, ... }
+ */
+export interface IExamHistoryDetail {
+  id: number;
+  exam: {
+    id: number;
+    title: string;
+    subject: string;
+    year: number;
+    examType: number;
+  };
+  totalQuestions: number;
+  correctCount: number;
+  wrongCount: number;
+  submittedAt: string;
   answers: IExamHistoryAnswer[];
 }
 
