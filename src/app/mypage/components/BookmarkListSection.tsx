@@ -58,10 +58,6 @@ export const BookmarkListSection = () => {
         : groups.filter(([subjectName]) => subjectName === subjectFilter),
     [groups, subjectFilter]
   );
-  const filteredCount = filteredGroups.reduce(
-    (sum, [, items]) => sum + items.length,
-    0
-  );
 
   if (isLoading) {
     return (
@@ -99,8 +95,7 @@ export const BookmarkListSection = () => {
 
   return (
     <div className="flex flex-col gap-8">
-      <div className="flex items-center justify-between gap-2">
-        <p className="text-sm text-[#6B7280]">총 {filteredCount}개</p>
+      <div className="flex items-center justify-end">
         <Select
           options={subjectOptions}
           value={subjectFilter}
@@ -125,17 +120,19 @@ export const BookmarkListSection = () => {
                 ({items.length})
               </span>
             </h3>
-            <Button
-              size="sm"
-              variant="outline"
-              onClick={() =>
-                router.push(
-                  `/mypage/bookmarks/review?subject=${encodeURIComponent(subjectName)}`
-                )
-              }
-            >
-              과목별 복습
-            </Button>
+            {subjectFilter !== ALL_SUBJECTS && (
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={() =>
+                  router.push(
+                    `/mypage/bookmarks/review?subject=${encodeURIComponent(subjectName)}`
+                  )
+                }
+              >
+                과목별 복습
+              </Button>
+            )}
           </div>
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             {items.map((bookmark) => (
