@@ -1,6 +1,6 @@
 "use client";
 
-import { Flag } from "lucide-react";
+import { Bug } from "lucide-react";
 
 import { cn } from "@/lib/utils";
 
@@ -20,7 +20,7 @@ export const ReportBugLink = ({ onClick, className }: IReportBugLinkProps) => {
         className
       )}
     >
-      <Flag className="size-3.5" />
+      <Bug className="size-3.5" />
       이 문제에 오류가 있나요? 제보하기
     </button>
   );
