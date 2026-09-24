@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 
-import { Modal, ModalContent, ModalHeader, Button } from "@/components/ui";
+import { Modal, ModalContent, Button } from "@/components/ui";
 import { CoupangDisclosure } from "@/components/coupang-ad";
 
 const COUPANG_WIDGET_SRC = "https://coupa.ng/cpDlEB";
@@ -47,12 +47,10 @@ interface IShareEntryAdModalProps {
 
 export const ShareEntryAdModal = ({ open, onClose }: IShareEntryAdModalProps) => {
   return (
-    <Modal open={open} onClose={onClose}>
+    // 바깥 클릭으로 닫히지 않도록 Modal에는 아무 동작도 하지 않는 onClose를 넘기고,
+    // 실제 닫기는 아래 "문제 보러 가기" 버튼에서만 하도록 한다
+    <Modal open={open} onClose={() => {}}>
       <ModalContent size="sm">
-        <ModalHeader showCloseButton onClose={onClose}>
-          공유된 문제
-        </ModalHeader>
-
         <div className="flex justify-center py-2">
           <iframe
             src={COUPANG_WIDGET_SRC}
