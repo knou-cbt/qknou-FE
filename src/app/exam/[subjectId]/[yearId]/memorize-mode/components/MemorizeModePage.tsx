@@ -26,6 +26,7 @@ import { useCopyProtection } from "@/lib/useCopyProtection";
 import type { ITutorQuestionExplanationResponse } from "../hooks/api";
 import { useBookmarkListQuery } from "@/components/bookmark/hooks/service";
 import { QuestionActionIcons } from "@/components/question-actions/QuestionActionIcons";
+import { ReportBugLink } from "@/components/question-actions/ReportBugLink";
 import {
   FeedbackModal,
   useFeedbackModal,
@@ -366,13 +367,6 @@ export const MemorizeModePage = ({ subjectId, yearId }: Props) => {
               bookmarkActive={
                 isAuthenticated && bookmarkedIds.has(currentQuestion.id)
               }
-              onReport={() =>
-                openFeedbackModal({
-                  type: "question_bug",
-                  questionId: currentQuestion.id,
-                  questionDisplayNumber: currentIndex + 1,
-                })
-              }
             />
           )}
         </div>
@@ -394,6 +388,17 @@ export const MemorizeModePage = ({ subjectId, yearId }: Props) => {
               onAnswerSelect={handleAnswerSelect}
               actionButtonText=""
             />
+            <div className="mt-4">
+              <ReportBugLink
+                onClick={() =>
+                  openFeedbackModal({
+                    type: "question_bug",
+                    questionId: currentQuestion.id,
+                    questionDisplayNumber: currentIndex + 1,
+                  })
+                }
+              />
+            </div>
           </div>
         )}
 

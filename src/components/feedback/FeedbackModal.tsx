@@ -12,7 +12,6 @@ import {
 } from "@/components/ui";
 import { cn } from "@/lib/utils";
 import { ApiError } from "@/lib/api-client";
-import { useRequireAuth } from "@/lib/useRequireAuth";
 
 import { useFeedbackMutation } from "./hooks/service";
 import type { TFeedbackType } from "./interface";
@@ -41,20 +40,18 @@ export function useFeedbackModal() {
     questionId?: number;
     questionDisplayNumber?: number;
   }>({ open: false });
-  const requireAuth = useRequireAuth();
 
+  // 비로그인 사용자도 제보할 수 있어야 해서 로그인 여부와 무관하게 바로 연다
   const openFeedbackModal = useCallback(
     (options?: IFeedbackModalOpenOptions) => {
-      requireAuth(() =>
-        setState({
-          open: true,
-          type: options?.type,
-          questionId: options?.questionId,
-          questionDisplayNumber: options?.questionDisplayNumber,
-        })
-      );
+      setState({
+        open: true,
+        type: options?.type,
+        questionId: options?.questionId,
+        questionDisplayNumber: options?.questionDisplayNumber,
+      });
     },
-    [requireAuth]
+    []
   );
 
   const closeFeedbackModal = useCallback(() => {
@@ -128,14 +125,12 @@ const FeedbackModalBody = ({
   const [type, setType] = useState<TFeedbackType | undefined>(
     hasDisplayNumber || defaultType !== "question_bug" ? defaultType : undefined
   );
-  const [pageUrlInput, setPageUrlInput] = useState(
-    typeof window !== "undefined" ? window.location.href : ""
-  );
   const [content, setContent] = useState("");
   const mutation = useFeedbackMutation();
 
-  const showQuestionId = type === "question_bug" && hasDisplayNumber;
-  const showPageUrl = type === "question_bug" || type === "site_bug";
+  // 문항 번호/페이지 URL은 사용자에게 보여주지 않고 백그라운드에서 함께 접수한다
+  const includeQuestionId = type === "question_bug" && hasDisplayNumber;
+  const includePageUrl = type === "question_bug" || type === "site_bug";
 
   const resetAndClose = () => {
     onClose();
@@ -144,13 +139,16 @@ const FeedbackModalBody = ({
   const handleSubmit = async () => {
     if (!type || content.trim().length === 0 || mutation.isPending) return;
 
+    const currentPageUrl =
+      typeof window !== "undefined" ? window.location.href : undefined;
+
     try {
       await mutation.mutateAsync({
         type,
         content: content.trim(),
-        questionId: showQuestionId ? questionId : undefined,
-        pageUrl: showPageUrl
-          ? pageUrlInput.trim().slice(0, 2000) || undefined
+        questionId: includeQuestionId ? questionId : undefined,
+        pageUrl: includePageUrl
+          ? currentPageUrl?.trim().slice(0, 2000) || undefined
           : undefined,
       });
       // integrationStatus가 failed여도 접수(DB) 자체는 성공 — 동일 문구로 안내
@@ -205,43 +203,6 @@ const FeedbackModalBody = ({
             ))}
           </div>
         </div>
-
-        {/* 문항 번호 */}
-        {showQuestionId && (
-          <div>
-            <label
-              htmlFor="feedback-question-id"
-              className="mb-1.5 block text-sm font-medium text-[#374151]"
-            >
-              문항 번호
-            </label>
-            <p
-              id="feedback-question-id"
-              className="w-full rounded-md border border-input bg-[#F9FAFB] px-3 py-2 text-sm text-[#374151]"
-            >
-              {questionDisplayNumber}번
-            </p>
-          </div>
-        )}
-
-        {/* 관련 페이지 URL */}
-        {showPageUrl && (
-          <div>
-            <label
-              htmlFor="feedback-page-url"
-              className="mb-1.5 block text-sm font-medium text-[#374151]"
-            >
-              관련 페이지 URL
-            </label>
-            <input
-              id="feedback-page-url"
-              type="text"
-              value={pageUrlInput}
-              onChange={(e) => setPageUrlInput(e.target.value)}
-              className="w-full rounded-md border border-input px-3 py-2 text-sm shadow-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring hover:border-[#9CA3AF]"
-            />
-          </div>
-        )}
 
         {/* 내용 */}
         <div>

@@ -1,6 +1,6 @@
 "use client";
 
-import { Flag, Share2 } from "lucide-react";
+import { Share2 } from "lucide-react";
 
 import { cn } from "@/lib/utils";
 import { toast } from "@/components/ui";
@@ -11,20 +11,21 @@ interface IQuestionActionIconsProps {
   shareUrl: string;
   bookmarkActive: boolean;
   onBookmarkToggled?: (next: boolean) => void;
-  onReport: () => void;
   className?: string;
 }
 
 const iconButtonClassName =
   "flex size-8 items-center justify-center rounded-full text-[#6B7280] transition-colors cursor-pointer hover:bg-[#F3F4F6]";
 
-/** 암기모드/문항 공유 화면 공통: 제보 · 공유 · 북마크 아이콘 3종 */
+/**
+ * 암기모드/문항 공유 화면 공통: 공유 · 북마크 아이콘 2종.
+ * 오류 제보는 이 줄과 혼동되지 않도록 별도 위치(답안 하단 텍스트 링크, ReportBugLink)로 분리됐다.
+ */
 export const QuestionActionIcons = ({
   questionId,
   shareUrl,
   bookmarkActive,
   onBookmarkToggled,
-  onReport,
   className,
 }: IQuestionActionIconsProps) => {
   const handleShare = async () => {
@@ -48,15 +49,6 @@ export const QuestionActionIcons = ({
 
   return (
     <div className={cn("flex items-center gap-1", className)}>
-      <button
-        type="button"
-        onClick={onReport}
-        aria-label="문항 오류 제보"
-        title="문항 오류 제보"
-        className={iconButtonClassName}
-      >
-        <Flag className="size-4" />
-      </button>
       <button
         type="button"
         onClick={() => void handleShare()}

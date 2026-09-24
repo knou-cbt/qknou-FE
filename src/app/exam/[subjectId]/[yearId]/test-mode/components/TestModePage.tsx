@@ -2,7 +2,7 @@
 import { useState, useCallback, useEffect, useMemo, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { useQueryClient } from "@tanstack/react-query";
-import { CheckCircle, XCircle, Clock, BookOpen, Flag } from "lucide-react";
+import { CheckCircle, XCircle, Clock, BookOpen } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 
 import {
@@ -21,6 +21,7 @@ import {
   useFeedbackModal,
 } from "@/components/feedback/FeedbackModal";
 import { ExplanationGate } from "@/components/ads/ExplanationGate";
+import { ReportBugLink } from "@/components/question-actions/ReportBugLink";
 import { useIsMobile } from "@/lib/useIsMobile";
 import { cn } from "@/lib/utils";
 import {
@@ -668,23 +669,6 @@ export const TestModePage = ({ subjectId, yearId }: Props) => {
             {exam?.title ?? "-"} | 시험모드 | {currentIndex + 1} /{" "}
             {questions.length}
           </p>
-          {currentQuestion && (
-            <button
-              type="button"
-              onClick={() =>
-                openFeedbackModal({
-                  type: "question_bug",
-                  questionId: currentQuestion.id,
-                  questionDisplayNumber: currentIndex + 1,
-                })
-              }
-              aria-label="문항 오류 제보"
-              title="문항 오류 제보"
-              className="flex size-8 items-center justify-center rounded-full text-[#6B7280] transition-colors cursor-pointer hover:bg-[#F3F4F6]"
-            >
-              <Flag className="size-4" />
-            </button>
-          )}
         </div>
 
         {/* Question Navigator - 모바일에서는 숨김 */}
@@ -719,6 +703,17 @@ export const TestModePage = ({ subjectId, yearId }: Props) => {
               onAnswerSelect={handleAnswerSelect}
               actionButtonText=""
             />
+            <div className="mt-4">
+              <ReportBugLink
+                onClick={() =>
+                  openFeedbackModal({
+                    type: "question_bug",
+                    questionId: currentQuestion.id,
+                    questionDisplayNumber: currentIndex + 1,
+                  })
+                }
+              />
+            </div>
           </div>
         )}
 
