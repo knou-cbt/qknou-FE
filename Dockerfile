@@ -14,10 +14,11 @@ WORKDIR /app
 # 브라우저에서 직접 쓰이는 값 → next build 시점에 고정되므로 ARG로 받아 빌드에 반영
 ARG NEXT_PUBLIC_API_URL
 ARG NEXT_PUBLIC_SITE_URL
+ARG API_PROXY_TARGET
 ENV NEXT_PUBLIC_API_URL=$NEXT_PUBLIC_API_URL \
     NEXT_PUBLIC_SITE_URL=$NEXT_PUBLIC_SITE_URL \
-    NODE_ENV=production
-
+    NODE_ENV=production \
+    API_PROXY_TARGET=$API_PROXY_TARGET
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 RUN npm run build \

@@ -120,11 +120,6 @@ export const ExamHistorySection = () => {
           aria-label="과목별 필터"
           className="w-40"
         />
-        {subjectFilter === ALL_SUBJECTS && (
-          <p className="text-xs text-[#9CA3AF]">
-            과목을 선택하면 해당 과목의 풀이 기록만 볼 수 있어요
-          </p>
-        )}
       </div>
 
       {filteredHistory.length === 0 ? (
