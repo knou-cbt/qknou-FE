@@ -343,14 +343,14 @@ QuestionActionButton.displayName = "QuestionActionButton";
 // ============================================
 
 const questionCardVariants = cva(
-  "flex flex-col items-start bg-white rounded-[16px] w-full",
+  "flex flex-col items-start rounded-[16px] w-full",
   {
     variants: {
       size: {
         default: "max-w-[1066px] pt-6 sm:pt-8 pb-0 gap-4 sm:gap-6",
         sm: "w-full max-w-[600px] pt-4 sm:pt-6 pb-0 gap-3 sm:gap-4",
         lg: "w-full max-w-[1200px] pt-6 sm:pt-10 pb-0 gap-4 sm:gap-6",
-        full: "w-full pt-6 sm:pt-8 pb-0 gap-4 sm:gap-6",
+        full: "w-full pb-0 gap-4 sm:gap-6",
       },
     },
     defaultVariants: {
@@ -465,7 +465,7 @@ const QuestionCard = React.forwardRef<HTMLDivElement, IQuestionCardProps>(
 
           {/* Question Text */}
           {processedQuestion && (
-            <div className="font-normal text-base sm:text-[19px] leading-6 sm:leading-[31px] text-[#101828] w-full wrap-break-word">
+            <div className="font-normal text-base sm:text-[19px] leading-6 sm:leading-[31px] text-[#101828] w-full wrap-break-word px-4 sm:px-0">
               <InlineMathContent text={processedQuestion} />
             </div>
           )}

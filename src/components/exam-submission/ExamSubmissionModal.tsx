@@ -10,6 +10,7 @@ import {
   ModalFooter,
   Button,
   Select,
+  SearchableSelect,
   toast,
 } from "@/components/ui";
 import { EXAM_TYPE_OPTIONS } from "@/constants";
@@ -28,6 +29,19 @@ const BLOCKED_REASON_LABEL: Record<string, string> = {
   already_in_review: "이미 검수 중인 시험지예요.",
 };
 
+/** ApiError.payload(백엔드가 내려준 에러 JSON)에서 message를 뽑아낸다 (string | string[] 둘 다 지원) */
+function extractApiErrorMessage(payload: unknown): string | undefined {
+  if (!payload || typeof payload !== "object" || !("message" in payload)) {
+    return undefined;
+  }
+  const { message } = payload as { message?: unknown };
+  if (typeof message === "string") return message;
+  if (Array.isArray(message) && typeof message[0] === "string") {
+    return message[0];
+  }
+  return undefined;
+}
+
 async function validatePdfFile(file: File): Promise<string | null> {
   if (file.type !== "application/pdf") {
     return "PDF 파일만 업로드할 수 있어요.";
@@ -43,10 +57,12 @@ async function validatePdfFile(file: File): Promise<string | null> {
   return null;
 }
 
-const currentYear = new Date().getFullYear();
-const YEAR_OPTIONS = Array.from({ length: 12 }, (_, i) => currentYear - i).map(
-  (year) => ({ value: String(year), label: `${year}년` })
-);
+const MAX_EXAM_YEAR = 2019;
+const MIN_EXAM_YEAR = 2013;
+const YEAR_OPTIONS = Array.from(
+  { length: MAX_EXAM_YEAR - MIN_EXAM_YEAR + 1 },
+  (_, i) => MAX_EXAM_YEAR - i
+).map((year) => ({ value: String(year), label: `${year}년` }));
 
 /** 헤더 유저메뉴 등에서 재사용하는 시험지 등록 모달 오픈 훅 */
 export function useExamSubmissionModal() {
@@ -158,7 +174,12 @@ const ExamSubmissionModalBody = ({ onClose }: { onClose: () => void }) => {
             return;
           }
           if (error.status === 400) {
-            toast.error("입력값을 다시 확인해 주세요.");
+            // 사전 중복 확인을 통과했어도 그 사이 다른 사용자가 먼저 등록했을 수 있음 —
+            // 서버가 내려준 메시지가 있으면 그대로, 없으면 중복 등록 가능성을 안내한다.
+            toast.error(
+              extractApiErrorMessage(error.payload) ??
+                "이미 등록되어 있는 시험지일 수 있어요. 다시 확인해 주세요."
+            );
             return;
           }
         }
@@ -202,11 +223,12 @@ const ExamSubmissionModalBody = ({ onClose }: { onClose: () => void }) => {
           <label className="mb-1.5 block text-sm font-medium text-[#374151]">
             과목명
           </label>
-          <Select
+          <SearchableSelect
             options={subjectOptions}
             value={subjectId}
             onChange={setSubjectId}
             placeholder={isSubjectsLoading ? "불러오는 중..." : "과목을 선택해주세요"}
+            searchPlaceholder="과목명 검색"
             disabled={isSubjectsLoading}
             className="h-11 text-sm"
           />

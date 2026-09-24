@@ -2,8 +2,10 @@
 
 import { useEffect, useState } from "react";
 
-const DESKTOP_BREAKPOINT = 768;
-const ADFIT_SCRIPT_SRC = "https://t1.daumcdn.net/kas/static/ba.min.js";
+import { CoupangDisclosure } from "@/components/coupang-ad";
+
+// 고정(fixed) 사이드 광고가 콘텐츠를 가리지 않으려면 태블릿보다 넓은 화면이 필요 — Tailwind `xl`과 동일
+const DESKTOP_BREAKPOINT = 1280;
 
 /** fixed 사이드 광고(160px) + right-4(16px) + 콘텐츠 간격(16px) */
 export const DESKTOP_SIDE_AD_RESERVED_PX = 160 + 16 + 16;
@@ -12,43 +14,41 @@ export const examSideAdContentStyle = {
   "--desktop-side-ad-reserved": `${DESKTOP_SIDE_AD_RESERVED_PX}px`,
 } as React.CSSProperties;
 
-const AD_UNIT = {
-  mobile: "DAN-ctqbpCkL5AnrfFZY",
-  mobileRect: "DAN-xvCJKicUSkdeRspa",
-  desktopBottom: "DAN-rjm8cuVO5tqxkcLZ",
-  desktopSide: "DAN-FXMS0a38OFAgXFvs",
-} as const;
+/** 모바일 하단 + 사각 배너 (쿠팡 파트너스, 사이즈는 120x240 고정) */
+const COUPANG_MOBILE_BOTTOM_WIDGET_SRC = "https://coupa.ng/cpDnB9";
+const COUPANG_MOBILE_RECT_WIDGET_SRC = "https://coupa.ng/cpDnDp";
 
-function removeAdfitScripts() {
-  document
-    .querySelectorAll(`script[src="${ADFIT_SCRIPT_SRC}"]`)
-    .forEach((node) => node.remove());
-}
+/** 웹(데스크탑) 하단/사이드는 쿠팡 파트너스로 전환 */
+const COUPANG_DESKTOP_SIDE_WIDGET_SRC = "https://coupa.ng/cpDlpC";
 
-function clearAdSlots() {
-  document.querySelectorAll("ins.kakao_ad_area").forEach((el) => {
-    el.innerHTML = "";
-  });
-}
+/** 하단 배너는 이 중 하나를 시간 간격으로 랜덤하게 보여준다 */
+const COUPANG_DESKTOP_BOTTOM_WIDGET_SRCS = [
+  "https://ads-partners.coupang.com/widgets.html?id=1031448&template=banner&trackingCode=AF2198707&subId=&width=728&height=90",
+  "https://ads-partners.coupang.com/widgets.html?id=1031450&template=banner&trackingCode=AF2198707&subId=&width=728&height=90",
+  "https://ads-partners.coupang.com/widgets.html?id=1031451&template=banner&trackingCode=AF2198707&subId=&width=728&height=90",
+  "https://ads-partners.coupang.com/widgets.html?id=1031452&template=banner&trackingCode=AF2198707&subId=&width=728&height=90",
+] as const;
 
-function loadAdfitScript() {
-  removeAdfitScripts();
-  clearAdSlots();
+const BOTTOM_WIDGET_ROTATE_INTERVAL_MS = 60 * 60 * 1000;
 
-  const script = document.createElement("script");
-  script.src = ADFIT_SCRIPT_SRC;
-  script.async = true;
-  document.body.appendChild(script);
+function pickRandomBottomWidgetSrc(): string {
+  const index = Math.floor(
+    Math.random() * COUPANG_DESKTOP_BOTTOM_WIDGET_SRCS.length
+  );
+  return COUPANG_DESKTOP_BOTTOM_WIDGET_SRCS[index];
 }
 
 /**
- * - 모바일: 320x50 하단
- * - 웹: 728x90 하단 + 160x600 사이드 (전 페이지)
+ * - 모바일: 하단 + 사각 위젯(120x240 x2)
+ * - 웹: 하단(로테이션) + 사이드
+ * - 전부 쿠팡 파트너스 위젯 iframe
  * - 콘텐츠 max-w 반응형은 시험/암기모드 상세에서 examDetailMaxW로 처리
- * - ba.min.js는 최초 1회만 스캔하므로 breakpoint 변경 시 스크립트 재주입
  */
 export function KakaoAd() {
   const [isDesktop, setIsDesktop] = useState<boolean | null>(null);
+  const [desktopBottomWidgetSrc, setDesktopBottomWidgetSrc] = useState(() =>
+    pickRandomBottomWidgetSrc()
+  );
 
   useEffect(() => {
     const mq = window.matchMedia(`(min-width: ${DESKTOP_BREAKPOINT}px)`);
@@ -59,14 +59,11 @@ export function KakaoAd() {
   }, []);
 
   useEffect(() => {
-    if (isDesktop === null) return;
-
-    const timer = window.setTimeout(loadAdfitScript, 0);
-    return () => {
-      window.clearTimeout(timer);
-      removeAdfitScripts();
-    };
-  }, [isDesktop]);
+    const interval = window.setInterval(() => {
+      setDesktopBottomWidgetSrc(pickRandomBottomWidgetSrc());
+    }, BOTTOM_WIDGET_ROTATE_INTERVAL_MS);
+    return () => window.clearInterval(interval);
+  }, []);
 
   if (isDesktop === null) {
     return null;
@@ -74,56 +71,59 @@ export function KakaoAd() {
 
   return (
     <>
-      {/* 모바일: 320x50 + 320x480 */}
+      {/* 모바일: 쿠팡 파트너스 */}
       {!isDesktop && (
-        <>
-          <div className="flex w-full justify-center py-2">
-            <div className="relative min-h-[50px] w-full max-w-[320px]">
-              <ins
-                className="kakao_ad_area absolute inset-0 min-h-[50px] min-w-[320px]"
-                style={{ display: "none" }}
-                data-ad-unit={AD_UNIT.mobile}
-                data-ad-width="320"
-                data-ad-height="50"
-              />
-            </div>
+        <div className="flex w-full flex-col items-center gap-2 py-2">
+          <div className="flex justify-center gap-2">
+            <iframe
+              src={COUPANG_MOBILE_BOTTOM_WIDGET_SRC}
+              width={120}
+              height={240}
+              frameBorder="0"
+              scrolling="no"
+              referrerPolicy="unsafe-url"
+              title="쿠팡 파트너스 광고"
+            />
+            <iframe
+              src={COUPANG_MOBILE_RECT_WIDGET_SRC}
+              width={120}
+              height={240}
+              frameBorder="0"
+              scrolling="no"
+              referrerPolicy="unsafe-url"
+              title="쿠팡 파트너스 광고"
+            />
           </div>
-          <div className="flex w-full justify-center py-2">
-            <div className="relative min-h-[480px] w-full max-w-[320px]">
-              <ins
-                className="kakao_ad_area absolute inset-0 min-h-[480px] min-w-[320px]"
-                style={{ display: "none" }}
-                data-ad-unit={AD_UNIT.mobileRect}
-                data-ad-width="320"
-                data-ad-height="480"
-              />
-            </div>
-          </div>
-        </>
+          <CoupangDisclosure />
+        </div>
       )}
 
-      {/* 웹 하단 + 사이드 */}
+      {/* 웹 하단 + 사이드: 쿠팡 파트너스 */}
       {isDesktop && (
         <>
-          <div className="flex w-full justify-center py-2">
-            <div className="relative h-[90px] w-[728px]">
-              <ins
-                className="kakao_ad_area absolute inset-0 h-[90px] w-[728px]"
-                data-ad-unit={AD_UNIT.desktopBottom}
-                data-ad-width="728"
-                data-ad-height="90"
-              />
-            </div>
+          <div className="flex w-full flex-col items-start gap-2 py-2 max-w-[1100px] mx-auto">
+            <iframe
+              key={desktopBottomWidgetSrc}
+              src={desktopBottomWidgetSrc}
+              width={728}
+              height={90}
+              frameBorder="0"
+              scrolling="no"
+              referrerPolicy="unsafe-url"
+              title="쿠팡 파트너스 광고"
+            />
+            <CoupangDisclosure className="text-start" />
           </div>
-          <div className="fixed right-4 top-24 z-40 h-[600px] w-[160px]">
-            <div className="relative h-full w-full">
-              <ins
-                className="kakao_ad_area absolute inset-0 h-[600px] w-[160px]"
-                data-ad-unit={AD_UNIT.desktopSide}
-                data-ad-width="160"
-                data-ad-height="600"
-              />
-            </div>
+          <div className="fixed right-4 top-24 z-40 flex w-[160px] justify-center rounded-[12px] bg-white">
+            <iframe
+              src={COUPANG_DESKTOP_SIDE_WIDGET_SRC}
+              width={160}
+              height={480}
+              frameBorder="0"
+              scrolling="no"
+              referrerPolicy="unsafe-url"
+              title="쿠팡 파트너스 광고"
+            />
           </div>
         </>
       )}

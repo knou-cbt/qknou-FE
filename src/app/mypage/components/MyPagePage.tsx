@@ -25,11 +25,12 @@ export const MyPagePage = () => {
   const searchParams = useSearchParams();
   const { user, isAuthenticated, isLoading } = useAuth();
   const { data: bookmarks } = useBookmarkListQuery();
-  const { data: examHistory } = useExamHistoryQuery();
+  const { data: examHistory } = useExamHistoryQuery(1, 1);
 
+  const latestExam = examHistory?.items[0];
   const correctRate =
-    examHistory && examHistory.totalQuestions > 0
-      ? Math.round((examHistory.correctCount / examHistory.totalQuestions) * 100)
+    latestExam && latestExam.totalQuestions > 0
+      ? Math.round((latestExam.correctCount / latestExam.totalQuestions) * 100)
       : null;
 
   const activeTab: TTab =

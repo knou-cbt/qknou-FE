@@ -20,6 +20,10 @@ jest.mock("@/components", () => ({
   Toaster: () => <div data-testid="toaster">toaster</div>,
 }));
 
+jest.mock("@/components/auth/LoginPromptModal", () => ({
+  LoginPromptModal: () => <div data-testid="login-prompt-modal">login-prompt</div>,
+}));
+
 const mockedUsePathname = usePathname as jest.MockedFunction<typeof usePathname>;
 const mockedUseExamContext = useExamContext as jest.MockedFunction<
   typeof useExamContext

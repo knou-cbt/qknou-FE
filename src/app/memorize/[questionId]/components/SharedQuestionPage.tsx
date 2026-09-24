@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { notFound } from "next/navigation";
 import ReactMarkdown from "react-markdown";
 
@@ -10,6 +10,7 @@ import {
   FeedbackModal,
   useFeedbackModal,
 } from "@/components/feedback/FeedbackModal";
+import { ExplanationGate } from "@/components/ads/ExplanationGate";
 import { SITE_URL } from "@/constants";
 import { ApiError } from "@/lib/api-client";
 import { cn } from "@/lib/utils";
@@ -33,9 +34,31 @@ export const SharedQuestionPage = ({ questionId }: Props) => {
     feedbackModalOpen,
     feedbackModalDefaultType,
     feedbackModalQuestionId,
+    feedbackModalQuestionDisplayNumber,
     openFeedbackModal,
     closeFeedbackModal,
   } = useFeedbackModal();
+
+  const [selectedAnswer, setSelectedAnswer] = useState<number | null>(null);
+  const [showResult, setShowResult] = useState(false);
+
+  // 다른 문항으로 이동해도 같은 컴포넌트 인스턴스가 재사용될 수 있어, 문항이
+  // 바뀌면 암기모드와 동일하게 선택/결과 상태를 초기화한다. effect 대신 렌더 중
+  // 비교해 리셋하는 방식(React 공식 권장 패턴)을 써서 setState-in-effect를 피한다.
+  const [renderedQuestionId, setRenderedQuestionId] = useState(data?.id);
+  if (data?.id !== renderedQuestionId) {
+    setRenderedQuestionId(data?.id);
+    setSelectedAnswer(null);
+    setShowResult(false);
+  }
+
+  const handleAnswerSelect = useCallback(
+    (value: string | number) => {
+      if (showResult) return;
+      setSelectedAnswer(Number(value));
+    },
+    [showResult]
+  );
 
   const formattedAnswers = useMemo(() => {
     if (!data?.choices) return [];
@@ -78,7 +101,7 @@ export const SharedQuestionPage = ({ questionId }: Props) => {
           <div className={examDetailMaxW[896]}>
             <Breadcrumb
               subject={data.exam.subject}
-              year={data.exam.title}
+              year={data.exam.year.toString()}
               subjectHref="/"
             />
           </div>
@@ -92,7 +115,7 @@ export const SharedQuestionPage = ({ questionId }: Props) => {
             )}
           >
             <p className="text-sm text-[#6B7280]">
-              {data.exam.title} | 문항 {data.questionNumber}번
+              {data.exam.subject} {data.exam.year}년 | 문항 {data.questionNumber}번
             </p>
             <QuestionActionIcons
               questionId={data.id}
@@ -102,6 +125,7 @@ export const SharedQuestionPage = ({ questionId }: Props) => {
                 openFeedbackModal({
                   type: "question_bug",
                   questionId: data.id,
+                  questionDisplayNumber: data.questionNumber,
                 })
               }
             />
@@ -115,20 +139,29 @@ export const SharedQuestionPage = ({ questionId }: Props) => {
               example={data.example}
               imageUrls={data.imageUrls}
               answers={formattedAnswers}
-              selectedAnswer={null}
+              selectedAnswer={selectedAnswer}
               correctAnswer={data.correctAnswers}
-              showResult
-              actionButtonText=""
+              showResult={showResult}
+              onAnswerSelect={handleAnswerSelect}
+              actionButtonText="정답 확인"
+              actionButtonDisabled={selectedAnswer === null}
+              onActionClick={() => setShowResult(true)}
             />
           </div>
 
-          {data.explanation && (
+          {showResult && (
             <div className={cn(examDetailMaxW[896], "mt-6")}>
               <div className="bg-[#F9FAFB] border border-[#E5E7EB] rounded-[16px] p-6">
                 <h3 className="font-semibold text-[#101828] mb-3">해설</h3>
-                <div className="text-[#364153] leading-7 [&_a]:text-[#155DFC] [&_a]:underline [&_li]:ml-5 [&_ol]:list-decimal [&_p]:mb-3 [&_ul]:list-disc">
-                  <ReactMarkdown>{data.explanation}</ReactMarkdown>
-                </div>
+                {data.explanation ? (
+                  <ExplanationGate>
+                    <div className="text-[#364153] leading-7 [&_a]:text-[#155DFC] [&_a]:underline [&_li]:ml-5 [&_ol]:list-decimal [&_p]:mb-3 [&_ul]:list-disc">
+                      <ReactMarkdown>{data.explanation}</ReactMarkdown>
+                    </div>
+                  </ExplanationGate>
+                ) : (
+                  <p className="text-[#6B7280]">등록된 해설이 없습니다.</p>
+                )}
               </div>
             </div>
           )}
@@ -140,6 +173,7 @@ export const SharedQuestionPage = ({ questionId }: Props) => {
         onClose={closeFeedbackModal}
         defaultType={feedbackModalDefaultType}
         questionId={feedbackModalQuestionId}
+        questionDisplayNumber={feedbackModalQuestionDisplayNumber}
       />
     </div>
   );

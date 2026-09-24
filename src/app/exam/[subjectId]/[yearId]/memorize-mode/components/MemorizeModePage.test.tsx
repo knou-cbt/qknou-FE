@@ -61,6 +61,10 @@ jest.mock("@/components/feedback/FeedbackModal", () => ({
   FeedbackModal: () => null,
 }));
 
+jest.mock("@/components/ads/ExplanationGate", () => ({
+  ExplanationGate: ({ children }: { children: React.ReactNode }) => children,
+}));
+
 jest.mock("@/components/chatbot", () => ({
   ChatbotPanel: ({
     open,

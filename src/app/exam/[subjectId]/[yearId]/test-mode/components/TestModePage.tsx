@@ -20,6 +20,7 @@ import {
   FeedbackModal,
   useFeedbackModal,
 } from "@/components/feedback/FeedbackModal";
+import { ExplanationGate } from "@/components/ads/ExplanationGate";
 import { useIsMobile } from "@/lib/useIsMobile";
 import { cn } from "@/lib/utils";
 import {
@@ -100,6 +101,7 @@ export const TestModePage = ({ subjectId, yearId }: Props) => {
     feedbackModalOpen,
     feedbackModalDefaultType,
     feedbackModalQuestionId,
+    feedbackModalQuestionDisplayNumber,
     openFeedbackModal,
     closeFeedbackModal,
   } = useFeedbackModal();
@@ -594,21 +596,23 @@ export const TestModePage = ({ subjectId, yearId }: Props) => {
                       <p className="text-sm text-red-500">{explanationError}</p>
                     )}
                     {!isExplanationLoading && !explanationError && explanationText && (
-                      <div className="text-[#364153] leading-7 [&_a]:text-[#155DFC] [&_a]:underline [&_code]:rounded [&_code]:bg-[#F3F4F6] [&_code]:px-1 [&_li]:ml-5 [&_ol]:list-decimal [&_p]:mb-3 [&_ul]:list-disc">
-                        <ReactMarkdown>{explanationText}</ReactMarkdown>
-                        {conceptTags.length > 0 && (
-                          <div className="mt-4 flex flex-wrap gap-2">
-                            {conceptTags.map((tag) => (
-                              <span
-                                key={tag}
-                                className="rounded-full bg-[#EEF2FF] text-[#3730A3] px-3 py-1 text-xs font-medium"
-                              >
-                                #{tag}
-                              </span>
-                            ))}
-                          </div>
-                        )}
-                      </div>
+                      <ExplanationGate>
+                        <div className="text-[#364153] leading-7 [&_a]:text-[#155DFC] [&_a]:underline [&_code]:rounded [&_code]:bg-[#F3F4F6] [&_code]:px-1 [&_li]:ml-5 [&_ol]:list-decimal [&_p]:mb-3 [&_ul]:list-disc">
+                          <ReactMarkdown>{explanationText}</ReactMarkdown>
+                          {conceptTags.length > 0 && (
+                            <div className="mt-4 flex flex-wrap gap-2">
+                              {conceptTags.map((tag) => (
+                                <span
+                                  key={tag}
+                                  className="rounded-full bg-[#EEF2FF] text-[#3730A3] px-3 py-1 text-xs font-medium"
+                                >
+                                  #{tag}
+                                </span>
+                              ))}
+                            </div>
+                          )}
+                        </div>
+                      </ExplanationGate>
                     )}
                   </div>
                 )}
@@ -671,9 +675,11 @@ export const TestModePage = ({ subjectId, yearId }: Props) => {
                 openFeedbackModal({
                   type: "question_bug",
                   questionId: currentQuestion.id,
+                  questionDisplayNumber: currentIndex + 1,
                 })
               }
               aria-label="문항 오류 제보"
+              title="문항 오류 제보"
               className="flex size-8 items-center justify-center rounded-full text-[#6B7280] transition-colors cursor-pointer hover:bg-[#F3F4F6]"
             >
               <Flag className="size-4" />
@@ -734,6 +740,7 @@ export const TestModePage = ({ subjectId, yearId }: Props) => {
         onClose={closeFeedbackModal}
         defaultType={feedbackModalDefaultType}
         questionId={feedbackModalQuestionId}
+        questionDisplayNumber={feedbackModalQuestionDisplayNumber}
       />
     </div>
   );

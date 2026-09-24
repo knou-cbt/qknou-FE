@@ -52,6 +52,7 @@ export const QuestionActionIcons = ({
         type="button"
         onClick={onReport}
         aria-label="문항 오류 제보"
+        title="문항 오류 제보"
         className={iconButtonClassName}
       >
         <Flag className="size-4" />
@@ -60,6 +61,7 @@ export const QuestionActionIcons = ({
         type="button"
         onClick={() => void handleShare()}
         aria-label="문항 공유"
+        title="문항 공유"
         className={iconButtonClassName}
       >
         <Share2 className="size-4" />

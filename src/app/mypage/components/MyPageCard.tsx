@@ -5,7 +5,8 @@ import { ChevronRight } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface IMyPageCardProps {
-  onClick: () => void;
+  /** 없으면 카드 전체 클릭은 비활성화되고(자체 액션 버튼을 안에 두는 용도), 쉐브론도 숨겨진다 */
+  onClick?: () => void;
   className?: string;
   children: React.ReactNode;
 }
@@ -17,20 +18,28 @@ interface IMyPageCardProps {
 export function MyPageCard({ onClick, className, children }: IMyPageCardProps) {
   return (
     <div
-      role="button"
-      tabIndex={0}
+      role={onClick ? "button" : undefined}
+      tabIndex={onClick ? 0 : undefined}
       onClick={onClick}
-      onKeyDown={(e) => {
-        if (e.key === "Enter") onClick();
-      }}
+      onKeyDown={
+        onClick
+          ? (e) => {
+              if (e.key === "Enter") onClick();
+            }
+          : undefined
+      }
       className={cn(
-        "flex cursor-pointer flex-row items-center gap-3 rounded-xl bg-white p-3 shadow-sm transition-all",
-        "sm:flex-col sm:items-stretch sm:gap-3 sm:rounded-xl sm:border sm:border-[#E5E7EB] sm:p-4 sm:shadow-none sm:hover:border-[#155DFC] sm:hover:shadow-md sm:hover:-translate-y-0.5",
+        "flex flex-row items-center gap-3 rounded-xl bg-white p-3 shadow-sm transition-all",
+        "sm:flex-col sm:items-stretch sm:gap-3 sm:rounded-xl sm:border sm:border-[#E5E7EB] sm:p-4 sm:shadow-none",
+        onClick &&
+          "cursor-pointer sm:hover:border-[#155DFC] sm:hover:shadow-md sm:hover:-translate-y-0.5",
         className
       )}
     >
       <div className="min-w-0 flex-1 sm:contents">{children}</div>
-      <ChevronRight className="size-4 shrink-0 text-[#D1D5DC] sm:hidden" />
+      {onClick && (
+        <ChevronRight className="size-4 shrink-0 text-[#D1D5DC] sm:hidden" />
+      )}
     </div>
   );
 }
