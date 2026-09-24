@@ -112,8 +112,7 @@ export const ExamHistorySection = () => {
         </p>
       </div>
 
-      <div className="flex items-center justify-between gap-2">
-        <p className="text-sm text-[#6B7280]">총 {filteredHistory.length}개</p>
+      <div className="flex items-center gap-2">
         <Select
           options={subjectOptions}
           value={subjectFilter}
@@ -121,6 +120,11 @@ export const ExamHistorySection = () => {
           aria-label="과목별 필터"
           className="w-40"
         />
+        {subjectFilter === ALL_SUBJECTS && (
+          <p className="text-xs text-[#9CA3AF]">
+            과목을 선택하면 해당 과목의 풀이 기록만 볼 수 있어요
+          </p>
+        )}
       </div>
 
       {filteredHistory.length === 0 ? (
