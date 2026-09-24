@@ -1,5 +1,6 @@
 // app/layout.tsx
 import type { Metadata } from "next";
+import Script from "next/script";
 import { GeistSans } from "geist/font/sans";
 import { GeistMono } from "geist/font/mono";
 import "./globals.css";
@@ -11,6 +12,8 @@ import { AppContent } from "@/components";
 import { SiteStructuredData } from "@/components/seo";
 import { GoogleAnalytics } from '@next/third-parties/google';
 import { SITE_URL } from "@/constants";
+
+const ADSENSE_CLIENT_ID = "ca-pub-7674232492620300";
 
 
 const SITE_NAME = "큐노";
@@ -124,6 +127,12 @@ export default function RootLayout({
   return (
     <html lang="ko">
       <body className={`${GeistSans.variable} ${GeistMono.variable} antialiased`} suppressHydrationWarning>
+        <Script
+          async
+          src={`https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=${ADSENSE_CLIENT_ID}`}
+          crossOrigin="anonymous"
+          strategy="afterInteractive"
+        />
         <SiteStructuredData />
         <AuthProvider>
           <QueryProvider>
