@@ -73,38 +73,20 @@ const AlertModal = ({
   return (
     <Modal open={open} onClose={onClose}>
       <ModalContent size="sm">
-        {/* Close Button */}
-        <button
-          onClick={onClose}
-          className="absolute top-4 right-4 p-1 rounded-md hover:bg-[#F3F4F6] transition-colors cursor-pointer"
-        >
-          <X className="w-5 h-5 text-[#6B7280]" />
-        </button>
+        {/* Title */}
+        <div className="flex items-center gap-2">
+          <Icon className={cn("size-4 shrink-0", config.iconColor)} />
+          <h3 className="text-base font-semibold text-[#101828]">{title}</h3>
+        </div>
 
-        {/* Content */}
-        <div className="flex flex-col items-center text-center pt-4">
-          {/* Icon */}
-          <div
-            className={cn(
-              "flex items-center justify-center w-12 h-12 rounded-full mb-4",
-              config.iconBgColor
-            )}
-          >
-            <Icon className={cn("w-6 h-6", config.iconColor)} />
-          </div>
+        {/* Message */}
+        {message && (
+          <p className="mt-2 text-sm text-[#6B7280]">{message}</p>
+        )}
 
-          {/* Title */}
-          <h3 className={cn("text-lg font-semibold mb-2", config.titleColor)}>
-            {title}
-          </h3>
-
-          {/* Message */}
-          {message && (
-            <p className="text-[#6B7280] text-sm mb-6">{message}</p>
-          )}
-
-          {/* Button */}
-          <Button onClick={onClose} className="w-full">
+        {/* Button */}
+        <div className="mt-5 flex justify-end">
+          <Button onClick={onClose} size="sm">
             {confirmText}
           </Button>
         </div>
