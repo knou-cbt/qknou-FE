@@ -4,6 +4,7 @@ import * as React from "react";
 import { useState } from "react";
 import Image from "next/image";
 import { cva, type VariantProps } from "class-variance-authority";
+import { ChevronDown } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 import remarkMath from "remark-math";
 import rehypeKatex from "rehype-katex";
@@ -125,12 +126,9 @@ function SharedExampleToggle({
         className="flex items-center gap-2 px-4 py-2.5 w-full bg-[#F3F4F6] border border-[#E5E7EB] rounded-[12px] text-sm font-medium text-[#364153] hover:bg-[#E9EAEB] transition-colors"
       >
         <span className="flex-1 text-left">{rangeLabel}</span>
-        <svg
+        <ChevronDown
           className={cn("w-4 h-4 shrink-0 transition-transform duration-200", open && "rotate-180")}
-          fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}
-        >
-          <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
-        </svg>
+        />
       </button>
       {open && (
         <div className="mt-2 px-4 py-3 bg-[#F9FAFB] border border-[#E5E7EB] rounded-[12px] text-sm text-[#364153] leading-6 break-words [&_ul]:list-disc [&_ol]:list-decimal [&_li]:ml-5">

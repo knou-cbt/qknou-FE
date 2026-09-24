@@ -6,7 +6,7 @@ import Link from "next/link";
 import { Home } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 
-import { QuestionCard } from "@/components/ui";
+import { QuestionCard, buttonVariants } from "@/components/ui";
 import { QuestionActionIcons } from "@/components/question-actions/QuestionActionIcons";
 import { ReportBugLink } from "@/components/question-actions/ReportBugLink";
 import {
@@ -27,6 +27,7 @@ import {
   examDetailStyle,
 } from "@/lib/exam-side-ad-layout";
 import { useCopyProtection } from "@/lib/useCopyProtection";
+import { trackEvent } from "@/lib/analytics";
 
 import { useQuestionQuery } from "../hooks/service";
 
@@ -68,6 +69,12 @@ export const SharedQuestionPage = ({ questionId }: Props) => {
     [showResult]
   );
 
+  const handleMoreQuestionsClick = useCallback(() => {
+    trackEvent("share_page_more_questions_click", {
+      question_id: data?.id ?? "",
+    });
+  }, [data?.id]);
+
   const formattedAnswers = useMemo(() => {
     if (!data?.choices) return [];
     return data.choices.map((choice) => ({
@@ -105,18 +112,6 @@ export const SharedQuestionPage = ({ questionId }: Props) => {
         style={examDetailStyle}
         className={cn("flex flex-1 flex-col", examDetailContentAreaClassName)}
       >
-        <div className="w-full px-4 pt-4 pb-4">
-          <div className={examDetailMaxW[896]}>
-            <Link
-              href="/"
-              className="inline-flex items-center gap-1.5 text-sm font-semibold text-[#155DFC] hover:text-[#1447E6]"
-            >
-              <Home className="size-4" />
-              큐노 홈으로
-            </Link>
-          </div>
-        </div>
-
         <main className="flex-1 flex flex-col items-center px-4 py-6">
           <div
             className={cn(
@@ -150,7 +145,7 @@ export const SharedQuestionPage = ({ questionId }: Props) => {
               actionButtonDisabled={selectedAnswer === null}
               onActionClick={() => setShowResult(true)}
             />
-            <div className="mt-4">
+            <div className="mt-4 flex items-center justify-between gap-2">
               <ReportBugLink
                 onClick={() =>
                   openFeedbackModal({
@@ -160,6 +155,14 @@ export const SharedQuestionPage = ({ questionId }: Props) => {
                   })
                 }
               />
+              <Link
+                href="/"
+                onClick={handleMoreQuestionsClick}
+                className={cn(buttonVariants({ variant: "outline", size: "sm" }), "gap-1.5")}
+              >
+                <Home className="size-3.5" />
+                더 많은 문제보기
+              </Link>
             </div>
           </div>
 
