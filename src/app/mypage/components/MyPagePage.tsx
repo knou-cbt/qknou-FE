@@ -76,18 +76,14 @@ export const MyPagePage = () => {
             <div className="flex flex-col gap-4 rounded-xl border border-[#E5E7EB] bg-white p-4 text-left shadow-sm md:p-6">
               {/* 유저 아이콘 + 유저 정보: 항상 가로 배치 */}
               <div className="flex flex-row items-center gap-4">
-                <div className="flex size-14 shrink-0 items-center justify-center overflow-hidden rounded-full bg-gradient-to-br from-[#5B93FF] to-[#0B45D1] text-lg font-semibold text-white shadow-[0_6px_16px_rgba(21,93,252,0.35)] ring-4 ring-white md:size-16 md:text-xl">
-                  {user?.profileImage ? (
-                    <Image
-                      src={user.profileImage}
-                      alt={user.name ?? "프로필"}
-                      width={64}
-                      height={64}
-                      className="size-full object-cover"
-                    />
-                  ) : (
-                    <span>{user?.name?.charAt(0) ?? "?"}</span>
-                  )}
+                <div className="flex size-14 shrink-0 items-center justify-center overflow-hidden rounded-full bg-white shadow-[0_6px_16px_rgba(21,93,252,0.15)] ring-4 ring-white md:size-16">
+                  <Image
+                    src={user?.profileImage || "/user-profile.png"}
+                    alt={user?.name ?? "프로필"}
+                    width={64}
+                    height={64}
+                    className="size-full object-cover"
+                  />
                 </div>
                 <div className="min-w-0">
                   <p className="truncate font-semibold text-[#101828] md:text-base">

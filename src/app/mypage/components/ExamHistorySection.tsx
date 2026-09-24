@@ -1,15 +1,17 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Info } from "lucide-react";
 
-import { Button, Pagination } from "@/components/ui";
+import { Button, Pagination, Select } from "@/components/ui";
 import { cn } from "@/lib/utils";
 
 import { MyPageCard } from "./MyPageCard";
-import { useExamHistoryQuery } from "../hooks/service";
+import { useAllExamHistoryQuery } from "../hooks/service";
 import { EXAM_TYPE_LABEL } from "../interface";
+
+const ALL_SUBJECTS = "all";
 
 const PAGE_SIZE_OPTIONS = [10, 20, 30, 50];
 
@@ -37,10 +39,36 @@ export const ExamHistorySection = () => {
   const router = useRouter();
   const [pageIndex, setPageIndex] = useState(0);
   const [pageSize, setPageSize] = useState(PAGE_SIZE_OPTIONS[0]);
-  const { data, isLoading } = useExamHistoryQuery(pageIndex + 1, pageSize);
+  const [subjectFilter, setSubjectFilter] = useState(ALL_SUBJECTS);
+  const { data: allHistory, isLoading } = useAllExamHistoryQuery();
 
-  const history = data?.items ?? [];
-  const pageCount = Math.max(Math.ceil((data?.total ?? 0) / pageSize), 1);
+  const subjectOptions = useMemo(() => {
+    const names = Array.from(
+      new Set((allHistory ?? []).map((item) => item.subjectName))
+    );
+    return [
+      { value: ALL_SUBJECTS, label: "전체 과목" },
+      ...names.map((name) => ({ value: name, label: name })),
+    ];
+  }, [allHistory]);
+
+  const filteredHistory = useMemo(() => {
+    if (subjectFilter === ALL_SUBJECTS) return allHistory ?? [];
+    return (allHistory ?? []).filter(
+      (item) => item.subjectName === subjectFilter
+    );
+  }, [allHistory, subjectFilter]);
+
+  const pageCount = Math.max(Math.ceil(filteredHistory.length / pageSize), 1);
+  const history = filteredHistory.slice(
+    pageIndex * pageSize,
+    pageIndex * pageSize + pageSize
+  );
+
+  const handleSubjectFilterChange = (value: string) => {
+    setSubjectFilter(value);
+    setPageIndex(0);
+  };
 
   if (isLoading) {
     return (
@@ -65,7 +93,7 @@ export const ExamHistorySection = () => {
     );
   }
 
-  if (history.length === 0) {
+  if ((allHistory ?? []).length === 0) {
     return (
       <div className="flex flex-col items-center gap-4 rounded-xl border border-[#E5E7EB] bg-white p-10 text-center">
         <p className="text-[#6B7280]">아직 제출한 시험이 없어요.</p>
@@ -84,6 +112,22 @@ export const ExamHistorySection = () => {
         </p>
       </div>
 
+      <div className="flex items-center justify-between gap-2">
+        <p className="text-sm text-[#6B7280]">총 {filteredHistory.length}개</p>
+        <Select
+          options={subjectOptions}
+          value={subjectFilter}
+          onChange={handleSubjectFilterChange}
+          aria-label="과목별 필터"
+          className="w-40"
+        />
+      </div>
+
+      {filteredHistory.length === 0 ? (
+        <div className="flex flex-col items-center gap-2 rounded-xl border border-[#E5E7EB] bg-white p-10 text-center">
+          <p className="text-[#6B7280]">해당 과목의 풀이 기록이 없어요.</p>
+        </div>
+      ) : (
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
         {history.map((item) => {
           const correctRate =
@@ -149,8 +193,9 @@ export const ExamHistorySection = () => {
           );
         })}
       </div>
+      )}
 
-      {history.length > 0 && (
+      {filteredHistory.length > 0 && (
         <Pagination
           pageIndex={pageIndex}
           pageCount={pageCount}
