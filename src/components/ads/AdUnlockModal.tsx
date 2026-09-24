@@ -10,6 +10,39 @@ const KAKAO_ADFIT_WIDTH = 250;
 const KAKAO_ADFIT_HEIGHT = 250;
 const KAKAO_ADFIT_SCRIPT_SRC = "//t1.kakaocdn.net/kas/static/ba.min.js";
 
+/**
+ * ba.min.js는 `if (!("adfit" in self))`로 자기 자신을 감싸서, 페이지에서 딱 한 번만
+ * <ins class="kakao_ad_area">들을 스캔해 iframe을 주입하고 그 뒤로는 스크립트를 몇 번을
+ * 더 넣어도 아무 일도 하지 않는다. 그래서 모달을 열 때마다 <ins>+<script>를 새로 만들면
+ * 정확히 "맨 처음 한 번"만 광고가 뜨고, 두 번째 오픈부터는 영영 빈 칸으로 남는다.
+ * → <ins>는 페이지에 딱 하나만(모듈 스코프 싱글턴) 만들고, 모달이 열릴 때마다 그 DOM
+ *   노드를 현재 모달의 컨테이너로 옮겨(appendChild) 재사용한다. 스크립트도 최초 1회만 삽입.
+ */
+let sharedAdInsNode: HTMLElement | null = null;
+let isAdFitScriptInserted = false;
+
+function getSharedAdInsNode(): HTMLElement {
+  if (!sharedAdInsNode) {
+    const ins = document.createElement("ins");
+    ins.className = "kakao_ad_area";
+    ins.style.display = "none";
+    ins.setAttribute("data-ad-unit", KAKAO_ADFIT_UNIT_ID);
+    ins.setAttribute("data-ad-width", String(KAKAO_ADFIT_WIDTH));
+    ins.setAttribute("data-ad-height", String(KAKAO_ADFIT_HEIGHT));
+    sharedAdInsNode = ins;
+  }
+  return sharedAdInsNode;
+}
+
+function ensureAdFitScriptLoaded() {
+  if (isAdFitScriptInserted) return;
+  isAdFitScriptInserted = true;
+  const script = document.createElement("script");
+  script.src = KAKAO_ADFIT_SCRIPT_SRC;
+  script.async = true;
+  document.body.appendChild(script);
+}
+
 interface IAdUnlockModalProps {
   open: boolean;
   onClose: () => void;
@@ -46,28 +79,24 @@ const AdUnlockModalBody = ({
   const adContainerRef = useRef<HTMLDivElement>(null);
   const iframeRef = useRef<HTMLIFrameElement | null>(null);
 
-  // 애드핏은 <ins class="kakao_ad_area">를 스크립트가 비동기로 스캔해 그 안에
-  // iframe을 주입하는 방식이라, 모달이 열릴 때마다 <ins>+<script>를 새로
-  // DOM에 삽입해야 매번 다시 렌더된다(리액트 재마운트만으로는 재스캔되지 않음).
+  // 모달을 열 때마다 공유 <ins> 노드를 이 컨테이너로 옮겨 붙인다. 이미 이전 오픈에서
+  // 광고가 로드돼 있으면 바로 보이고, 최초 1회라면 이제서야 스크립트가 스캔해서 채운다.
   useEffect(() => {
     const container = adContainerRef.current;
     if (!container) return;
 
-    const ins = document.createElement("ins");
-    ins.className = "kakao_ad_area";
-    ins.style.display = "none";
-    ins.setAttribute("data-ad-unit", KAKAO_ADFIT_UNIT_ID);
-    ins.setAttribute("data-ad-width", String(KAKAO_ADFIT_WIDTH));
-    ins.setAttribute("data-ad-height", String(KAKAO_ADFIT_HEIGHT));
-
-    const script = document.createElement("script");
-    script.src = KAKAO_ADFIT_SCRIPT_SRC;
-    script.async = true;
-
+    const ins = getSharedAdInsNode();
     container.appendChild(ins);
-    container.appendChild(script);
+    ensureAdFitScriptLoaded();
 
-    // 애드핏 스크립트가 <ins> 안에 iframe을 주입하는 시점은 비동기이므로 관찰해서 잡는다
+    const existingIframe = ins.querySelector("iframe");
+    if (existingIframe) {
+      iframeRef.current = existingIframe;
+    }
+
+    // 애드핏 스크립트가 <ins> 안에 iframe을 주입하는 시점은 비동기이므로 관찰해서 잡는다.
+    // subtree까지 봐야 한다 — iframe이 <ins> 바로 아래가 아니라 스크립트가 먼저 끼워넣는
+    // 래퍼 엘리먼트 안쪽에 나중에 들어갈 수도 있기 때문
     const observer = new MutationObserver(() => {
       const iframe = ins.querySelector("iframe");
       if (iframe) {
@@ -75,11 +104,13 @@ const AdUnlockModalBody = ({
         observer.disconnect();
       }
     });
-    observer.observe(ins, { childList: true });
+    observer.observe(ins, { childList: true, subtree: true });
 
+    // container.innerHTML은 지우지 않는다 — ins는 공유 노드라 다음에 열릴 모달이
+    // 그대로 재사용해야 한다. React가 container 자체를 언마운트하면서 ins도 함께
+    // DOM에서 떨어져 나가고, 다음 오픈 때 위 effect가 다시 appendChild로 살려 붙인다.
     return () => {
       observer.disconnect();
-      container.innerHTML = "";
     };
   }, []);
 
