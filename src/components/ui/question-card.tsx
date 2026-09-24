@@ -194,8 +194,13 @@ const answerChoiceVariants = cva(
       state: {
         default: "border-[#E5E7EB] hover:border-[#D1D5DC]",
         selected: "border-[#155DFC] bg-[#EFF6FF]",
-        correct: "border-[#059669] bg-[#ECFDF5]",
-        incorrect: "border-[#DC2626] bg-[#FEF2F2]",
+        // 결과 화면에서 정답: 클릭(선택)된 UI와 동일하게 표시해 튀지 않게 한다
+        correct: "border-[#155DFC] bg-[#EFF6FF]",
+        // 결과 화면에서 정답이 아닌 나머지 선택지: 회색으로 눌러서 정답이 도드라지게 한다
+        incorrect: "border-[#E5E7EB] bg-[#F9FAFB] opacity-60 cursor-not-allowed",
+        // 결과 화면에서 내가 골랐지만 틀린 선택지: 같은 회색 계열이되, 내 선택이었다는 건 알아볼 수 있게 테두리를 조금 진하게
+        incorrectSelected:
+          "border-[#9CA3AF] bg-[#F3F4F6] cursor-not-allowed",
         disabled: "border-[#E5E7EB] opacity-50 cursor-not-allowed",
       },
     },
@@ -212,8 +217,9 @@ const radioVariants = cva(
       state: {
         default: "bg-white border-[#D1D5DC]",
         selected: "bg-white border-[#155DFC]",
-        correct: "bg-white border-[#059669]",
-        incorrect: "bg-white border-[#DC2626]",
+        correct: "bg-white border-[#155DFC]",
+        incorrect: "bg-white border-[#D1D5DC]",
+        incorrectSelected: "bg-white border-[#9CA3AF]",
         disabled: "bg-white border-[#D1D5DC]",
       },
     },
@@ -225,7 +231,13 @@ const radioVariants = cva(
 
 export interface IAnswerChoiceProps
   extends Omit<React.HTMLAttributes<HTMLDivElement>, "onClick"> {
-  state?: "default" | "selected" | "correct" | "incorrect" | "disabled";
+  state?:
+    | "default"
+    | "selected"
+    | "correct"
+    | "incorrect"
+    | "incorrectSelected"
+    | "disabled";
   value: string | number;
   onValueSelect?: (value: string | number) => void;
 }
@@ -247,41 +259,19 @@ const AnswerChoice = React.forwardRef<HTMLDivElement, IAnswerChoiceProps>(
         className={cn(answerChoiceVariants({ state, className }))}
         onClick={handleClick}
         role="radio"
-        aria-checked={state === "selected"}
+        aria-checked={state === "selected" || state === "incorrectSelected"}
         tabIndex={state === "disabled" ? -1 : 0}
         {...props}
       >
-        {/* Correct Checkmark or Radio Circle */}
-        {state === "correct" ? (
-          <div className="flex items-center justify-center w-6 h-6 bg-[#059669] rounded-full shrink-0 mt-0.5">
-            <svg
-              width="14"
-              height="14"
-              viewBox="0 0 14 14"
-              fill="none"
-              xmlns="http://www.w3.org/2000/svg"
-            >
-              <path
-                d="M3 7L5.5 9.5L11 4"
-                stroke="white"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-            </svg>
-          </div>
-        ) : (
-          <div className={cn(radioVariants({ state }), "shrink-0 mt-0.5")}>
-            {(state === "selected" || state === "incorrect") && (
-              <div
-                className={cn("w-2.5 h-2.5 rounded-full", {
-                  "bg-[#155DFC]": state === "selected",
-                  "bg-[#DC2626]": state === "incorrect",
-                })}
-              />
-            )}
-          </div>
-        )}
+        {/* Radio Circle: 정답/선택은 채운 원, 내가 골랐지만 틀린 선택지는 회색 원으로 표시, 나머지는 빈 원 */}
+        <div className={cn(radioVariants({ state }), "shrink-0 mt-0.5")}>
+          {(state === "selected" || state === "correct") && (
+            <div className="w-2.5 h-2.5 rounded-full bg-[#155DFC]" />
+          )}
+          {state === "incorrectSelected" && (
+            <div className="w-2.5 h-2.5 rounded-full bg-[#9CA3AF]" />
+          )}
+        </div>
 
         {/* Answer Text */}
         <span className="flex-1 min-w-0 font-normal text-sm sm:text-base leading-5 sm:leading-6 text-[#101828] break-words">
@@ -423,12 +413,13 @@ const QuestionCard = React.forwardRef<HTMLDivElement, IQuestionCardProps>(
 
     const getAnswerState = (
       value: string | number
-    ): "default" | "selected" | "correct" | "incorrect" => {
+    ): "default" | "selected" | "correct" | "incorrect" | "incorrectSelected" => {
       if (showResult) {
-        // 복수 정답 지원: 배열에 포함되어 있으면 정답
-        const isCorrect = correctAnswer.includes(value);
-        if (isCorrect) return "correct";
-        if (value === selectedAnswer && !isCorrect) return "incorrect";
+        // 복수 정답 지원: 배열에 포함되어 있으면 정답. 그 외 나머지는 회색으로 눌러
+        // 정답을 도드라지게 하되, 내가 골랐던 오답은 회색 원으로 표시를 남겨 구분한다
+        if (correctAnswer.includes(value)) return "correct";
+        if (value === selectedAnswer) return "incorrectSelected";
+        return "incorrect";
       }
       if (value === selectedAnswer) return "selected";
       return "default";
