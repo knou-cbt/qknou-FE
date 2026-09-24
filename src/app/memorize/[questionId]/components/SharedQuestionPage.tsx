@@ -3,7 +3,6 @@
 import { useCallback, useMemo, useState } from "react";
 import { notFound } from "next/navigation";
 import Link from "next/link";
-import { Home } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 
 import { QuestionCard, buttonVariants } from "@/components/ui";
@@ -160,7 +159,6 @@ export const SharedQuestionPage = ({ questionId }: Props) => {
                 onClick={handleMoreQuestionsClick}
                 className={cn(buttonVariants({ variant: "outline", size: "sm" }), "gap-1.5")}
               >
-                <Home className="size-3.5" />
                 더 많은 문제보기
               </Link>
             </div>
