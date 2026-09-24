@@ -9,8 +9,11 @@ import { cn } from "@/lib/utils";
 // 고정(fixed) 사이드 광고가 콘텐츠를 가리지 않으려면 태블릿보다 넓은 화면이 필요 — Tailwind `xl`과 동일
 const DESKTOP_BREAKPOINT = 1280;
 
-/** fixed 사이드 광고(160px) + right-4(16px) + 콘텐츠 간격(16px) */
-export const DESKTOP_SIDE_AD_RESERVED_PX = 160 + 16 + 16;
+/**
+ * 사이드 광고는 제거됨. examDetailStyle/examDetailContentAreaClassName을 쓰는
+ * 시험·암기모드 상세 페이지들이 있어 값 자체는 0으로 남겨 콘텐츠 폭이 그대로 100%가 되게 한다.
+ */
+export const DESKTOP_SIDE_AD_RESERVED_PX = 0;
 
 export const examSideAdContentStyle = {
   "--desktop-side-ad-reserved": `${DESKTOP_SIDE_AD_RESERVED_PX}px`,
@@ -32,9 +35,6 @@ const MOBILE_BANNER_HEIGHT = 50;
 const DESKTOP_BANNER_WIDTH = 728;
 const DESKTOP_BANNER_HEIGHT = 90;
 
-/** 웹(데스크탑) 하단/사이드는 쿠팡 파트너스로 전환 */
-const COUPANG_DESKTOP_SIDE_WIDGET_SRC = "https://coupa.ng/cpDlpC";
-
 const BOTTOM_WIDGET_ROTATE_INTERVAL_MS = 60 * 60 * 1000;
 
 function pickRandomBottomWidgetId(): string {
@@ -43,8 +43,8 @@ function pickRandomBottomWidgetId(): string {
 }
 
 /**
- * - 모바일: 하단 가로형 배너(320x50) + 사이드는 없음
- * - 웹: 하단(로테이션) + 사이드
+ * - 모바일: 하단 가로형 배너(320x50)
+ * - 웹: 하단(로테이션). 사이드 광고는 지저분하다는 피드백으로 제거함
  * - 전부 쿠팡 파트너스 위젯 iframe
  * - 하단 광고는 화면에 고정된 채 접기/펼치기가 가능한 바 형태로 표시
  * - 공정위 고시 문구는 항상 배너 바로 아래 노출(숨겨두지 않음)
@@ -148,21 +148,6 @@ export function KakaoAd() {
           </div>
         </div>
       </div>
-
-      {/* 웹 사이드: 쿠팡 파트너스 (기존과 동일하게 유지) */}
-      {isDesktop && (
-        <div className="fixed right-4 top-24 z-40 flex w-[160px] justify-center rounded-[12px] bg-white">
-          <iframe
-            src={COUPANG_DESKTOP_SIDE_WIDGET_SRC}
-            width={160}
-            height={480}
-            frameBorder="0"
-            scrolling="no"
-            referrerPolicy="unsafe-url"
-            title="쿠팡 파트너스 광고"
-          />
-        </div>
-      )}
     </>
   );
 }

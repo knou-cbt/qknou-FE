@@ -97,7 +97,7 @@ export const ExamHistorySection = () => {
     return (
       <div className="flex flex-col items-center gap-4 rounded-xl border border-[#E5E7EB] bg-white p-10 text-center">
         <p className="text-[#6B7280]">아직 제출한 시험이 없어요.</p>
-        <Button onClick={() => router.push("/")}>과목 목록 보러가기</Button>
+        <Button onClick={() => router.push("/")}>시험 대비하러 가기</Button>
       </div>
     );
   }

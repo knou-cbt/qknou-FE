@@ -87,8 +87,9 @@ export const BookmarkListSection = () => {
 
   if (bookmarks.length === 0) {
     return (
-      <div className="flex flex-col items-center gap-2 rounded-xl border border-[#E5E7EB] bg-white p-10 text-center">
+      <div className="flex flex-col items-center gap-4 rounded-xl border border-[#E5E7EB] bg-white p-10 text-center">
         <p className="text-[#6B7280]">북마크한 문항이 없어요.</p>
+        <Button onClick={() => router.push("/")}>시험 대비하러 가기</Button>
       </div>
     );
   }
@@ -103,11 +104,6 @@ export const BookmarkListSection = () => {
           aria-label="과목별 필터"
           className="w-40"
         />
-        {subjectFilter === ALL_SUBJECTS && (
-          <p className="text-xs text-[#9CA3AF]">
-            과목을 선택하면 과목별로 복습할 수 있어요
-          </p>
-        )}
       </div>
 
       {filteredGroups.length === 0 && (
