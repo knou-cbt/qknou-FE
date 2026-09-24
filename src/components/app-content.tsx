@@ -16,8 +16,9 @@ export function AppContent({ children }: AppContentProps) {
   // 시험모드 경로 체크 (제출 후에는 exam 모드 해제)
   const isExamMode = pathname.includes("/test-mode") && !isSubmitted;
 
-  // auth/success 페이지에서는 헤더 숨김
-  const shouldHideHeader = pathname === "/auth/success";
+  // auth/success, 문항 공유 화면에서는 헤더 숨김(공유 화면은 자체 홈 링크로 대체)
+  const shouldHideHeader =
+    pathname === "/auth/success" || pathname.startsWith("/memorize/");
 
   return (
     <div className="flex min-h-screen flex-col overflow-y-auto bg-[#F0F4FF]">

@@ -2,15 +2,22 @@
 
 import { useCallback, useMemo, useState } from "react";
 import { notFound } from "next/navigation";
+import Link from "next/link";
+import { Home } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 
-import { Breadcrumb, QuestionCard } from "@/components/ui";
+import { QuestionCard } from "@/components/ui";
 import { QuestionActionIcons } from "@/components/question-actions/QuestionActionIcons";
+import { ReportBugLink } from "@/components/question-actions/ReportBugLink";
 import {
   FeedbackModal,
   useFeedbackModal,
 } from "@/components/feedback/FeedbackModal";
 import { ExplanationGate } from "@/components/ads/ExplanationGate";
+import {
+  ShareEntryAdModal,
+  useShareEntryAdModal,
+} from "@/components/ads/ShareEntryAdModal";
 import { SITE_URL } from "@/constants";
 import { ApiError } from "@/lib/api-client";
 import { cn } from "@/lib/utils";
@@ -38,6 +45,7 @@ export const SharedQuestionPage = ({ questionId }: Props) => {
     openFeedbackModal,
     closeFeedbackModal,
   } = useFeedbackModal();
+  const shareEntryAdModal = useShareEntryAdModal();
 
   const [selectedAnswer, setSelectedAnswer] = useState<number | null>(null);
   const [showResult, setShowResult] = useState(false);
@@ -99,11 +107,13 @@ export const SharedQuestionPage = ({ questionId }: Props) => {
       >
         <div className="w-full px-4 pt-4 pb-4">
           <div className={examDetailMaxW[896]}>
-            <Breadcrumb
-              subject={data.exam.subject}
-              year={data.exam.year.toString()}
-              subjectHref="/"
-            />
+            <Link
+              href="/"
+              className="inline-flex items-center gap-1.5 text-sm font-semibold text-[#155DFC] hover:text-[#1447E6]"
+            >
+              <Home className="size-4" />
+              큐노 홈으로
+            </Link>
           </div>
         </div>
 
@@ -121,13 +131,6 @@ export const SharedQuestionPage = ({ questionId }: Props) => {
               questionId={data.id}
               shareUrl={shareUrl}
               bookmarkActive={Boolean(data.isBookmarked)}
-              onReport={() =>
-                openFeedbackModal({
-                  type: "question_bug",
-                  questionId: data.id,
-                  questionDisplayNumber: data.questionNumber,
-                })
-              }
             />
           </div>
 
@@ -147,6 +150,17 @@ export const SharedQuestionPage = ({ questionId }: Props) => {
               actionButtonDisabled={selectedAnswer === null}
               onActionClick={() => setShowResult(true)}
             />
+            <div className="mt-4">
+              <ReportBugLink
+                onClick={() =>
+                  openFeedbackModal({
+                    type: "question_bug",
+                    questionId: data.id,
+                    questionDisplayNumber: data.questionNumber,
+                  })
+                }
+              />
+            </div>
           </div>
 
           {showResult && (
@@ -174,6 +188,11 @@ export const SharedQuestionPage = ({ questionId }: Props) => {
         defaultType={feedbackModalDefaultType}
         questionId={feedbackModalQuestionId}
         questionDisplayNumber={feedbackModalQuestionDisplayNumber}
+      />
+
+      <ShareEntryAdModal
+        open={shareEntryAdModal.open}
+        onClose={shareEntryAdModal.onClose}
       />
     </div>
   );

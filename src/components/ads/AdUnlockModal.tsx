@@ -3,9 +3,16 @@
 import { useEffect, useRef, useState } from "react";
 
 import { Modal, ModalContent, ModalHeader, Button } from "@/components/ui";
-import { CoupangDisclosure } from "@/components/coupang-ad";
 
-const COUPANG_WIDGET_SRC = "https://coupa.ng/cpDlEB";
+/**
+ * 카카오 애드핏 광고 단위 코드. 카카오 애드핏 콘솔(https://adfit.kakao.com)에서
+ * 이 사이트 도메인으로 발급받은 실제 단위 코드로 교체해야 광고가 노출된다.
+ * TODO: 실제 data-ad-unit 값으로 교체
+ */
+const KAKAO_ADFIT_UNIT_ID = "DAN-XXXXXXXXXXXXXXXX";
+const KAKAO_ADFIT_WIDTH = 250;
+const KAKAO_ADFIT_HEIGHT = 250;
+const KAKAO_ADFIT_SCRIPT_SRC = "//t1.daumcdn.net/kas/static/ba.min.js";
 
 interface IAdUnlockModalProps {
   open: boolean;
@@ -40,7 +47,45 @@ const AdUnlockModalBody = ({
   // 엘리먼트 자체가 부모 문서의 activeElement가 되는 브라우저 표준 동작을
   // 이용한 것으로, 교차 출처여도 동작한다.
   const [hasLeftAndReturned, setHasLeftAndReturned] = useState(false);
-  const iframeRef = useRef<HTMLIFrameElement>(null);
+  const adContainerRef = useRef<HTMLDivElement>(null);
+  const iframeRef = useRef<HTMLIFrameElement | null>(null);
+
+  // 애드핏은 <ins class="kakao_ad_area">를 스크립트가 비동기로 스캔해 그 안에
+  // iframe을 주입하는 방식이라, 모달이 열릴 때마다 <ins>+<script>를 새로
+  // DOM에 삽입해야 매번 다시 렌더된다(리액트 재마운트만으로는 재스캔되지 않음).
+  useEffect(() => {
+    const container = adContainerRef.current;
+    if (!container) return;
+
+    const ins = document.createElement("ins");
+    ins.className = "kakao_ad_area";
+    ins.style.display = "none";
+    ins.setAttribute("data-ad-unit", KAKAO_ADFIT_UNIT_ID);
+    ins.setAttribute("data-ad-width", String(KAKAO_ADFIT_WIDTH));
+    ins.setAttribute("data-ad-height", String(KAKAO_ADFIT_HEIGHT));
+
+    const script = document.createElement("script");
+    script.src = KAKAO_ADFIT_SCRIPT_SRC;
+    script.async = true;
+
+    container.appendChild(ins);
+    container.appendChild(script);
+
+    // 애드핏 스크립트가 <ins> 안에 iframe을 주입하는 시점은 비동기이므로 관찰해서 잡는다
+    const observer = new MutationObserver(() => {
+      const iframe = ins.querySelector("iframe");
+      if (iframe) {
+        iframeRef.current = iframe;
+        observer.disconnect();
+      }
+    });
+    observer.observe(ins, { childList: true });
+
+    return () => {
+      observer.disconnect();
+      container.innerHTML = "";
+    };
+  }, []);
 
   useEffect(() => {
     let adWasClicked = false;
@@ -78,20 +123,7 @@ const AdUnlockModalBody = ({
         돌아오면 버튼이 활성화돼요.
       </p>
 
-      <div className="flex justify-center py-2">
-        <iframe
-          ref={iframeRef}
-          src={COUPANG_WIDGET_SRC}
-          width={120}
-          height={240}
-          frameBorder="0"
-          scrolling="no"
-          referrerPolicy="unsafe-url"
-          title="쿠팡 파트너스 광고"
-        />
-      </div>
-
-      <CoupangDisclosure className="mt-2" />
+      <div ref={adContainerRef} className="flex justify-center py-2" />
 
       <Button
         onClick={onUnlocked}
