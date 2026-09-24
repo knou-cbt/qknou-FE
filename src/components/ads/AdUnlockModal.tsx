@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 import { Modal, ModalContent, ModalHeader, Button } from "@/components/ui";
 import { CoupangDisclosure } from "@/components/coupang-ad";
@@ -33,33 +33,36 @@ const AdUnlockModalBody = ({
   onUnlocked: () => void;
 }) => {
   // 광고는 교차 출처 iframe이라 실제 클릭 이벤트를 직접 감지할 수 없다.
-  // 대신 "광고를 클릭 → 새 탭/광고주 페이지로 이동 → 이 창으로 복귀"할 때
-  // 발생하는 탭 비활성화→재활성화를 클릭의 근사 신호로 사용한다.
+  // 단순히 "창이 포커스를 잃었다가 돌아옴"만 보면 Cmd+Tab으로 다른 앱을
+  // 갔다 오기만 해도 풀려버린다 — 그래서 blur가 일어난 시점에 포커스가
+  // 실제로 "이 iframe 안"으로 들어갔었는지(=진짜 광고를 클릭했는지)까지
+  // document.activeElement로 같이 확인한다. iframe을 클릭하면 그 iframe
+  // 엘리먼트 자체가 부모 문서의 activeElement가 되는 브라우저 표준 동작을
+  // 이용한 것으로, 교차 출처여도 동작한다.
   const [hasLeftAndReturned, setHasLeftAndReturned] = useState(false);
+  const iframeRef = useRef<HTMLIFrameElement>(null);
 
   useEffect(() => {
-    let hasLeft = false;
+    let adWasClicked = false;
 
-    const markLeft = () => {
-      hasLeft = true;
+    const handleBlur = () => {
+      // blur 이벤트 시점엔 activeElement가 아직 안 바뀌어 있을 수 있어 다음 tick에 확인
+      window.setTimeout(() => {
+        if (document.activeElement === iframeRef.current) {
+          adWasClicked = true;
+        }
+      }, 0);
     };
-    const markReturned = () => {
-      if (hasLeft) setHasLeftAndReturned(true);
+    const handleFocus = () => {
+      if (adWasClicked) setHasLeftAndReturned(true);
     };
 
-    const handleVisibilityChange = () => {
-      if (document.hidden) markLeft();
-      else markReturned();
-    };
-
-    document.addEventListener("visibilitychange", handleVisibilityChange);
-    window.addEventListener("blur", markLeft);
-    window.addEventListener("focus", markReturned);
+    window.addEventListener("blur", handleBlur);
+    window.addEventListener("focus", handleFocus);
 
     return () => {
-      document.removeEventListener("visibilitychange", handleVisibilityChange);
-      window.removeEventListener("blur", markLeft);
-      window.removeEventListener("focus", markReturned);
+      window.removeEventListener("blur", handleBlur);
+      window.removeEventListener("focus", handleFocus);
     };
   }, []);
 
@@ -77,6 +80,7 @@ const AdUnlockModalBody = ({
 
       <div className="flex justify-center py-2">
         <iframe
+          ref={iframeRef}
           src={COUPANG_WIDGET_SRC}
           width={120}
           height={240}
