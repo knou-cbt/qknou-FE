@@ -183,6 +183,7 @@ const Header = React.forwardRef<HTMLElement, IHeaderProps>(
           title="시험 제출 완료"
           message="시험이 성공적으로 제출되었습니다."
           confirmText="확인"
+          showIcon={false}
         />
 
         {/* 컨펌 모달 */}

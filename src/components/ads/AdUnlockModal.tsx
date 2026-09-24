@@ -4,15 +4,11 @@ import { useEffect, useRef, useState } from "react";
 
 import { Modal, ModalContent, ModalHeader, Button } from "@/components/ui";
 
-/**
- * 카카오 애드핏 광고 단위 코드. 카카오 애드핏 콘솔(https://adfit.kakao.com)에서
- * 이 사이트 도메인으로 발급받은 실제 단위 코드로 교체해야 광고가 노출된다.
- * TODO: 실제 data-ad-unit 값으로 교체
- */
-const KAKAO_ADFIT_UNIT_ID = "DAN-XXXXXXXXXXXXXXXX";
+/** 카카오 애드핏 콘솔(https://adfit.kakao.com)에서 발급받은 이 사이트 전용 광고 단위 코드 */
+const KAKAO_ADFIT_UNIT_ID = "DAN-wmaKSCFvVh6iSe5I";
 const KAKAO_ADFIT_WIDTH = 250;
 const KAKAO_ADFIT_HEIGHT = 250;
-const KAKAO_ADFIT_SCRIPT_SRC = "//t1.daumcdn.net/kas/static/ba.min.js";
+const KAKAO_ADFIT_SCRIPT_SRC = "//t1.kakaocdn.net/kas/static/ba.min.js";
 
 interface IAdUnlockModalProps {
   open: boolean;

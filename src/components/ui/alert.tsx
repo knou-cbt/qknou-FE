@@ -57,6 +57,7 @@ interface IAlertModalProps {
   title: string;
   message?: React.ReactNode;
   confirmText?: string;
+  showIcon?: boolean;
 }
 
 const AlertModal = ({
@@ -66,6 +67,7 @@ const AlertModal = ({
   title,
   message,
   confirmText = "확인",
+  showIcon = true,
 }: IAlertModalProps) => {
   const config = alertConfig[type];
   const Icon = config.icon;
@@ -75,7 +77,9 @@ const AlertModal = ({
       <ModalContent size="sm">
         {/* Title */}
         <div className="flex items-center gap-2">
-          <Icon className={cn("size-4 shrink-0", config.iconColor)} />
+          {showIcon && (
+            <Icon className={cn("size-4 shrink-0", config.iconColor)} />
+          )}
           <h3 className="text-base font-semibold text-[#101828]">{title}</h3>
         </div>
 

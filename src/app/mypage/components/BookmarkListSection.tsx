@@ -95,7 +95,7 @@ export const BookmarkListSection = () => {
 
   return (
     <div className="flex flex-col gap-8">
-      <div className="flex items-center justify-end">
+      <div className="flex items-center gap-2">
         <Select
           options={subjectOptions}
           value={subjectFilter}
@@ -103,6 +103,11 @@ export const BookmarkListSection = () => {
           aria-label="과목별 필터"
           className="w-40"
         />
+        {subjectFilter === ALL_SUBJECTS && (
+          <p className="text-xs text-[#9CA3AF]">
+            과목을 선택하면 과목별로 복습할 수 있어요
+          </p>
+        )}
       </div>
 
       {filteredGroups.length === 0 && (
