@@ -18,16 +18,10 @@ import { ApiError } from "@/lib/api-client";
 import { useRequireAuth } from "@/lib/useRequireAuth";
 import { useSubjectListQuery } from "@/app/exam/[subjectId]/year/hooks/service";
 
-import { useCheckDuplicateQuery, useUploadSubmissionMutation } from "./hooks/service";
-import type { ICheckDuplicateParams } from "./interface";
+import { useUploadSubmissionMutation } from "./hooks/service";
 
 const MAX_FILE_SIZE = 20 * 1024 * 1024; // 20MB
 const PDF_MAGIC_BYTES = "%PDF-";
-
-const BLOCKED_REASON_LABEL: Record<string, string> = {
-  already_published: "이미 등록되어 있는 시험지예요.",
-  already_in_review: "이미 검수 중인 시험지예요.",
-};
 
 /** ApiError.payload(백엔드가 내려준 에러 JSON)에서 message를 뽑아낸다 (string | string[] 둘 다 지원) */
 function extractApiErrorMessage(payload: unknown): string | undefined {
@@ -121,12 +115,10 @@ const ExamSubmissionModalBody = ({ onClose }: { onClose: () => void }) => {
     [subjectsData]
   );
 
-  const checkParams: ICheckDuplicateParams | null =
+  const submissionParams =
     subjectId && year && examType
       ? { subjectId: Number(subjectId), year: Number(year), examType: Number(examType) }
       : null;
-  const { data: duplicateCheck, isFetching: isCheckingDuplicate } =
-    useCheckDuplicateQuery(checkParams);
 
   const uploadMutation = useUploadSubmissionMutation();
 
@@ -144,23 +136,20 @@ const ExamSubmissionModalBody = ({ onClose }: { onClose: () => void }) => {
     }
   };
 
-  const isBlocked = Boolean(duplicateCheck?.blocked);
   const canSubmit =
-    Boolean(checkParams) &&
+    Boolean(submissionParams) &&
     Boolean(file) &&
     !fileError &&
-    !isBlocked &&
-    !isCheckingDuplicate &&
     !uploadMutation.isPending;
 
   const handleSubmit = () => {
-    if (!checkParams || !file) return;
+    if (!submissionParams || !file) return;
 
     requireAuth(async () => {
       const formData = new FormData();
-      formData.append("subjectId", String(checkParams.subjectId));
-      formData.append("year", String(checkParams.year));
-      formData.append("examType", String(checkParams.examType));
+      formData.append("subjectId", String(submissionParams.subjectId));
+      formData.append("year", String(submissionParams.year));
+      formData.append("examType", String(submissionParams.examType));
       formData.append("file", file);
 
       try {
@@ -173,12 +162,12 @@ const ExamSubmissionModalBody = ({ onClose }: { onClose: () => void }) => {
             toast.error("아직 지원되지 않는 기능이에요. 곧 열릴 예정이에요.");
             return;
           }
-          if (error.status === 400) {
-            // 사전 중복 확인을 통과했어도 그 사이 다른 사용자가 먼저 등록했을 수 있음 —
-            // 서버가 내려준 메시지가 있으면 그대로, 없으면 중복 등록 가능성을 안내한다.
+          if (error.status === 400 || error.status === 409) {
+            // 서버가 (subjectId, year, examType) 조합을 exams 테이블과 1차 중복
+            // 검증한 결과 — 메시지가 있으면 그대로, 없으면 기본 문구를 보여준다.
             toast.error(
               extractApiErrorMessage(error.payload) ??
-                "이미 등록되어 있는 시험지일 수 있어요. 다시 확인해 주세요."
+                "이미 등록되어 있는 시험지예요."
             );
             return;
           }
@@ -263,13 +252,6 @@ const ExamSubmissionModalBody = ({ onClose }: { onClose: () => void }) => {
           />
         </div>
 
-        {checkParams && isBlocked && duplicateCheck?.reason && (
-          <p className="rounded-lg bg-[#FEF2F2] px-3 py-2 text-sm text-[#DC2626]">
-            {BLOCKED_REASON_LABEL[duplicateCheck.reason] ??
-              "지금은 등록할 수 없는 조합이에요."}
-          </p>
-        )}
-
         <div>
           <label className="mb-1.5 block text-sm font-medium text-[#374151]">
             파일 업로드
@@ -278,7 +260,6 @@ const ExamSubmissionModalBody = ({ onClose }: { onClose: () => void }) => {
             type="file"
             accept="application/pdf"
             onChange={(e) => void handleFileChange(e)}
-            disabled={isBlocked}
             className="block w-full text-sm text-[#374151] file:mr-3 file:rounded-md file:border-0 file:bg-[#F3F4F6] file:px-3 file:py-2 file:text-sm file:font-medium file:text-[#374151] hover:file:bg-[#E5E7EB]"
           />
           {fileError ? (
