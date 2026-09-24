@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Check } from "lucide-react";
 
 import { Modal, ModalContent, ModalHeader, ModalFooter, Button } from "@/components/ui";
 import { hideLoginPrompt, subscribeLoginPrompt } from "@/lib/loginPrompt";
@@ -49,8 +48,7 @@ export const LoginPromptModal = () => {
                 key={feature}
                 className="flex items-center gap-2 text-sm text-[#374151]"
               >
-                <Check className="size-4 shrink-0 text-[#155DFC]" />
-                {feature}
+                - {feature}
               </li>
             ))}
           </ul>
