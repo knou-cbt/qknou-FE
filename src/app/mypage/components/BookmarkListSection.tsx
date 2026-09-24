@@ -3,7 +3,7 @@
 import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 
-import { Button } from "@/components/ui";
+import { Button, Select } from "@/components/ui";
 import { BookmarkButton } from "@/components/bookmark/BookmarkButton";
 import { useBookmarkListQuery } from "@/components/bookmark/hooks/service";
 import { groupBySubject } from "@/components/bookmark/groupBySubject";
@@ -29,13 +29,39 @@ function formatDate(iso: string) {
   ).padStart(2, "0")}`;
 }
 
+const ALL_SUBJECTS = "all";
+
 export const BookmarkListSection = () => {
   const router = useRouter();
   const { data, isLoading } = useBookmarkListQuery();
   const [hiddenIds, setHiddenIds] = useState<Set<number>>(new Set());
+  const [subjectFilter, setSubjectFilter] = useState(ALL_SUBJECTS);
 
   const bookmarks = (data ?? []).filter((b) => !hiddenIds.has(b.questionId));
   const groups = useMemo(() => groupBySubject(bookmarks), [bookmarks]);
+
+  const subjectOptions = useMemo(
+    () => [
+      { value: ALL_SUBJECTS, label: "전체 과목" },
+      ...groups.map(([subjectName]) => ({
+        value: subjectName,
+        label: subjectName,
+      })),
+    ],
+    [groups]
+  );
+
+  const filteredGroups = useMemo(
+    () =>
+      subjectFilter === ALL_SUBJECTS
+        ? groups
+        : groups.filter(([subjectName]) => subjectName === subjectFilter),
+    [groups, subjectFilter]
+  );
+  const filteredCount = filteredGroups.reduce(
+    (sum, [, items]) => sum + items.length,
+    0
+  );
 
   if (isLoading) {
     return (
@@ -73,9 +99,24 @@ export const BookmarkListSection = () => {
 
   return (
     <div className="flex flex-col gap-8">
-      <p className="text-sm text-[#6B7280]">총 {bookmarks.length}개</p>
+      <div className="flex items-center justify-between gap-2">
+        <p className="text-sm text-[#6B7280]">총 {filteredCount}개</p>
+        <Select
+          options={subjectOptions}
+          value={subjectFilter}
+          onChange={setSubjectFilter}
+          aria-label="과목별 필터"
+          className="w-40"
+        />
+      </div>
 
-      {groups.map(([subjectName, items]) => (
+      {filteredGroups.length === 0 && (
+        <div className="flex flex-col items-center gap-2 rounded-xl border border-[#E5E7EB] bg-white p-10 text-center">
+          <p className="text-[#6B7280]">해당 과목의 북마크가 없어요.</p>
+        </div>
+      )}
+
+      {filteredGroups.map(([subjectName, items]) => (
         <div key={subjectName}>
           <div className="mb-3 flex items-center justify-between">
             <h3 className="text-sm font-semibold text-[#101828]">
