@@ -4,7 +4,13 @@
  */
 
 const DEFAULT_SITE_URL = "https://www.qknou.kr";
-export const DEFAULT_API_URL = "https://qknou-be.onrender.com";
+/**
+ * 예전 Render 백엔드(qknou-be.onrender.com)는 서비스가 중단(suspend)되어 항상 503을
+ * 반환한다. 실제 운영 백엔드는 사내 서버의 api.qknou.kr로 이전됐다(.env.production.example
+ * 참고). 이 값은 로컬 개발에서 API_URL이 직접 호출하는 기본값이자, 프로덕션에서
+ * API_PROXY_TARGET이 안 정해졌을 때의 폴백이므로 반드시 살아있는 주소를 가리켜야 한다.
+ */
+export const DEFAULT_API_URL = "https://api.qknou.kr";
 
 export const SITE_URL =
   process.env.NEXT_PUBLIC_SITE_URL?.replace(/\/$/, "") ?? DEFAULT_SITE_URL;
