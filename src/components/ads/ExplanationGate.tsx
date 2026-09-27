@@ -24,7 +24,7 @@ export const ExplanationGate = ({ children }: IExplanationGateProps) => {
       </div>
       <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 bg-white/70 px-4 text-center backdrop-blur-[1px]">
         <p className="text-sm font-medium text-[#374151]">
-          광고를 클릭하면 30분 동안 해설을 무제한으로 볼 수 있어요
+          광고를 잠깐 보면 30분 동안 해설을 무제한으로 볼 수 있어요
         </p>
         <button
           type="button"

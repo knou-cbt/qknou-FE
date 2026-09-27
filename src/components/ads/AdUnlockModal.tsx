@@ -43,6 +43,14 @@ function ensureAdFitScriptLoaded() {
   document.body.appendChild(script);
 }
 
+/**
+ * 광고 클릭 여부를 blur/focus로 추정하던 기존 방식은 (1) 크로스오리진이라 오탐이
+ * 잦고 (2) "클릭하면 보상"은 대부분의 광고 정책(카카오 애드핏 포함)이 금지하는
+ * 유도 클릭에 해당할 수 있다. 그래서 클릭 감지 대신, 광고를 일정 시간 노출하면
+ * 그냥 풀어주는 타이머 방식으로 바꾼다.
+ */
+const AD_VIEW_SECONDS = 5;
+
 interface IAdUnlockModalProps {
   open: boolean;
   onClose: () => void;
@@ -51,7 +59,7 @@ interface IAdUnlockModalProps {
 
 /**
  * Modal은 open=false일 때 children을 렌더하지 않는다 — 아래 Body는 열릴 때마다
- * 새로 마운트되어 클릭 감지 상태가 항상 처음부터 다시 시작한다.
+ * 새로 마운트되어 카운트다운이 항상 처음부터 다시 시작한다.
  */
 export const AdUnlockModal = ({ open, onClose, onUnlocked }: IAdUnlockModalProps) => {
   return (
@@ -68,16 +76,8 @@ const AdUnlockModalBody = ({
   onClose: () => void;
   onUnlocked: () => void;
 }) => {
-  // 광고는 교차 출처 iframe이라 실제 클릭 이벤트를 직접 감지할 수 없다.
-  // 단순히 "창이 포커스를 잃었다가 돌아옴"만 보면 Cmd+Tab으로 다른 앱을
-  // 갔다 오기만 해도 풀려버린다 — 그래서 blur가 일어난 시점에 포커스가
-  // 실제로 "이 iframe 안"으로 들어갔었는지(=진짜 광고를 클릭했는지)까지
-  // document.activeElement로 같이 확인한다. iframe을 클릭하면 그 iframe
-  // 엘리먼트 자체가 부모 문서의 activeElement가 되는 브라우저 표준 동작을
-  // 이용한 것으로, 교차 출처여도 동작한다.
-  const [hasLeftAndReturned, setHasLeftAndReturned] = useState(false);
+  const [secondsLeft, setSecondsLeft] = useState(AD_VIEW_SECONDS);
   const adContainerRef = useRef<HTMLDivElement>(null);
-  const iframeRef = useRef<HTMLIFrameElement | null>(null);
 
   // 모달을 열 때마다 공유 <ins> 노드를 이 컨테이너로 옮겨 붙인다. 이미 이전 오픈에서
   // 광고가 로드돼 있으면 바로 보이고, 최초 1회라면 이제서야 스크립트가 스캔해서 채운다.
@@ -89,54 +89,26 @@ const AdUnlockModalBody = ({
     container.appendChild(ins);
     ensureAdFitScriptLoaded();
 
-    const existingIframe = ins.querySelector("iframe");
-    if (existingIframe) {
-      iframeRef.current = existingIframe;
-    }
-
-    // 애드핏 스크립트가 <ins> 안에 iframe을 주입하는 시점은 비동기이므로 관찰해서 잡는다.
-    // subtree까지 봐야 한다 — iframe이 <ins> 바로 아래가 아니라 스크립트가 먼저 끼워넣는
-    // 래퍼 엘리먼트 안쪽에 나중에 들어갈 수도 있기 때문
-    const observer = new MutationObserver(() => {
-      const iframe = ins.querySelector("iframe");
-      if (iframe) {
-        iframeRef.current = iframe;
-        observer.disconnect();
-      }
-    });
-    observer.observe(ins, { childList: true, subtree: true });
-
     // container.innerHTML은 지우지 않는다 — ins는 공유 노드라 다음에 열릴 모달이
     // 그대로 재사용해야 한다. React가 container 자체를 언마운트하면서 ins도 함께
     // DOM에서 떨어져 나가고, 다음 오픈 때 위 effect가 다시 appendChild로 살려 붙인다.
-    return () => {
-      observer.disconnect();
-    };
   }, []);
 
+  // 광고를 AD_VIEW_SECONDS만큼 노출하면 클릭 여부와 무관하게 풀어준다
   useEffect(() => {
-    let adWasClicked = false;
-
-    const handleBlur = () => {
-      // blur 이벤트 시점엔 activeElement가 아직 안 바뀌어 있을 수 있어 다음 tick에 확인
-      window.setTimeout(() => {
-        if (document.activeElement === iframeRef.current) {
-          adWasClicked = true;
+    const interval = window.setInterval(() => {
+      setSecondsLeft((prev) => {
+        if (prev <= 1) {
+          window.clearInterval(interval);
+          return 0;
         }
-      }, 0);
-    };
-    const handleFocus = () => {
-      if (adWasClicked) setHasLeftAndReturned(true);
-    };
-
-    window.addEventListener("blur", handleBlur);
-    window.addEventListener("focus", handleFocus);
-
-    return () => {
-      window.removeEventListener("blur", handleBlur);
-      window.removeEventListener("focus", handleFocus);
-    };
+        return prev - 1;
+      });
+    }, 1000);
+    return () => window.clearInterval(interval);
   }, []);
+
+  const isUnlockable = secondsLeft <= 0;
 
   return (
     <ModalContent size="md">
@@ -145,21 +117,18 @@ const AdUnlockModalBody = ({
       </ModalHeader>
 
       <p className="mb-4 text-sm text-[#6B7280]">
-        아래 광고를 <strong className="text-[#374151]">클릭</strong>하면 30분
-        동안 모든 해설을 무제한으로 볼 수 있어요. 광고 클릭 후 이 창으로
-        돌아오면 버튼이 활성화돼요.
+        아래 광고가 <strong className="text-[#374151]">{AD_VIEW_SECONDS}초</strong>간
+        노출되고 나면 30분 동안 모든 해설을 무제한으로 볼 수 있어요.
       </p>
 
       <div ref={adContainerRef} className="flex justify-center py-2" />
 
       <Button
         onClick={onUnlocked}
-        disabled={!hasLeftAndReturned}
+        disabled={!isUnlockable}
         className="mt-4 w-full"
       >
-        {hasLeftAndReturned
-          ? "30분 무제한 해설 받기"
-          : "광고를 클릭하면 활성화돼요"}
+        {isUnlockable ? "30분 무제한 해설 받기" : `${secondsLeft}초 후 활성화돼요`}
       </Button>
     </ModalContent>
   );
