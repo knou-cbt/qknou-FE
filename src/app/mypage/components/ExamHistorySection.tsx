@@ -118,7 +118,7 @@ export const ExamHistorySection = () => {
           value={subjectFilter}
           onChange={handleSubjectFilterChange}
           aria-label="과목별 필터"
-          className="w-40"
+          className="w-full sm:w-40"
         />
       </div>
 
