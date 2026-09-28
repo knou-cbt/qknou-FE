@@ -78,10 +78,11 @@ export function KakaoAd() {
   useEffect(() => {
     const el = barContentRef.current;
     if (!el) return;
-    const observer = new ResizeObserver((entries) => {
-      const entry = entries[0];
-      if (entry) setBarHeight(entry.contentRect.height);
-    });
+    // ResizeObserver의 entry.contentRect는 content-box라 el의 상하 padding(py-2,
+    // 16px)이 빠진다. spacer/collapse translateY 둘 다 실제 렌더링 높이(border-box)와
+    // 맞아야 해서 offsetHeight를 직접 읽는다 — 안 그러면 접었을 때 바가 16px만큼
+    // 화면에 남고, 펼쳤을 때도 spacer가 16px 부족해서 푸터와 어긋난다.
+    const observer = new ResizeObserver(() => setBarHeight(el.offsetHeight));
     observer.observe(el);
     return () => observer.disconnect();
   }, [isDesktop]);
