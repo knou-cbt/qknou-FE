@@ -1,6 +1,7 @@
 "use client"
 
 import * as React from "react"
+import Link from "next/link"
 
 import { cn } from "@/lib/utils"
 import { FeedbackModal, useFeedbackModal } from "@/components/feedback/FeedbackModal"
@@ -50,7 +51,15 @@ const Footer = React.forwardRef<HTMLElement, IFooterProps>(
             </button>
             로 알려주세요.
           </p>
-          <p className="mt-4">© 2025 QKNOU. All rights reserved.</p>
+          <p className="mt-4 flex flex-wrap items-center justify-center gap-x-3">
+            <span>© 2025 QKNOU. All rights reserved.</span>
+            <Link href="/terms" className="text-[#6B7280] hover:text-[#155DFC] hover:underline">
+              이용약관
+            </Link>
+            <Link href="/privacy" className="text-[#6B7280] hover:text-[#155DFC] hover:underline">
+              개인정보처리방침
+            </Link>
+          </p>
         </div>
 
         <FeedbackModal
