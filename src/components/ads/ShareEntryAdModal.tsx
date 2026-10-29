@@ -3,9 +3,7 @@
 import { useState } from "react";
 
 import { Modal, ModalContent, Button } from "@/components/ui";
-import { CoupangDisclosure } from "@/components/coupang-ad";
-
-const COUPANG_WIDGET_SRC = "https://coupa.ng/cpDlEB";
+import { KakaoAdFit, KAKAO_ADFIT_UNITS } from "@/components/ads/KakaoAdFit";
 
 /** 세션(탭)당 1회만 노출되도록 하는 플래그 */
 const SESSION_STORAGE_KEY = "qknou:shareEntryAdShown";
@@ -52,18 +50,8 @@ export const ShareEntryAdModal = ({ open, onClose }: IShareEntryAdModalProps) =>
     <Modal open={open} onClose={() => {}}>
       <ModalContent size="sm">
         <div className="flex justify-center py-2">
-          <iframe
-            src={COUPANG_WIDGET_SRC}
-            width={120}
-            height={240}
-            frameBorder="0"
-            scrolling="no"
-            referrerPolicy="unsafe-url"
-            title="쿠팡 파트너스 광고"
-          />
+          <KakaoAdFit {...KAKAO_ADFIT_UNITS.modal} />
         </div>
-
-        <CoupangDisclosure className="mt-2" />
 
         <Button onClick={onClose} className="mt-4 w-full">
           문제 보러 가기

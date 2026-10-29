@@ -2,10 +2,14 @@
 
 import { useEffect, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { CheckCircle2 } from "lucide-react";
+import Image from "next/image";
 import { useAuth } from "@/contexts/AuthContext";
+import { LoginSuccessIcon } from "./LoginSuccessIcon";
 
 const POST_LOGIN_REDIRECT_KEY = "qknou_post_login_redirect";
+
+/** 성공 화면을 보여준 뒤 복귀 경로로 이동하기까지의 지연 — 하단 진행 바도 이 시간에 맞춰 찬다 */
+const REDIRECT_DELAY_MS = 1500;
 
 function getSafeRedirectPath(path: string | null): string {
   if (!path || !path.startsWith("/") || path.startsWith("//")) {
@@ -49,7 +53,7 @@ const SuccessInner = () => {
             setTimeout(() => {
               window.location.href = redirectPath;
             }, 500);
-          }, 1500);
+          }, REDIRECT_DELAY_MS);
         } else {
           // 토큰이 없으면 로그인 페이지로 이동
           console.error("No token found in URL");
@@ -65,15 +69,48 @@ const SuccessInner = () => {
   }, [searchParams, login, router]);
 
   return (
-    <div className="min-h-screen flex items-center justify-center">
-      <div className="text-center">
-        <div className="flex items-center justify-center mb-4">
-          <CheckCircle2 className="w-24 h-24 text-[#22C55E]" strokeWidth={1.5} />
+    <SuccessLayout>
+      <LoginSuccessIcon className="mx-auto mb-6 h-20 w-20 sm:h-24 sm:w-24" />
+      <h1 className="mb-2 text-xl font-bold text-gray-900 sm:text-2xl">
+        로그인되었어요
+      </h1>
+      <p className="text-sm text-gray-600 sm:text-base">
+        잠시 후 자동으로 이동해요
+      </p>
+
+      <div
+        role="progressbar"
+        aria-label="이동 준비 중"
+        className="mt-8 h-1.5 w-full overflow-hidden rounded-full bg-[#E5EDFF]"
+      >
+        <div
+          className="h-full origin-left rounded-full bg-[#155DFC]"
+          style={{
+            animation: `login-success-progress ${REDIRECT_DELAY_MS}ms linear forwards`,
+          }}
+        />
+      </div>
+    </SuccessLayout>
+  );
+};
+
+/** 로그인 페이지와 같은 배경·로고·카드 구성 */
+const SuccessLayout = ({ children }: { children: React.ReactNode }) => {
+  return (
+    <div className="flex min-h-screen items-start justify-center bg-gradient-to-b from-[#F9FAFB] to-[#EFF6FF] px-4 pt-16 sm:pt-20">
+      <div className="w-full max-w-md">
+        <div className="mb-6 flex justify-center sm:mb-8">
+          <Image
+            src="/logo.svg"
+            alt="QKNOU LOGO"
+            width={96}
+            height={96}
+            className="h-20 w-20 sm:h-24 sm:w-24"
+          />
         </div>
-        <h1 className="text-2xl font-bold text-gray-900 mb-2">
-          로그인 성공!
-        </h1>
-        <p className="text-gray-600">잠시만 기다려주세요...</p>
+        <div className="rounded-2xl bg-white px-6 py-10 text-center shadow-lg sm:p-10">
+          {children}
+        </div>
       </div>
     </div>
   );
@@ -83,9 +120,9 @@ export const SuccessContent = () => {
   return (
     <Suspense
       fallback={
-        <div className="min-h-screen flex items-center justify-center">
-          <div className="text-center">로딩 중...</div>
-        </div>
+        <SuccessLayout>
+          <p className="text-sm text-gray-600">로그인 처리 중...</p>
+        </SuccessLayout>
       }
     >
       <SuccessInner />
