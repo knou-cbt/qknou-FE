@@ -27,6 +27,7 @@ import {
   type StoredChatHistory,
   type StoredDailyQuestionCount,
 } from "./chatbotPanel.utils";
+import { ChatbotAiSelector } from "./ChatbotAiSelector";
 
 const LOGIN_CTA_TEXT_COLOR = "#155DFC";
 const LOGIN_CTA_CLASS =
@@ -743,6 +744,8 @@ export function ChatbotPanel({
             {showThreadList ? "대화로" : "목록으로"}
           </button>
         </div>
+
+        <ChatbotAiSelector onNavigate={onClose} />
 
         {/* Content - scroll */}
         <div

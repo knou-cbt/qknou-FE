@@ -30,6 +30,11 @@ jest.mock("remark-gfm", () => ({
   default: jest.fn(),
 }));
 
+// 답변 AI 선택 줄은 React Query가 필요해 별도로 다루고, 패널 테스트에서는 비운다
+jest.mock("./ChatbotAiSelector", () => ({
+  ChatbotAiSelector: () => null,
+}));
+
 jest.mock("@/contexts", () => ({
   useAuth: () => useAuthMock(),
 }));

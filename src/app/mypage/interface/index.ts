@@ -49,4 +49,21 @@ export interface IExamHistoryDetail {
   answers: IExamHistoryAnswer[];
 }
 
+/** 사용자가 직접 연결할 수 있는 AI 제공사 */
+export type TAiProvider = "openrouter" | "gemini" | "openai" | "anthropic";
+
+/** 연결된 AI 1건. 서버는 원본 키를 돌려주지 않고 마스킹한 값만 내려준다 */
+export interface IAiConnection {
+  provider: TAiProvider;
+  /** 예: "sk-...a1b2" */
+  maskedKey: string;
+  connectedAt: string;
+}
+
+export interface IAiConnectionsResponse {
+  /** null이면 큐노 기본 AI 사용 */
+  activeProvider: TAiProvider | null;
+  connections: IAiConnection[];
+}
+
 export { EXAM_TYPE_LABEL } from "@/constants";

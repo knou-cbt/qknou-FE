@@ -2,12 +2,12 @@
 
 import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Info } from "lucide-react";
 
 import { Button, Pagination, Select } from "@/components/ui";
 import { cn } from "@/lib/utils";
 
 import { MyPageCard } from "./MyPageCard";
+import { MyPageNotice } from "./MyPageNotice";
 import { useAllExamHistoryQuery } from "../hooks/service";
 import { EXAM_TYPE_LABEL } from "../interface";
 
@@ -104,13 +104,10 @@ export const ExamHistorySection = () => {
 
   return (
     <div className="flex flex-col gap-4">
-      <div className="flex items-start gap-2 rounded-lg bg-[#EFF6FF] px-3 py-2.5 text-xs text-[#1E3A8A] sm:text-sm">
-        <Info className="mt-0.5 size-4 shrink-0 text-[#3B82F6]" />
-        <p>
-          같은 과목·연도 시험을 다시 풀면 이전 기록은 이번 결과로
-          대체돼요. 과목·연도 조합당 최근 풀이 1건만 보관돼요.
-        </p>
-      </div>
+      <MyPageNotice>
+        같은 과목·연도 시험을 다시 풀면 이전 기록은 이번 결과로
+        대체돼요. 과목·연도 조합당 최근 풀이 1건만 보관돼요.
+      </MyPageNotice>
 
       <div className="flex items-center gap-2">
         <Select

@@ -9,21 +9,25 @@ import { POST_LOGIN_REDIRECT_KEY } from "@/lib/auth-token";
 
 import { ExamHistorySection } from "./ExamHistorySection";
 import { BookmarkListSection } from "./BookmarkListSection";
+import { AiConnectSection } from "./ai-connect/AiConnectSection";
 
-type TTab = "history" | "bookmarks";
+type TTab = "history" | "bookmarks" | "ai";
 
 const TABS: { value: TTab; label: string }[] = [
   { value: "history", label: "내가 풀었던 문제" },
   { value: "bookmarks", label: "북마크" },
+  { value: "ai", label: "AI 연결" },
 ];
+
+const TAB_VALUES = TABS.map((tab) => tab.value);
 
 export const MyPagePage = () => {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { isAuthenticated, isLoading } = useAuth();
 
-  const activeTab: TTab =
-    searchParams.get("tab") === "bookmarks" ? "bookmarks" : "history";
+  const tabParam = searchParams.get("tab") as TTab | null;
+  const activeTab: TTab = tabParam && TAB_VALUES.includes(tabParam) ? tabParam : "history";
 
   useEffect(() => {
     if (!isLoading && !isAuthenticated) {
@@ -77,7 +81,9 @@ export const MyPagePage = () => {
           ))}
         </div>
 
-        {activeTab === "history" ? <ExamHistorySection /> : <BookmarkListSection />}
+        {activeTab === "history" && <ExamHistorySection />}
+        {activeTab === "bookmarks" && <BookmarkListSection />}
+        {activeTab === "ai" && <AiConnectSection />}
       </div>
     </div>
   );

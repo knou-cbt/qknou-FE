@@ -2,9 +2,12 @@ import { UserApiPaths } from "@/constants";
 import { authorizedFetch } from "@/lib/api-client";
 
 import type {
+  IAiConnection,
+  IAiConnectionsResponse,
   IExamHistoryDetail,
   IExamHistoryItem,
   IExamHistoryListResponse,
+  TAiProvider,
 } from "../../interface";
 
 /** 시험 풀이 기록 목록 조회 (limit은 서버 제한상 최대 50) */
@@ -33,3 +36,29 @@ export const getAllExamHistory = async (): Promise<IExamHistoryItem[]> => {
 /** 풀이 기록 단건 상세(문항별 정오표 포함) 조회 */
 export const getExamHistoryDetail = (attemptId: number) =>
   authorizedFetch<IExamHistoryDetail>(UserApiPaths.examHistoryDetail(attemptId));
+
+/** 내 AI 연결 목록 + 현재 사용 중인 AI 조회 */
+export const getAiConnections = () =>
+  authorizedFetch<IAiConnectionsResponse>(UserApiPaths.aiConnections);
+
+/** 제공사 API 키 저장. 서버가 제공사에 키를 검증해보고 유효하지 않으면 400을 돌려준다 */
+export const saveAiConnection = (provider: TAiProvider, apiKey: string) =>
+  authorizedFetch<IAiConnection>(UserApiPaths.aiConnection(provider), {
+    method: "PUT",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ apiKey }),
+  });
+
+/** 제공사 연결 해제(서버에 저장된 키 삭제). 사용 중이던 AI면 서버가 기본 AI로 되돌린다 */
+export const deleteAiConnection = (provider: TAiProvider) =>
+  authorizedFetch<void>(UserApiPaths.aiConnection(provider), {
+    method: "DELETE",
+  });
+
+/** 챗봇이 사용할 AI 선택. null이면 큐노 기본 AI */
+export const updateActiveAiProvider = (activeProvider: TAiProvider | null) =>
+  authorizedFetch<IAiConnectionsResponse>(UserApiPaths.aiConnections, {
+    method: "PATCH",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ activeProvider }),
+  });
