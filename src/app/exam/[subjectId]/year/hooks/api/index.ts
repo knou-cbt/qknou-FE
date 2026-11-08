@@ -28,7 +28,8 @@ export interface IGetSubjectListResponse {
 }
 
 export const getSubjectList = async (
-  params?: IGetSubjectListParams
+  params?: IGetSubjectListParams,
+  init?: RequestInit
 ): Promise<IGetSubjectListResponse> => {
   const searchParams = new URLSearchParams();
 
@@ -40,7 +41,7 @@ export const getSubjectList = async (
     ? `${SubjectApiPaths.list}?${searchParams.toString()}`
     : SubjectApiPaths.list;
 
-  const response = await fetch(url);
+  const response = await fetch(url, init);
   if (!response.ok) throw new Error("과목 목록 조회 실패");
 
   const result: IApiResponse<IGetSubjectListResponse> = await response.json();
@@ -48,8 +49,11 @@ export const getSubjectList = async (
 };
 
 /** 과목 상세 조회 */
-export const getSubjectDetail = async (id: string): Promise<ISubject> => {
-  const response = await fetch(SubjectApiPaths.detail(id));
+export const getSubjectDetail = async (
+  id: string,
+  init?: RequestInit
+): Promise<ISubject> => {
+  const response = await fetch(SubjectApiPaths.detail(id), init);
 
   if (!response.ok) throw new Error("과목 정보 조회 실패");
 
@@ -59,9 +63,10 @@ export const getSubjectDetail = async (id: string): Promise<ISubject> => {
 
 /** 특정 과목의 시험지 목록 조회 */
 export const getExamListBySubject = async (
-  subjectId: string
+  subjectId: string,
+  init?: RequestInit
 ): Promise<IExam[]> => {
-  const response = await fetch(SubjectApiPaths.exams(subjectId));
+  const response = await fetch(SubjectApiPaths.exams(subjectId), init);
   if (!response.ok) throw new Error("시험지 목록 조회 실패");
 
   const result: IApiResponse<IExam[]> = await response.json();

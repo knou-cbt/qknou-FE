@@ -73,7 +73,8 @@ describe("test-mode api", () => {
     const result = await getExamQuestionsWithAnswers("2025");
 
     expect(global.fetch).toHaveBeenCalledWith(
-      ExamApiPaths.questions("2025", "study")
+      ExamApiPaths.questions("2025", "study"),
+      undefined
     );
     expect(result.questions[0].correctAnswers).toEqual([]);
   });

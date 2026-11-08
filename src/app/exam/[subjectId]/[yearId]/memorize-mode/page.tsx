@@ -1,6 +1,10 @@
 import type { Metadata } from "next";
-import { SubjectApiPaths } from "@/constants";
+import { QueryClient, dehydrate, HydrationBoundary } from "@tanstack/react-query";
+
+import { ExamQueryKeys, SubjectApiPaths } from "@/constants";
+import { AdSenseScript } from "@/components/ads/AdSenseScript";
 import { MemorizeModePage } from "./components";
+import { getExamQuestionsWithAnswers } from "./hooks/api";
 
 type PageProps = {
   params: Promise<{ subjectId: string; yearId: string }>;
@@ -33,8 +37,9 @@ async function getExamYear(
       next: { revalidate: 3600 },
     });
     if (!res.ok) return null;
-    const json: IApiResponse<{ id: string; year: number }[]> = await res.json();
-    const exam = json.data?.find((e) => e.id === yearId);
+    const json: IApiResponse<{ id: number | string; year: number }[]> = await res.json();
+    // API는 id를 숫자로 내려주므로 URL의 문자열 yearId와 문자열끼리 비교
+    const exam = json.data?.find((e) => String(e.id) === yearId);
     return exam?.year ?? null;
   } catch {
     return null;
@@ -68,5 +73,18 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 export default async function Page({ params }: PageProps) {
   const { subjectId, yearId } = await params;
 
-  return <MemorizeModePage subjectId={subjectId} yearId={yearId} />;
+  // 문항을 서버에서 미리 조회해 HTML에 포함 (크롤러가 "불러오는 중"만 보지 않도록)
+  const queryClient = new QueryClient();
+  await queryClient.prefetchQuery({
+    queryKey: ExamQueryKeys.questions(yearId, "study"),
+    queryFn: () =>
+      getExamQuestionsWithAnswers(yearId, { next: { revalidate: 3600 } }),
+  });
+
+  return (
+    <HydrationBoundary state={dehydrate(queryClient)}>
+      <AdSenseScript />
+      <MemorizeModePage subjectId={subjectId} yearId={yearId} />
+    </HydrationBoundary>
+  );
 }

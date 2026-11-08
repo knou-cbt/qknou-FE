@@ -33,8 +33,9 @@ async function getExamYear(
       next: { revalidate: 3600 },
     });
     if (!res.ok) return null;
-    const json: IApiResponse<{ id: string; year: number }[]> = await res.json();
-    const exam = json.data?.find((e) => e.id === yearId);
+    const json: IApiResponse<{ id: number | string; year: number }[]> = await res.json();
+    // API는 id를 숫자로 내려주므로 URL의 문자열 yearId와 문자열끼리 비교
+    const exam = json.data?.find((e) => String(e.id) === yearId);
     return exam?.year ?? null;
   } catch {
     return null;
@@ -62,6 +63,8 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     alternates: {
       canonical: `/exam/${subjectId}/${yearId}/test-mode`,
     },
+    // 암기모드와 같은 문항에서 정답만 가린 페이지라 검색·광고 크롤러에는 중복 저품질 페이지로 보인다
+    robots: { index: false, follow: true },
   };
 }
 

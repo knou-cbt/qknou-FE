@@ -74,6 +74,12 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       changeFrequency: "daily",
       priority: 1.0,
     },
+    {
+      url: `${baseUrl}/about`,
+      lastModified: new Date(),
+      changeFrequency: "monthly",
+      priority: 0.5,
+    },
   ];
 
   try {
@@ -96,12 +102,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
           changeFrequency: "monthly",
           priority: 0.6,
         });
-        dynamicPages.push({
-          url: `${baseUrl}/exam/${subject.id}/${exam.id}/test-mode`,
-          lastModified: new Date(),
-          changeFrequency: "monthly",
-          priority: 0.6,
-        });
+        // 시험모드는 암기모드와 문항이 같아 noindex 처리하고 사이트맵에서도 뺀다
       }
     }
 

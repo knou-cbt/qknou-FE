@@ -53,9 +53,10 @@ interface IApiExamQuestionsWithAnswersResponse {
 
 /** 시험 문제 조회 (암기모드 - 정답 포함) */
 export const getExamQuestionsWithAnswers = async (
-  examId: string
+  examId: string,
+  init?: RequestInit
 ): Promise<IExamQuestionsWithAnswersResponse> => {
-  const response = await fetch(ExamApiPaths.questions(examId, "study"));
+  const response = await fetch(ExamApiPaths.questions(examId, "study"), init);
   if (!response.ok) throw new Error("시험 문제 조회 실패");
 
   const result: IApiResponse<IApiExamQuestionsWithAnswersResponse> =

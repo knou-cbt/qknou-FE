@@ -12,9 +12,6 @@ import { SiteStructuredData } from "@/components/seo";
 import { GoogleAnalytics } from '@next/third-parties/google';
 import { SITE_URL } from "@/constants";
 
-const ADSENSE_CLIENT_ID = "ca-pub-7674232492620300";
-
-
 const SITE_NAME = "큐노";
 const SITE_DESC =
   "큐노(QKNOU)는 방송통신대학교(KNOU) 기출문제를 한곳에서 제공하는 문제 풀이 플랫폼입니다. 과목/연도별 문제 풀이와 학습을 지원합니다.";
@@ -126,11 +123,7 @@ export default function RootLayout({
   return (
     <html lang="ko">
       <body className={`${GeistSans.variable} ${GeistMono.variable} antialiased`} suppressHydrationWarning>
-        <script
-          async
-          src={`https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=${ADSENSE_CLIENT_ID}`}
-          crossOrigin="anonymous"
-        />
+        {/* 애드센스 스크립트는 본문이 있는 페이지에서만 로드 (AdSenseScript 참고) */}
         <SiteStructuredData />
         <AuthProvider>
           <QueryProvider>

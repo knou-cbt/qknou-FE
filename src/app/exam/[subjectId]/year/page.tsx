@@ -1,6 +1,10 @@
 import type { Metadata } from "next";
-import { SubjectApiPaths } from "@/constants";
+import { QueryClient, dehydrate, HydrationBoundary } from "@tanstack/react-query";
+
+import { SubjectApiPaths, SubjectQueryKeys } from "@/constants";
+import { AdSenseScript } from "@/components/ads/AdSenseScript";
 import { ExamYearPage } from "./components";
+import { getExamListBySubject, getSubjectDetail } from "./hooks/api";
 
 type PageProps = {
   params: Promise<{ subjectId: string }>;
@@ -44,5 +48,25 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 
 export default async function Page({ params }: PageProps) {
   const { subjectId } = await params;
-  return <ExamYearPage subjectId={subjectId} />;
+
+  // 과목명·시험 목록을 서버에서 미리 조회해 HTML에 포함 (크롤러가 "불러오는 중"만 보지 않도록)
+  const queryClient = new QueryClient();
+  const init = { next: { revalidate: 3600 } };
+  await Promise.all([
+    queryClient.prefetchQuery({
+      queryKey: SubjectQueryKeys.detail(subjectId),
+      queryFn: () => getSubjectDetail(subjectId, init),
+    }),
+    queryClient.prefetchQuery({
+      queryKey: SubjectQueryKeys.exams(subjectId),
+      queryFn: () => getExamListBySubject(subjectId, init),
+    }),
+  ]);
+
+  return (
+    <HydrationBoundary state={dehydrate(queryClient)}>
+      <AdSenseScript />
+      <ExamYearPage subjectId={subjectId} />
+    </HydrationBoundary>
+  );
 }

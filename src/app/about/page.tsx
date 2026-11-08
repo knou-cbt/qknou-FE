@@ -2,6 +2,8 @@
 
 import React from "react";
 
+import { AdSenseScript } from "@/components/ads/AdSenseScript";
+
 /** GEO: FAQ 형식 콘텐츠 — AI 추출·인용에 적합 */
 const FAQ_ITEMS = [
   {
@@ -43,6 +45,7 @@ export default function AboutPage() {
 
   return (
     <>
+      <AdSenseScript />
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }}
