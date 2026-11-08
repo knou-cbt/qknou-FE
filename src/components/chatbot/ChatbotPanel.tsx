@@ -28,6 +28,7 @@ import {
   type StoredDailyQuestionCount,
 } from "./chatbotPanel.utils";
 import { ChatbotAiSelector } from "./ChatbotAiSelector";
+import { useAiConnectionsQuery } from "@/app/mypage/hooks/service";
 
 const LOGIN_CTA_TEXT_COLOR = "#155DFC";
 const LOGIN_CTA_CLASS =
@@ -51,6 +52,8 @@ type TutorRecommendation = {
 type TutorResponse = {
   success: boolean;
   error?: string;
+  /** 내 AI로 답하다 실패했을 때 백엔드가 내려주는 코드 */
+  code?: string;
   data?: {
     answer: string;
     intent: TutorIntent;
@@ -76,6 +79,20 @@ interface ChatbotPanelProps {
   subjectLabel?: string;
   yearLabel?: string;
 }
+
+/** 내 AI 호출 실패 코드별 안내 (docs/BE-AI-CONNECTIONS.md §6-3) */
+const OWN_AI_ERROR_MESSAGES: Record<string, string> = {
+  AI_KEY_INVALID:
+    "연결한 AI 키가 만료되었거나 삭제되었어요. 마이페이지에서 다시 연결해 주세요.",
+  AI_QUOTA_EXCEEDED:
+    "연결한 AI의 사용 한도에 도달했어요. 잠시 후 다시 시도하거나 큐노 기본 AI로 바꿔 주세요.",
+  AI_BILLING_REQUIRED:
+    "연결한 AI의 크레딧이 부족해요. 제공사에서 결제 정보를 확인해 주세요.",
+  AI_PROVIDER_ERROR:
+    "연결한 AI 제공사에 일시적인 문제가 있어요. 잠시 후 다시 시도해 주세요.",
+};
+const OWN_AI_FALLBACK_ERROR =
+  "연결한 AI로 답변을 만들지 못했어요. 잠시 후 다시 시도해 주세요.";
 
 const SUGGESTIONS = [
   "학습 도우미는 무엇인가요?",
@@ -279,10 +296,14 @@ export function ChatbotPanel({
   );
 
   const hasQuestionContext = questionId != null;
+  const { data: aiConnections } = useAiConnectionsQuery();
+  // 내 AI는 백엔드 튜터에서만 쓰인다. 일반 대화(/api/chatbot)는 항상 운영자 키라 기존 한도를 유지한다
+  const isUsingOwnAi =
+    isLoggedIn && hasQuestionContext && aiConnections?.activeProvider != null;
   const remainingByMode = hasQuestionContext
     ? Math.max(0, tutorRemainingCount ?? tutorTotalLimit)
     : Math.max(0, CHATBOT_QUESTION_LIMIT - questionCount);
-  const canAskByLimit = remainingByMode > 0;
+  const canAskByLimit = isUsingOwnAi || remainingByMode > 0;
   const canAsk = isLoggedIn && canAskByLimit;
 
   useEffect(() => {
@@ -613,9 +634,23 @@ export function ChatbotPanel({
             return;
           }
 
+          // 내 AI 사용 중에는 운영자 키(/api/chatbot)로 몰래 대체하지 않는다
+          if (isUsingOwnAi) {
+            await appendBotMessageWithTyping(
+              (data?.code && OWN_AI_ERROR_MESSAGES[data.code]) ||
+                OWN_AI_FALLBACK_ERROR
+            );
+            setLoading(false);
+            return;
+          }
+
           // 추천 의도인데 추천 결과가 없거나, success=false/HTTP 에러인 경우 GPT 보조로 fallback
           await callGptFallback(historyMessages);
         } catch {
+          if (isUsingOwnAi) {
+            await appendBotMessageWithTyping(OWN_AI_FALLBACK_ERROR);
+            return;
+          }
           await callGptFallback([
             ...messages,
             { role: "user" as const, text: trimmed },
@@ -676,6 +711,7 @@ export function ChatbotPanel({
       appendBotMessageWithTyping,
       isViewingOtherThread,
       token,
+      isUsingOwnAi,
     ]
   );
 
@@ -744,8 +780,6 @@ export function ChatbotPanel({
             {showThreadList ? "대화로" : "목록으로"}
           </button>
         </div>
-
-        <ChatbotAiSelector onNavigate={onClose} />
 
         {/* Content - scroll */}
         <div
@@ -915,6 +949,9 @@ export function ChatbotPanel({
 
         {/* Input area - fixed at bottom */}
         <div className="shrink-0 border-t border-[#E5E7EB] bg-white p-3">
+          {hasQuestionContext && (
+            <ChatbotAiSelector onNavigate={onClose} disabled={loading || isTyping} />
+          )}
           <div className="flex items-end gap-2">
             <div className="flex flex-1 items-center gap-1 rounded-2xl border border-[#E5E7EB] bg-[#F9FAFB] px-3 py-2">
               <input
@@ -967,6 +1004,8 @@ export function ChatbotPanel({
               >
                 로그인 하러 가기
               </button>
+            ) : isUsingOwnAi ? (
+              "내 AI로 답변 · 횟수 제한 없음 · AI는 한정된 데이터에 기반하니 중요한 정보는 추가 확인을 권장해요."
             ) : hasQuestionContext ? (
               `남은 질문 ${remainingByMode}회 · AI는 한정된 데이터에 기반하니 중요한 정보는 추가 확인을 권장해요.`
             ) : canAskByLimit ? (

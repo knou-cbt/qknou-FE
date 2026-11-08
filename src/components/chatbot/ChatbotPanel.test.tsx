@@ -30,9 +30,14 @@ jest.mock("remark-gfm", () => ({
   default: jest.fn(),
 }));
 
-// 답변 AI 선택 줄은 React Query가 필요해 별도로 다루고, 패널 테스트에서는 비운다
+// 답변 AI 드롭다운은 React Query가 필요해 별도로 다루고, 패널 테스트에서는 비운다
 jest.mock("./ChatbotAiSelector", () => ({
   ChatbotAiSelector: () => null,
+}));
+
+const useAiConnectionsQueryMock = jest.fn();
+jest.mock("@/app/mypage/hooks/service", () => ({
+  useAiConnectionsQuery: () => useAiConnectionsQueryMock(),
 }));
 
 jest.mock("@/contexts", () => ({
@@ -58,6 +63,7 @@ describe("ChatbotPanel", () => {
       login: jest.fn(),
       logout: jest.fn(),
     });
+    useAiConnectionsQueryMock.mockReturnValue({ data: undefined });
     global.fetch = jest.fn();
   });
 
@@ -156,6 +162,98 @@ describe("ChatbotPanel", () => {
 
     await waitFor(() => {
       expect(screen.getByText("응답 완료")).toBeInTheDocument();
+    });
+  });
+
+  describe("with a question context", () => {
+    const loggedInAuth = {
+      user: { id: "user-1", name: "Tester", email: "test@example.com" },
+      token: "token",
+      isAuthenticated: true,
+      isLoading: false,
+      login: jest.fn(),
+      logout: jest.fn(),
+    };
+
+    const mockTutorFetch = (chatResponse: { ok: boolean; status?: number; body: unknown }) => {
+      (global.fetch as jest.Mock).mockImplementation(async (url: string) => {
+        if (url === "/api/tutor/remaining-count") {
+          return {
+            ok: true,
+            json: async () => ({ success: true, remainingCount: 0, totalLimit: 5 }),
+          };
+        }
+        return {
+          ok: chatResponse.ok,
+          status: chatResponse.status ?? 200,
+          json: async () => chatResponse.body,
+        };
+      });
+    };
+
+    beforeEach(() => {
+      useAuthMock.mockReturnValue(loggedInAuth);
+    });
+
+    it("blocks questions when the default AI quota is used up", async () => {
+      useAiConnectionsQueryMock.mockReturnValue({
+        data: { activeProvider: null, connections: [] },
+      });
+      mockTutorFetch({ ok: true, body: { success: true } });
+
+      render(<ChatbotPanel open onClose={jest.fn()} questionId={1} />);
+
+      await waitFor(() => {
+        expect(screen.getByRole("textbox", { name: "메시지 입력" })).toBeDisabled();
+      });
+    });
+
+    it("ignores the quota when the user's own AI is active", async () => {
+      useAiConnectionsQueryMock.mockReturnValue({
+        data: {
+          activeProvider: "gemini",
+          connections: [{ provider: "gemini", maskedKey: "AI...1234", connectedAt: "" }],
+        },
+      });
+      mockTutorFetch({
+        ok: true,
+        body: { success: true, data: { answer: "내 AI 응답", intent: "general" }, remainingCount: 0 },
+      });
+      const user = userEvent.setup({ advanceTimers: jest.advanceTimersByTime });
+
+      render(<ChatbotPanel open onClose={jest.fn()} questionId={1} />);
+
+      expect(screen.getByText(/횟수 제한 없음/)).toBeInTheDocument();
+      await user.type(screen.getByRole("textbox", { name: "메시지 입력" }), "질문");
+      await user.click(screen.getByRole("button", { name: "보내기" }));
+      await advanceTypingAnimation(1000);
+
+      await waitFor(() => {
+        expect(screen.getByText("내 AI 응답")).toBeInTheDocument();
+      });
+      expect(screen.getByRole("textbox", { name: "메시지 입력" })).toBeEnabled();
+    });
+
+    it("does not fall back to the operator chatbot when the user's own AI fails", async () => {
+      useAiConnectionsQueryMock.mockReturnValue({
+        data: {
+          activeProvider: "gemini",
+          connections: [{ provider: "gemini", maskedKey: "AI...1234", connectedAt: "" }],
+        },
+      });
+      mockTutorFetch({ ok: false, status: 409, body: { success: false, code: "AI_KEY_INVALID" } });
+      const user = userEvent.setup({ advanceTimers: jest.advanceTimersByTime });
+
+      render(<ChatbotPanel open onClose={jest.fn()} questionId={1} />);
+
+      await user.type(screen.getByRole("textbox", { name: "메시지 입력" }), "질문");
+      await user.click(screen.getByRole("button", { name: "보내기" }));
+      await advanceTypingAnimation(5000);
+
+      await waitFor(() => {
+        expect(screen.getByText(/다시 연결해 주세요/)).toBeInTheDocument();
+      });
+      expect(global.fetch).not.toHaveBeenCalledWith("/api/chatbot", expect.anything());
     });
   });
 });
