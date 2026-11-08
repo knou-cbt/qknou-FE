@@ -85,7 +85,7 @@ const PrivacyPage = () => {
 
             <Section index={2} id="period" title={SECTIONS[1].title}>
               <p>
-                회사는 법령에 따른 개인정보 보유·이용기간 또는 정보주체로부터
+                개인은 법령에 따른 개인정보 보유·이용기간 또는 정보주체로부터
                 개인정보를 수집 시에 동의받은 개인정보 보유·이용기간 내에서
                 개인정보를 처리·보유합니다.
               </p>
@@ -100,7 +100,7 @@ const PrivacyPage = () => {
             </Section>
 
             <Section index={3} id="items" title={SECTIONS[2].title}>
-              <p>회사는 다음의 개인정보 항목을 처리하고 있습니다:</p>
+              <p>개인은 다음의 개인정보 항목을 처리하고 있습니다:</p>
               <ul className="list-disc space-y-1.5 pl-5">
                 <li>
                   필수항목: 이메일, 이름, 소셜 로그인 제공자가 부여한 고유
@@ -112,7 +112,7 @@ const PrivacyPage = () => {
 
             <Section index={4} id="third-party" title={SECTIONS[3].title}>
               <p>
-                회사는 정보주체의 개인정보를 제1조(개인정보의 처리 목적)에서
+                개인은 정보주체의 개인정보를 제1조(개인정보의 처리 목적)에서
                 명시한 범위 내에서만 처리하며, 정보주체의 동의, 법률의 특별한
                 규정 등 개인정보 보호법 제17조 및 제18조에 해당하는 경우에만
                 개인정보를 제3자에게 제공합니다.
@@ -121,7 +121,7 @@ const PrivacyPage = () => {
 
             <Section index={5} id="outsourcing" title={SECTIONS[4].title}>
               <p>
-                회사는 원활한 개인정보 업무처리를 위하여 다음과 같이
+                개인은 원활한 개인정보 업무처리를 위하여 다음과 같이
                 개인정보 처리업무를 위탁하고 있습니다:
               </p>
               <ul className="list-disc space-y-1.5 pl-5">
@@ -132,7 +132,7 @@ const PrivacyPage = () => {
 
             <Section index={6} id="rights" title={SECTIONS[5].title}>
               <p>
-                정보주체는 회사에 대해 언제든지 다음 각 호의 개인정보 보호
+                정보주체는 개인에 대해 언제든지 다음 각 호의 개인정보 보호
                 관련 권리를 행사할 수 있습니다:
               </p>
               <ul className="list-disc space-y-1.5 pl-5">
@@ -142,22 +142,22 @@ const PrivacyPage = () => {
               </ul>
               <p>
                 정보주체는 언제든지 이메일(hansuyeon.dev@gmail.com)을 통해
-                개인정보 열람·정정·삭제·처리정지 요구를 할 수 있으며, 회사는
+                개인정보 열람·정정·삭제·처리정지 요구를 할 수 있으며, 개인은
                 이에 대해 지체 없이 조치하겠습니다.
               </p>
             </Section>
 
             <Section index={7} id="destruction" title={SECTIONS[6].title}>
               <p>
-                회사는 개인정보 보유기간의 경과, 처리목적 달성 등
+                개인은 개인정보 보유기간의 경과, 처리목적 달성 등
                 개인정보가 불필요하게 되었을 때에는 지체없이 해당
                 개인정보를 파기합니다.
               </p>
               <p>파기의 절차 및 방법은 다음과 같습니다:</p>
               <ul className="list-disc space-y-1.5 pl-5">
                 <li>
-                  파기절차: 회사는 파기 사유가 발생한 개인정보를 선정하고,
-                  회사의 개인정보 보호책임자의 승인을 받아 개인정보를
+                  파기절차: 개인은 파기 사유가 발생한 개인정보를 선정하고,
+                  개인의 개인정보 보호책임자의 승인을 받아 개인정보를
                   파기합니다.
                 </li>
                 <li>
@@ -169,7 +169,7 @@ const PrivacyPage = () => {
 
             <Section index={8} id="officer" title={SECTIONS[7].title}>
               <p>
-                회사는 개인정보 처리에 관한 업무를 총괄해서 책임지고,
+                개인은 개인정보 처리에 관한 업무를 총괄해서 책임지고,
                 개인정보 처리와 관련한 정보주체의 불만처리 및 피해구제 등을
                 위하여 아래와 같이 개인정보 보호책임자를 지정하고 있습니다.
               </p>
@@ -180,7 +180,7 @@ const PrivacyPage = () => {
             </Section>
 
             <Section index={9} id="safety" title={SECTIONS[8].title}>
-              <p>회사는 개인정보의 안전성 확보를 위해 다음과 같은 조치를 취하고 있습니다:</p>
+              <p>개인은 개인정보의 안전성 확보를 위해 다음과 같은 조치를 취하고 있습니다:</p>
               <ul className="list-disc space-y-1.5 pl-5">
                 <li>관리적 조치: 내부관리계획 수립·시행, 정기적 직원 교육 등</li>
                 <li>
