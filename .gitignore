@@ -48,3 +48,7 @@ next-env.d.ts
 /refs/
 /src/app/preview/
 /src/app/api/preview-image/
+
+# docs (guide만 커밋, 나머지는 로컬 전용)
+/docs/*
+!/docs/guide/
