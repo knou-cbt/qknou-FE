@@ -71,7 +71,13 @@ jest.mock("@/components/feedback/FeedbackModal", () => ({
 }));
 
 jest.mock("@/components/ads/ExplanationGate", () => ({
-  ExplanationGate: ({ children }: { children: React.ReactNode }) => children,
+  ExplanationGate: ({ children }: { children?: React.ReactNode }) => children ?? null,
+  ExplanationPlaceholder: () => null,
+}));
+
+// 잠금 해제 상태에서만 AI 해설을 생성하므로, 기본은 이미 광고 시청을 마친 상태로 둔다
+jest.mock("@/lib/explanation-unlock", () => ({
+  useExplanationUnlock: () => ({ isUnlocked: true, unlockFor30Min: jest.fn() }),
 }));
 
 jest.mock("@/components/ui", () => ({

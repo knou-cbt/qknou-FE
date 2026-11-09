@@ -62,7 +62,14 @@ jest.mock("@/components/feedback/FeedbackModal", () => ({
 }));
 
 jest.mock("@/components/ads/ExplanationGate", () => ({
-  ExplanationGate: ({ children }: { children: React.ReactNode }) => children,
+  ExplanationGate: ({ children }: { children?: React.ReactNode }) => children ?? null,
+  ExplanationPlaceholder: () => null,
+}));
+
+// 잠금 해제 상태에서만 AI 해설을 생성하므로, 기본은 이미 광고 시청을 마친 상태로 둔다
+let mockIsUnlocked = true;
+jest.mock("@/lib/explanation-unlock", () => ({
+  useExplanationUnlock: () => ({ isUnlocked: mockIsUnlocked, unlockFor30Min: jest.fn() }),
 }));
 
 jest.mock("@/components/chatbot", () => ({
@@ -208,6 +215,7 @@ describe("MemorizeModePage", () => {
   beforeEach(() => {
     jest.clearAllMocks();
     sessionStorage.clear();
+    mockIsUnlocked = true;
     mockedUseExamContext.mockReturnValue({
       isExamMode: false,
       isSubmitted: false,
@@ -351,5 +359,22 @@ describe("MemorizeModePage", () => {
         screen.getByText("해설을 불러오지 못했습니다. 다시 시도해 주세요.")
       ).toBeInTheDocument();
     });
+  });
+
+  it("does not generate a tutor explanation until the explanation is unlocked", async () => {
+    const user = userEvent.setup();
+    const mutateAsync = jest.fn();
+    mockIsUnlocked = false;
+    mockedUseTutorQuestionExplanationMutation.mockReturnValue({
+      mutateAsync,
+    } as unknown as ReturnType<typeof useTutorQuestionExplanationMutation>);
+
+    render(<MemorizeModePage subjectId="subject" yearId="2025" />);
+
+    await user.click(screen.getByRole("button", { name: "2번" }));
+    await user.click(screen.getByRole("button", { name: "정답 확인" }));
+
+    expect(mutateAsync).not.toHaveBeenCalled();
+    expect(screen.queryByText("기본 해설 1")).not.toBeInTheDocument();
   });
 });

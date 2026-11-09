@@ -7,11 +7,25 @@ import { useExplanationUnlock } from "@/lib/explanation-unlock";
 import { AdUnlockModal } from "./AdUnlockModal";
 
 interface IExplanationGateProps {
-  children: React.ReactNode;
+  children?: React.ReactNode;
+  /**
+   * 잠금 상태에서 children 대신 블러 뒤에 깔 내용. AI 해설처럼 생성 비용이 드는 경우
+   * 잠금 해제 전에는 생성 요청을 하지 않으므로 children 대신 자리표시를 넘긴다.
+   */
+  lockedPreview?: React.ReactNode;
 }
 
+/** AI 해설 생성 전 잠금 상태에서 블러 뒤에 깔아두는 자리표시 */
+export const ExplanationPlaceholder = () => (
+  <div className="space-y-3 py-2">
+    {["w-full", "w-11/12", "w-4/5", "w-full", "w-2/3"].map((width, i) => (
+      <div key={i} className={`h-4 rounded bg-[#D1D5DB] ${width}`} />
+    ))}
+  </div>
+);
+
 /** 해설 콘텐츠를 감싸서, 잠금 해제(광고 시청) 전에는 블러 처리하고 CTA를 보여준다 */
-export const ExplanationGate = ({ children }: IExplanationGateProps) => {
+export const ExplanationGate = ({ children, lockedPreview }: IExplanationGateProps) => {
   const { isUnlocked, unlockFor30Min } = useExplanationUnlock();
   const [modalOpen, setModalOpen] = useState(false);
 
@@ -20,7 +34,7 @@ export const ExplanationGate = ({ children }: IExplanationGateProps) => {
   return (
     <div className="relative overflow-hidden rounded-[12px]">
       <div aria-hidden className="pointer-events-none select-none blur-sm">
-        {children}
+        {lockedPreview ?? children}
       </div>
       <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 bg-white/70 px-4 text-center backdrop-blur-[1px]">
         <p className="text-sm font-medium text-[#374151]">

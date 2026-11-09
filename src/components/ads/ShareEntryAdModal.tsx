@@ -4,6 +4,7 @@ import { useState } from "react";
 
 import { Modal, ModalContent, Button } from "@/components/ui";
 import { KakaoAdFit, KAKAO_ADFIT_UNITS } from "@/components/ads/KakaoAdFit";
+import { useExplanationUnlock } from "@/lib/explanation-unlock";
 
 /** 세션(탭)당 1회만 노출되도록 하는 플래그 */
 const SESSION_STORAGE_KEY = "qknou:shareEntryAdShown";
@@ -34,8 +35,10 @@ export function useShareEntryAdModal() {
     markShownThisSession();
     return true;
   });
+  // 해설 무제한(광고 제거) 30분 동안에는 공유 진입 광고도 띄우지 않는다
+  const { isUnlocked } = useExplanationUnlock();
 
-  return { open, onClose: () => setOpen(false) };
+  return { open: open && !isUnlocked, onClose: () => setOpen(false) };
 }
 
 interface IShareEntryAdModalProps {

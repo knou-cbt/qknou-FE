@@ -64,7 +64,7 @@ const AdUnlockModalBody = ({
 
       <p className="mb-4 text-sm text-[#6B7280]">
         아래 광고가 <strong className="text-[#374151]">{AD_VIEW_SECONDS}초</strong>간
-        노출되고 나면 30분 동안 모든 해설을 무제한으로 볼 수 있어요.
+        노출되고 나면 30분 동안 모든 해설을 무제한으로 볼 수 있고, 그동안 광고도 보이지 않아요.
       </p>
 
       <div className="flex justify-center py-2">

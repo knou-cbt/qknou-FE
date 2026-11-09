@@ -1,5 +1,5 @@
 "use client";
-import { useState, useCallback, useMemo, useEffect } from "react";
+import { useState, useCallback, useMemo, useEffect, useRef } from "react";
 import Image from "next/image";
 import {
   ExamNavButtons,
@@ -31,7 +31,8 @@ import {
   FeedbackModal,
   useFeedbackModal,
 } from "@/components/feedback/FeedbackModal";
-import { ExplanationGate } from "@/components/ads/ExplanationGate";
+import { ExplanationGate, ExplanationPlaceholder } from "@/components/ads/ExplanationGate";
+import { useExplanationUnlock } from "@/lib/explanation-unlock";
 
 type Props = {
   subjectId?: string;
@@ -101,6 +102,9 @@ export const MemorizeModePage = ({ subjectId, yearId }: Props) => {
   >({});
 
   const { isExplanationVisible, setIsExplanationVisible } = useExamContext();
+  const { isUnlocked } = useExplanationUnlock();
+  // StrictMode 이중 실행이나 deps 변경으로 같은 문항 해설을 중복 생성하지 않도록 진행 중인 요청을 기록
+  const requestedExplanationIdsRef = useRef(new Set<number>());
   useCopyProtection();
   const [chatbotOpen, setChatbotOpen] = useState(false);
   const { mutateAsync: fetchQuestionExplanation } =
@@ -195,30 +199,46 @@ export const MemorizeModePage = ({ subjectId, yearId }: Props) => {
     [showResult]
   );
 
-  const handleShowAnswer = useCallback(async () => {
-    const questionId = currentQuestion?.id;
+  const handleShowAnswer = useCallback(() => {
     setShowResult(true);
+  }, []);
 
-    if (!questionId) return;
-    if (explanationsByQuestion[questionId]) return;
+  // AI 해설은 토큰 비용이 들어서, 광고 시청으로 잠금이 풀린 뒤 해설을 실제로 볼 때만 생성한다
+  useEffect(() => {
+    const questionId = currentQuestion?.id;
+    if (!questionId || !showResult || !isExplanationVisible || !isUnlocked) return;
+    if (explanationsByQuestion[questionId] || explanationErrorByQuestion[questionId]) return;
+    if (requestedExplanationIdsRef.current.has(questionId)) return;
+    requestedExplanationIdsRef.current.add(questionId);
 
-    setExplanationErrorByQuestion((prev) => ({ ...prev, [questionId]: null }));
-    setExplanationLoadingQuestionId(questionId);
+    void (async () => {
+      setExplanationErrorByQuestion((prev) => ({ ...prev, [questionId]: null }));
+      setExplanationLoadingQuestionId(questionId);
 
-    try {
-      const explanation = await fetchQuestionExplanation(questionId);
-      setExplanationsByQuestion((prev) => ({ ...prev, [questionId]: explanation }));
-    } catch {
-      setExplanationErrorByQuestion((prev) => ({
-        ...prev,
-        [questionId]: "해설을 불러오지 못했습니다. 다시 시도해 주세요.",
-      }));
-    } finally {
-      setExplanationLoadingQuestionId((prev) =>
-        prev === questionId ? null : prev
-      );
-    }
-  }, [currentQuestion?.id, explanationsByQuestion, fetchQuestionExplanation]);
+      try {
+        const explanation = await fetchQuestionExplanation(questionId);
+        setExplanationsByQuestion((prev) => ({ ...prev, [questionId]: explanation }));
+      } catch {
+        setExplanationErrorByQuestion((prev) => ({
+          ...prev,
+          [questionId]: "해설을 불러오지 못했습니다. 다시 시도해 주세요.",
+        }));
+      } finally {
+        requestedExplanationIdsRef.current.delete(questionId);
+        setExplanationLoadingQuestionId((prev) =>
+          prev === questionId ? null : prev
+        );
+      }
+    })();
+  }, [
+    currentQuestion?.id,
+    showResult,
+    isExplanationVisible,
+    isUnlocked,
+    explanationsByQuestion,
+    explanationErrorByQuestion,
+    fetchQuestionExplanation,
+  ]);
 
   // 문제 이동 시 저장된 정답 상태 복원
   useEffect(() => {
@@ -416,13 +436,16 @@ export const MemorizeModePage = ({ subjectId, yearId }: Props) => {
                   />
                 </div>
               </div>
-              {isExplanationVisible && isExplanationLoading && (
+              {isExplanationVisible && !isUnlocked && (
+                <ExplanationGate lockedPreview={<ExplanationPlaceholder />} />
+              )}
+              {isExplanationVisible && isUnlocked && isExplanationLoading && (
                 <p className="text-sm text-[#6B7280]">해설을 생성하는 중...</p>
               )}
-              {isExplanationVisible && explanationError && (
+              {isExplanationVisible && isUnlocked && explanationError && (
                 <p className="text-sm text-red-500">{explanationError}</p>
               )}
-              {isExplanationVisible && explanationText && (
+              {isExplanationVisible && isUnlocked && explanationText && (
                 <ExplanationGate>
                   <div className="text-[#364153] leading-7 [&_a]:text-[#155DFC] [&_a]:underline [&_code]:rounded [&_code]:bg-[#F3F4F6] [&_code]:px-1 [&_li]:ml-5 [&_ol]:list-decimal [&_p]:mb-3 [&_ul]:list-disc">
                     <ReactMarkdown>{explanationText}</ReactMarkdown>

@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { ChevronDown } from "lucide-react";
 
 import { KakaoAdFit, KAKAO_ADFIT_UNITS } from "@/components/ads/KakaoAdFit";
+import { useExplanationUnlock } from "@/lib/explanation-unlock";
 import { cn } from "@/lib/utils";
 
 // 고정(fixed) 사이드 광고가 콘텐츠를 가리지 않으려면 태블릿보다 넓은 화면이 필요 — Tailwind `xl`과 동일
@@ -26,8 +27,10 @@ export const examSideAdContentStyle = {
  * - 하단 광고는 화면에 고정된 채 접기/펼치기가 가능한 바 형태로 표시
  * - 바 높이는 화면 크기별 배너 크기에 따라 달라서 고정 px 대신 ResizeObserver로 실측해 spacer/collapse에 사용
  * - 콘텐츠 max-w 반응형은 시험/암기모드 상세에서 examDetailMaxW로 처리
+ * - "30분 무제한 해설 받기"로 잠금 해제된 동안에는 광고를 띄우지 않는다
  */
 export function KakaoAd() {
+  const { isUnlocked } = useExplanationUnlock();
   const [isDesktop, setIsDesktop] = useState<boolean | null>(null);
   const [isExpanded, setIsExpanded] = useState(true);
   const [barHeight, setBarHeight] = useState(0);
@@ -53,7 +56,7 @@ export function KakaoAd() {
     return () => observer.disconnect();
   }, [isDesktop]);
 
-  if (isDesktop === null) {
+  if (isDesktop === null || isUnlocked) {
     return null;
   }
 

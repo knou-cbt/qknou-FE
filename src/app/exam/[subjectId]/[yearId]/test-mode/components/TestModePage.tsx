@@ -20,7 +20,8 @@ import {
   FeedbackModal,
   useFeedbackModal,
 } from "@/components/feedback/FeedbackModal";
-import { ExplanationGate } from "@/components/ads/ExplanationGate";
+import { ExplanationGate, ExplanationPlaceholder } from "@/components/ads/ExplanationGate";
+import { useExplanationUnlock } from "@/lib/explanation-unlock";
 import { ReportBugLink } from "@/components/question-actions/ReportBugLink";
 import { useIsMobile } from "@/lib/useIsMobile";
 import { cn } from "@/lib/utils";
@@ -122,6 +123,9 @@ export const TestModePage = ({ subjectId, yearId }: Props) => {
   >({});
   const [explanationLoadingQuestionId, setExplanationLoadingQuestionId] =
     useState<number | null>(null);
+  const { isUnlocked } = useExplanationUnlock();
+  // StrictMode 이중 실행이나 deps 변경으로 같은 문항 해설을 중복 생성하지 않도록 진행 중인 요청을 기록
+  const requestedExplanationIdsRef = useRef(new Set<number>());
 
   // 시험 시작 시간 추적
   const [startTime] = useState<number>(() => Date.now());
@@ -375,49 +379,64 @@ export const TestModePage = ({ subjectId, yearId }: Props) => {
     currentQuestionId !== undefined &&
     explanationLoadingQuestionId === currentQuestionId;
 
-  const handleToggleExplanation = useCallback(async () => {
+  const handleToggleExplanation = useCallback(() => {
     const questionId = currentQuestion?.id;
     if (!questionId) return;
 
-    const nextVisible = !visibleExplanationByQuestion[questionId];
     setVisibleExplanationByQuestion((prev) => ({
       ...prev,
-      [questionId]: nextVisible,
+      [questionId]: !prev[questionId],
     }));
+  }, [currentQuestion?.id]);
 
-    if (!nextVisible || resultExplanationsByQuestion[questionId]) return;
+  // AI 해설은 토큰 비용이 들어서, 광고 시청으로 잠금이 풀린 뒤 해설을 실제로 볼 때만 생성한다
+  useEffect(() => {
+    const questionId = currentQuestion?.id;
+    if (!questionId || !isExplanationVisible || !isUnlocked) return;
+    if (resultExplanationsByQuestion[questionId] || explanationErrorByQuestion[questionId]) return;
+    if (requestedExplanationIdsRef.current.has(questionId)) return;
+    requestedExplanationIdsRef.current.add(questionId);
 
-    setExplanationErrorByQuestion((prev) => ({ ...prev, [questionId]: null }));
-    setExplanationLoadingQuestionId(questionId);
+    void (async () => {
+      setExplanationErrorByQuestion((prev) => ({ ...prev, [questionId]: null }));
+      setExplanationLoadingQuestionId(questionId);
 
-    try {
-      const response = await fetch(
-        TutorApiPaths.explanation(questionId),
-        {
-          method: "GET",
-          cache: "no-store",
-        }
-      );
-      if (!response.ok) throw new Error("해설 조회 실패");
+      try {
+        const response = await fetch(
+          TutorApiPaths.explanation(questionId),
+          {
+            method: "GET",
+            cache: "no-store",
+          }
+        );
+        if (!response.ok) throw new Error("해설 조회 실패");
 
-      const data = (await response.json()) as TutorQuestionExplanation;
-      if (!data.success) throw new Error("해설 생성 실패");
+        const data = (await response.json()) as TutorQuestionExplanation;
+        if (!data.success) throw new Error("해설 생성 실패");
 
-      setResultExplanationsByQuestion((prev) => ({
-        ...prev,
-        [questionId]: data,
-      }));
-    } catch {
-      setExplanationErrorByQuestion((prev) => ({
-        ...prev,
-        [questionId]: "해설을 불러오지 못했습니다. 다시 시도해 주세요.",
-      }));
-    } finally {
-      setExplanationLoadingQuestionId((prev) =>
-        prev === questionId ? null : prev
-      );
-    }
-  }, [currentQuestion?.id, visibleExplanationByQuestion, resultExplanationsByQuestion]);
+        setResultExplanationsByQuestion((prev) => ({
+          ...prev,
+          [questionId]: data,
+        }));
+      } catch {
+        setExplanationErrorByQuestion((prev) => ({
+          ...prev,
+          [questionId]: "해설을 불러오지 못했습니다. 다시 시도해 주세요.",
+        }));
+      } finally {
+        requestedExplanationIdsRef.current.delete(questionId);
+        setExplanationLoadingQuestionId((prev) =>
+          prev === questionId ? null : prev
+        );
+      }
+    })();
+  }, [
+    currentQuestion?.id,
+    isExplanationVisible,
+    isUnlocked,
+    resultExplanationsByQuestion,
+    explanationErrorByQuestion,
+  ]);
 
   useEffect(() => {
     if (!subjectId || !yearId || typeof window === "undefined") return;
@@ -590,13 +609,16 @@ export const TestModePage = ({ subjectId, yearId }: Props) => {
                 />
                 {isExplanationVisible && (
                   <div className="mt-4 bg-[#F9FAFB] border border-[#E5E7EB] rounded-[16px] p-5">
-                    {isExplanationLoading && (
+                    {!isUnlocked && (
+                      <ExplanationGate lockedPreview={<ExplanationPlaceholder />} />
+                    )}
+                    {isUnlocked && isExplanationLoading && (
                       <p className="text-sm text-[#6B7280]">해설을 생성하는 중...</p>
                     )}
-                    {explanationError && (
+                    {isUnlocked && explanationError && (
                       <p className="text-sm text-red-500">{explanationError}</p>
                     )}
-                    {!isExplanationLoading && !explanationError && explanationText && (
+                    {isUnlocked && !isExplanationLoading && !explanationError && explanationText && (
                       <ExplanationGate>
                         <div className="text-[#364153] leading-7 [&_a]:text-[#155DFC] [&_a]:underline [&_code]:rounded [&_code]:bg-[#F3F4F6] [&_code]:px-1 [&_li]:ml-5 [&_ol]:list-decimal [&_p]:mb-3 [&_ul]:list-disc">
                           <ReactMarkdown>{explanationText}</ReactMarkdown>
@@ -625,7 +647,7 @@ export const TestModePage = ({ subjectId, yearId }: Props) => {
           <div className={examDetailMaxW[896]}>
             <ExamNavButtons
               onPrevClick={handlePrev}
-              onAnswerClick={() => void handleToggleExplanation()}
+              onAnswerClick={handleToggleExplanation}
               onNextClick={handleNext}
               prevDisabled={currentIndex === 0}
               nextDisabled={currentIndex === questions.length - 1}
