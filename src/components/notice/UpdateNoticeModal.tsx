@@ -19,15 +19,7 @@ const DISMISSED_STORAGE_KEY = "qknou:notice:dismissed";
  * 서버 공지 API와 별개로 프론트에서 직접 띄우는 고정 공지.
  * id는 서버 공지 id(양수)와 겹치지 않게 음수를 쓴다. 노출이 끝나면 항목을 지운다.
  */
-const STATIC_NOTICES: INotice[] = [
-  {
-    id: -20261103,
-    title: "구글 로그인 이용자 안내",
-    content:
-      "내부 운영자 변경으로 인하여 기존 구글 로그인 이용자 분들은 새로 로그인 진행 부탁드립니다.\n혼란을 드려 죄송합니다.",
-    publishedAt: "2026-11-03T00:00:00+09:00",
-  },
-];
+const STATIC_NOTICES: INotice[] = [];
 
 type TDismissedMap = Record<string, number>;
 
