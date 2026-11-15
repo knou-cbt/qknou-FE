@@ -141,7 +141,7 @@ const PrivacyPage = () => {
                 <li>개인정보 처리정지 요구권</li>
               </ul>
               <p>
-                정보주체는 언제든지 이메일(hansuyeon.dev@gmail.com)을 통해
+                정보주체는 언제든지 이메일(eunseondev@gmail.com)을 통해
                 개인정보 열람·정정·삭제·처리정지 요구를 할 수 있으며, 개인은
                 이에 대해 지체 없이 조치하겠습니다.
               </p>
@@ -175,7 +175,7 @@ const PrivacyPage = () => {
               </p>
               <div className="rounded-lg bg-[#F9FAFB] px-4 py-3">
                 <p className="font-medium text-[#101828]">개인정보 보호책임자</p>
-                <p className="mt-1 text-[#6B7280]">이메일: hansuyeon.dev@gmail.com</p>
+                <p className="mt-1 text-[#6B7280]">이메일: eunseondev@gmail.com</p>
               </div>
             </Section>
 
