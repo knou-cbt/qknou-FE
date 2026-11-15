@@ -29,6 +29,7 @@ import {
 } from "./chatbotPanel.utils";
 import { ChatbotAiSelector } from "./ChatbotAiSelector";
 import { useAiConnectionsQuery } from "@/app/mypage/hooks/service";
+import { sanitizeErrorText } from "@/lib/sanitize-error";
 
 const LOGIN_CTA_TEXT_COLOR = "#155DFC";
 const LOGIN_CTA_CLASS =
@@ -93,6 +94,11 @@ const OWN_AI_ERROR_MESSAGES: Record<string, string> = {
 };
 const OWN_AI_FALLBACK_ERROR =
   "연결한 AI로 답변을 만들지 못했어요. 잠시 후 다시 시도해 주세요.";
+
+const GENERIC_CHAT_ERROR =
+  "일시적인 오류가 발생했어요. 잠시 후 다시 시도해 주세요.";
+const TUTOR_FALLBACK_ERROR =
+  "튜터 응답을 만들지 못했어요. 잠시 후 다시 시도해 주세요.";
 
 const SUGGESTIONS = [
   "학습 도우미는 무엇인가요?",
@@ -517,8 +523,8 @@ export function ChatbotPanel({
       } catch (error) {
         const message =
           error instanceof Error
-            ? error.message
-            : "일시적인 오류가 발생했어요. 잠시 후 다시 시도해 주세요.";
+            ? sanitizeErrorText(error.message, GENERIC_CHAT_ERROR)
+            : GENERIC_CHAT_ERROR;
         await appendBotMessageWithTyping(message);
       } finally {
         setLoading(false);
@@ -629,7 +635,10 @@ export function ChatbotPanel({
           }
 
           if (!res.ok && data?.error) {
-            await appendBotMessageWithTyping(data.error);
+            // 서버 프록시에서 한 번 걸렀지만, 내부 주소가 보이는 문구는 화면에 절대 띄우지 않는다
+            await appendBotMessageWithTyping(
+              sanitizeErrorText(data.error, TUTOR_FALLBACK_ERROR)
+            );
             setLoading(false);
             return;
           }
@@ -692,8 +701,8 @@ export function ChatbotPanel({
       } catch (error) {
         const message =
           error instanceof Error
-            ? error.message
-            : "일시적인 오류가 발생했어요. 잠시 후 다시 시도해 주세요.";
+            ? sanitizeErrorText(error.message, GENERIC_CHAT_ERROR)
+            : GENERIC_CHAT_ERROR;
         await appendBotMessageWithTyping(message);
       } finally {
         setLoading(false);

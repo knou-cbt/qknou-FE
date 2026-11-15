@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { sanitizeErrorText } from "@/lib/sanitize-error";
 
 type IncomingMessage = {
   role: "user" | "bot";
@@ -101,8 +102,11 @@ export async function POST(req: Request) {
       error?: { message?: string };
     };
     if (!response.ok) {
-      const rawMessage =
-        data?.error?.message ?? "OpenAI API 호출 중 오류가 발생했습니다.";
+      const fallbackMessage = "OpenAI API 호출 중 오류가 발생했습니다.";
+      const rawMessage = sanitizeErrorText(
+        data?.error?.message ?? fallbackMessage,
+        fallbackMessage,
+      );
       const errorMessage =
         response.status === 429
           ? "요청 한도에 도달했습니다. 잠시 후 다시 시도하거나 OpenAI 결제/사용량 한도를 확인해 주세요."
