@@ -250,7 +250,7 @@ describe("exam flow integration", () => {
     mockedUsePathname.mockReturnValue("/exam/subject/2025/test-mode");
     mockedUseRouter.mockReturnValue({
       push: jest.fn(),
-    } as ReturnType<typeof useRouter>);
+    } as unknown as ReturnType<typeof useRouter>);
     mockedUseIsMobile.mockReturnValue(false);
     mockedUseAuth.mockReturnValue({
       isAuthenticated: false,
@@ -294,7 +294,7 @@ describe("exam flow integration", () => {
       },
       isLoading: false,
       isError: false,
-    } as ReturnType<typeof useExamQuestionsQuery>);
+    } as unknown as ReturnType<typeof useExamQuestionsQuery>);
     mockedUseExamSubmitMutation.mockReturnValue({
       mutateAsync: jest.fn().mockResolvedValue({
         results: [
@@ -312,7 +312,7 @@ describe("exam flow integration", () => {
           },
         ],
       }),
-    } as ReturnType<typeof useExamSubmitMutation>);
+    } as unknown as ReturnType<typeof useExamSubmitMutation>);
   });
 
   it("lets a user answer, submit from the exam header, and land on the result state", async () => {

@@ -224,7 +224,7 @@ describe("TestModePage", () => {
   beforeEach(() => {
     jest.clearAllMocks();
     sessionStorage.clear();
-    mockedUseRouter.mockReturnValue({ push: pushMock } as ReturnType<
+    mockedUseRouter.mockReturnValue({ push: pushMock } as unknown as ReturnType<
       typeof useRouter
     >);
     mockedUseIsMobile.mockReturnValue(false);
@@ -255,7 +255,7 @@ describe("TestModePage", () => {
       },
       isLoading: false,
       isError: false,
-    } as ReturnType<typeof useExamQuestionsQuery>);
+    } as unknown as ReturnType<typeof useExamQuestionsQuery>);
     mockedUseExamSubmitMutation.mockReturnValue({
       mutateAsync: jest.fn().mockResolvedValue({
         results: [
@@ -273,7 +273,7 @@ describe("TestModePage", () => {
           },
         ],
       }),
-    } as ReturnType<typeof useExamSubmitMutation>);
+    } as unknown as ReturnType<typeof useExamSubmitMutation>);
     global.fetch = jest.fn().mockResolvedValue({
       ok: true,
       json: async () => ({
@@ -312,7 +312,7 @@ describe("TestModePage", () => {
       data: undefined,
       isLoading: true,
       isError: false,
-    } as ReturnType<typeof useExamQuestionsQuery>);
+    } as unknown as ReturnType<typeof useExamQuestionsQuery>);
 
     render(<TestModePage subjectId="subject" yearId="2025" />);
 
@@ -324,7 +324,7 @@ describe("TestModePage", () => {
       data: undefined,
       isLoading: false,
       isError: true,
-    } as ReturnType<typeof useExamQuestionsQuery>);
+    } as unknown as ReturnType<typeof useExamQuestionsQuery>);
 
     render(<TestModePage subjectId="subject" yearId="2025" />);
 

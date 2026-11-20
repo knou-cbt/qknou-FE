@@ -243,14 +243,14 @@ describe("MemorizeModePage", () => {
       },
       isLoading: false,
       isError: false,
-    } as ReturnType<typeof useExamQuestionsWithAnswersQuery>);
+    } as unknown as ReturnType<typeof useExamQuestionsWithAnswersQuery>);
     mockedUseTutorQuestionExplanationMutation.mockReturnValue({
       mutateAsync: jest.fn().mockResolvedValue({
         success: true,
         explanation: "튜터 해설",
         conceptTags: ["핵심"],
       }),
-    } as ReturnType<typeof useTutorQuestionExplanationMutation>);
+    } as unknown as ReturnType<typeof useTutorQuestionExplanationMutation>);
     mockedUseAuth.mockReturnValue({
       isAuthenticated: false,
       user: null,
@@ -258,10 +258,10 @@ describe("MemorizeModePage", () => {
       isLoading: false,
       login: jest.fn(),
       logout: jest.fn(),
-    } as ReturnType<typeof useAuth>);
+    } as unknown as ReturnType<typeof useAuth>);
     mockedUseBookmarkListQuery.mockReturnValue({
       data: undefined,
-    } as ReturnType<typeof useBookmarkListQuery>);
+    } as unknown as ReturnType<typeof useBookmarkListQuery>);
   });
 
   it("renders the current question and stores the post-login redirect path", () => {
@@ -279,7 +279,7 @@ describe("MemorizeModePage", () => {
       data: undefined,
       isLoading: true,
       isError: false,
-    } as ReturnType<typeof useExamQuestionsWithAnswersQuery>);
+    } as unknown as ReturnType<typeof useExamQuestionsWithAnswersQuery>);
 
     render(<MemorizeModePage subjectId="subject" yearId="2025" />);
 
@@ -291,7 +291,7 @@ describe("MemorizeModePage", () => {
       data: undefined,
       isLoading: false,
       isError: true,
-    } as ReturnType<typeof useExamQuestionsWithAnswersQuery>);
+    } as unknown as ReturnType<typeof useExamQuestionsWithAnswersQuery>);
 
     render(<MemorizeModePage subjectId="subject" yearId="2025" />);
 
@@ -347,7 +347,7 @@ describe("MemorizeModePage", () => {
 
     mockedUseTutorQuestionExplanationMutation.mockReturnValue({
       mutateAsync: jest.fn().mockRejectedValue(new Error("failed")),
-    } as ReturnType<typeof useTutorQuestionExplanationMutation>);
+    } as unknown as ReturnType<typeof useTutorQuestionExplanationMutation>);
 
     render(<MemorizeModePage subjectId="subject" yearId="2025" />);
 
