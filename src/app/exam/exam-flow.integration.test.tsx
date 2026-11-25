@@ -252,11 +252,12 @@ describe("exam flow integration", () => {
       push: jest.fn(),
     } as unknown as ReturnType<typeof useRouter>);
     mockedUseIsMobile.mockReturnValue(false);
+    // 시험모드는 로그인 사용자 전용
     mockedUseAuth.mockReturnValue({
-      isAuthenticated: false,
+      isAuthenticated: true,
       isLoading: false,
       user: null,
-      token: null,
+      token: "token",
       login: jest.fn(),
       logout: jest.fn(),
     });
@@ -351,9 +352,9 @@ describe("exam flow integration", () => {
     });
 
     expect(screen.getByText("show-result:true")).toBeInTheDocument();
-    expect(screen.getByRole("link", { name: "로그인" })).toHaveAttribute(
-      "href",
-      "/auth/login"
-    );
+    // 로그인 상태라 헤더에 로그인 링크가 없다
+    expect(
+      screen.queryByRole("link", { name: "로그인" })
+    ).not.toBeInTheDocument();
   });
 });

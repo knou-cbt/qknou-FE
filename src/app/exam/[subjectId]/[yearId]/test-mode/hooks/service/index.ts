@@ -20,9 +20,8 @@ export const useExamQuestionsQuery = (examId: string) => {
       isAuthenticated ? "member" : "guest"
     ),
     queryFn: () => getExamQuestions(examId),
-    enabled: !!examId,
-    // 로그인 확인 직후 member 키로 바뀌어도 미리보기 화면을 유지한 채 전체 문항을 받는다
-    placeholderData: (previous) => previous,
+    // 시험모드는 로그인 사용자 전용이라 비로그인은 요청하지 않는다
+    enabled: !!examId && isAuthenticated,
   });
 };
 

@@ -17,7 +17,7 @@ import { TutorApiPaths, UserQueryKeys } from "@/constants";
 import { useExamContext, useAuth } from "@/contexts";
 import { ApiError } from "@/lib/api-client";
 import { getAuthToken } from "@/lib/auth-token";
-import { PreviewLoginBanner } from "@/components/auth/PreviewLoginBanner";
+import { showLoginPrompt } from "@/lib/loginPrompt";
 import {
   FeedbackModal,
   useFeedbackModal,
@@ -133,7 +133,8 @@ export const TestModePage = ({ subjectId, yearId }: Props) => {
   const [startTime] = useState<number>(() => Date.now());
 
   // API 호출
-  const { isAuthenticated } = useAuth();
+  // 시험모드는 로그인 사용자 전용 (비로그인은 문항을 요청하지 않고 로그인 안내를 보여 줌)
+  const { isAuthenticated, isLoading: isAuthLoading } = useAuth();
   const { data, isLoading, isError } = useExamQuestionsQuery(
     examId ?? ""
   );
@@ -462,6 +463,48 @@ export const TestModePage = ({ subjectId, yearId }: Props) => {
     );
   }
 
+  if (isAuthLoading) {
+    return (
+      <div className="min-h-screen bg-[#F0F4FF] flex items-center justify-center">
+        <p className="text-[#6B7280]">문제를 불러오는 중...</p>
+      </div>
+    );
+  }
+
+  if (!isAuthenticated) {
+    return (
+      <div className="min-h-screen bg-[#F0F4FF] flex items-center justify-center px-4">
+        <div className="w-full max-w-md rounded-[16px] border border-[#E5E7EB] bg-white p-6 text-center">
+          <h1 className="text-lg font-bold text-[#101828]">
+            시험모드는 로그인 후 이용할 수 있어요
+          </h1>
+          <p className="mt-2 text-sm text-[#6B7280]">
+            로그인하면 전체 문항을 제한 시간 안에 풀고 채점 결과와 해설을 볼 수
+            있어요.
+          </p>
+          <div className="mt-6 flex flex-col gap-2">
+            <button
+              type="button"
+              onClick={showLoginPrompt}
+              className="w-full rounded-lg bg-[#155DFC] px-4 py-2.5 text-sm font-medium text-white hover:bg-[#1447E6]"
+            >
+              로그인하기
+            </button>
+            {subjectId && (
+              <button
+                type="button"
+                onClick={() => router.push(`/exam/${subjectId}/year`)}
+                className="w-full rounded-lg border border-[#E5E7EB] px-4 py-2.5 text-sm font-medium text-[#364153] hover:bg-[#F9FAFB]"
+              >
+                시험 목록으로
+              </button>
+            )}
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   if (isLoading) {
     return (
       <div className="min-h-screen bg-[#F0F4FF] flex items-center justify-center">
@@ -733,13 +776,6 @@ export const TestModePage = ({ subjectId, yearId }: Props) => {
               onAnswerSelect={handleAnswerSelect}
               actionButtonText=""
             />
-            {data?.preview && (
-              <PreviewLoginBanner
-                className="mt-4"
-                previewCount={data.preview.limit}
-                totalQuestions={data.preview.totalQuestions}
-              />
-            )}
             <div className="mt-4">
               <ReportBugLink
                 onClick={() =>

@@ -18,6 +18,9 @@ import {
   useSubjectDetailQuery,
 } from "../hooks/service";
 import type { IExam } from "../interface";
+import { useAuth } from "@/contexts";
+import { showLoginPrompt } from "@/lib/loginPrompt";
+import { POST_LOGIN_REDIRECT_KEY } from "@/lib/auth-token";
 
 type Props = {
   subjectId: string;
@@ -25,6 +28,7 @@ type Props = {
 
 export const ExamYearPage = ({ subjectId }: Props) => {
   const router = useRouter();
+  const { isAuthenticated } = useAuth();
   const [isTestModeModalOpen, setIsTestModeModalOpen] = useState(false);
   const [selectedExamId, setSelectedExamId] = useState<string | null>(null);
 
@@ -74,6 +78,19 @@ export const ExamYearPage = ({ subjectId }: Props) => {
               <Button
                 size="sm"
                 onClick={() => {
+                  // 시험모드는 로그인 사용자 전용: 로그인 후 이 시험모드로 돌아오도록 경로를 남기고 안내
+                  if (!isAuthenticated) {
+                    try {
+                      sessionStorage.setItem(
+                        POST_LOGIN_REDIRECT_KEY,
+                        `/exam/${subjectId}/${examId}/test-mode`
+                      );
+                    } catch {
+                      // 저장 실패 시에도 로그인 안내는 띄운다
+                    }
+                    showLoginPrompt();
+                    return;
+                  }
                   setSelectedExamId(examId);
                   setIsTestModeModalOpen(true);
                 }}
@@ -87,7 +104,7 @@ export const ExamYearPage = ({ subjectId }: Props) => {
         },
       },
     ],
-    [subjectId, router]
+    [subjectId, router, isAuthenticated]
   );
 
   if (isLoading) {

@@ -2,7 +2,7 @@ import { act, render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { TestModePage } from "./TestModePage";
 import { useRouter } from "next/navigation";
-import { useExamContext } from "@/contexts";
+import { useExamContext, useAuth } from "@/contexts";
 import { useIsMobile } from "@/lib/useIsMobile";
 import {
   useExamQuestionsQuery,
@@ -284,6 +284,17 @@ describe("TestModePage", () => {
         generated: true,
       }),
     }) as jest.Mock;
+  });
+
+  it("asks a guest to log in instead of showing the exam", () => {
+    (useAuth as jest.Mock).mockReturnValueOnce({ isAuthenticated: false, isLoading: false });
+
+    render(<TestModePage subjectId="subject" yearId="2025" />);
+
+    expect(
+      screen.getByText("시험모드는 로그인 후 이용할 수 있어요")
+    ).toBeInTheDocument();
+    expect(screen.queryByText("문제를 불러오는 중...")).not.toBeInTheDocument();
   });
 
   it("renders the exam page, syncs counts and stores the redirect path", async () => {
