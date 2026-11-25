@@ -16,6 +16,7 @@ import {
   buildThreadId,
   CHATBOT_QUESTION_LIMIT,
   CHAT_HISTORY_CONTEXT_LIMIT,
+  TUTOR_HISTORY_CONTEXT_LIMIT,
   CHAT_HISTORY_TTL_MS,
   formatThreadTitle,
   getChatHistoryKey,
@@ -584,8 +585,8 @@ export function ChatbotPanel({
         try {
           const tutorHistory: TutorHistoryItem[] = historyMessages
             .slice(0, -1)
-            // 튜터 history도 최근 N개만 전달
-            .slice(-CHAT_HISTORY_CONTEXT_LIMIT)
+            // 튜터 history는 백엔드 한도(20개)까지 전달
+            .slice(-TUTOR_HISTORY_CONTEXT_LIMIT)
             .map((m) => ({
               role: m.role === "user" ? "user" : "assistant",
               content: m.text,
@@ -854,7 +855,7 @@ export function ChatbotPanel({
                   대화 내용은 사용자 기기에만 저장됩니다.
                 </li>
                 <li>
-                  재질문 시 최근 대화 {CHAT_HISTORY_CONTEXT_LIMIT}개만 컨텍스트로 전달됩니다.
+                  재질문 시 최근 대화 일부만 컨텍스트로 전달됩니다.
                 </li>
                 <li>
                    챗봇 대화 내용은 30일 동안만 유지되며 이후 자동으로 초기화됩니다.

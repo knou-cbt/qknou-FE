@@ -1,5 +1,7 @@
 export const CHATBOT_QUESTION_LIMIT = 5;
 export const CHAT_HISTORY_CONTEXT_LIMIT = 2;
+// 튜터(/api/tutor/chat)는 백엔드가 최근 20개까지 받으므로 그 한도까지 보낸다
+export const TUTOR_HISTORY_CONTEXT_LIMIT = 20;
 export const STORAGE_KEY_PREFIX = "qknou_chatbot_questions_";
 export const CHAT_HISTORY_KEY_PREFIX = "qknou_chatbot_history_";
 export const CHAT_HISTORY_TTL_MS = 30 * 24 * 60 * 60 * 1000;

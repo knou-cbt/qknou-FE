@@ -60,6 +60,10 @@ const Footer = React.forwardRef<HTMLElement, IFooterProps>(
               개인정보처리방침
             </Link>
           </p>
+          {/* 수집 봇 함정: robots.txt가 금지한 경로라 정상 크롤러는 따라가지 않는다. 접근한 IP는 nginx가 차단 */}
+          <a href="/export/questions-all.json" hidden aria-hidden="true" tabIndex={-1} rel="nofollow">
+            전체 문제 내보내기
+          </a>
         </div>
 
         <FeedbackModal
