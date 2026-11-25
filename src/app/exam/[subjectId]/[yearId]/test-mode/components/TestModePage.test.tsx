@@ -28,6 +28,7 @@ jest.mock("@/lib/useIsMobile", () => ({
 
 jest.mock("@/contexts", () => ({
   useExamContext: jest.fn(),
+  useAuth: jest.fn(() => ({ isAuthenticated: true })),
 }));
 
 jest.mock("../hooks/service", () => ({

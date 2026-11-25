@@ -2,6 +2,7 @@ import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { MemorizeModePage } from "./MemorizeModePage";
 import { useExamContext, useAuth } from "@/contexts";
+import { showLoginPrompt } from "@/lib/loginPrompt";
 import {
   useExamQuestionsWithAnswersQuery,
   useTutorQuestionExplanationMutation,
@@ -68,6 +69,10 @@ jest.mock("@/components/ads/ExplanationGate", () => ({
 
 // 잠금 해제 상태에서만 AI 해설을 생성하므로, 기본은 이미 광고 시청을 마친 상태로 둔다
 let mockIsUnlocked = true;
+jest.mock("@/lib/loginPrompt", () => ({
+  showLoginPrompt: jest.fn(),
+}));
+
 jest.mock("@/lib/explanation-unlock", () => ({
   useExplanationUnlock: () => ({ isUnlocked: mockIsUnlocked, unlockFor30Min: jest.fn() }),
 }));
@@ -251,10 +256,11 @@ describe("MemorizeModePage", () => {
         conceptTags: ["핵심"],
       }),
     } as unknown as ReturnType<typeof useTutorQuestionExplanationMutation>);
+    // 정답·해설은 로그인 사용자에게만 내려오므로 기본은 로그인 상태로 둔다
     mockedUseAuth.mockReturnValue({
-      isAuthenticated: false,
+      isAuthenticated: true,
       user: null,
-      token: null,
+      token: "token",
       isLoading: false,
       login: jest.fn(),
       logout: jest.fn(),
@@ -296,6 +302,26 @@ describe("MemorizeModePage", () => {
     render(<MemorizeModePage subjectId="subject" yearId="2025" />);
 
     expect(screen.getByText("문제를 불러오는데 실패했습니다.")).toBeInTheDocument();
+  });
+
+  it("asks a guest to log in instead of revealing the answer", async () => {
+    const user = userEvent.setup();
+    mockedUseAuth.mockReturnValue({
+      isAuthenticated: false,
+      user: null,
+      token: null,
+      isLoading: false,
+      login: jest.fn(),
+      logout: jest.fn(),
+    } as unknown as ReturnType<typeof useAuth>);
+
+    render(<MemorizeModePage subjectId="subject" yearId="2025" />);
+
+    await user.click(screen.getByRole("button", { name: "2번" }));
+    await user.click(screen.getByRole("button", { name: "정답 확인" }));
+
+    expect(showLoginPrompt).toHaveBeenCalled();
+    expect(screen.queryByText("show-result:true")).not.toBeInTheDocument();
   });
 
   it("reveals the explanation after checking the answer and opens the chatbot", async () => {

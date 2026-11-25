@@ -38,16 +38,24 @@ export interface IQuestionWithAnswer extends IQuestion {
   explanation?: string;
 }
 
+/** 비로그인 미리보기 정보. 비로그인 응답에만 있고, 앞 limit 문항만 내려온다 */
+export interface IQuestionsPreview {
+  limit: number;
+  totalQuestions: number;
+}
+
 /** 시험 문제 조회 응답 (시험모드) */
 export interface IExamQuestionsResponse {
   exam: IExamInfo;
   questions: IQuestion[];
+  preview?: IQuestionsPreview;
 }
 
-/** 시험 문제 조회 응답 (암기모드 - 정답 포함) */
+/** 시험 문제 조회 응답 (암기모드 - 로그인 시 정답을 따로 받아 합친 결과, 비로그인은 correctAnswers가 빈 배열) */
 export interface IExamQuestionsWithAnswersResponse {
   exam: IExamInfo;
   questions: IQuestionWithAnswer[];
+  preview?: IQuestionsPreview;
 }
 
 /** 문제 결과 */

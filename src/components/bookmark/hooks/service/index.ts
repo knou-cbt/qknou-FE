@@ -31,7 +31,7 @@ export const useToggleBookmarkMutation = () => {
       queryClient.invalidateQueries({ queryKey: BookmarkQueryKeys.list() });
       if (variables) {
         queryClient.invalidateQueries({
-          queryKey: QuestionQueryKeys.detail(variables.questionId),
+          queryKey: QuestionQueryKeys.detail(variables.questionId, "member"),
         });
       }
     },

@@ -25,8 +25,12 @@ export const ExamQueryKeys = {
   all: ["exam"] as const,
 
   // 시험 문제 조회
-  questions: (examId: string | number, mode: "study" | "test") =>
-    [...ExamQueryKeys.all, "questions", examId, mode] as const,
+  // audience: 비로그인(guest)은 미리보기만 받으므로 로그인(member)과 캐시를 나눈다
+  questions: (
+    examId: string | number,
+    mode: "study" | "test",
+    audience: "guest" | "member" = "guest"
+  ) => [...ExamQueryKeys.all, "questions", examId, mode, audience] as const,
 
   // 시험 결과
   results: () => [...ExamQueryKeys.all, "result"] as const,

@@ -14,8 +14,10 @@ import {
   toast,
 } from "@/components/ui";
 import { TutorApiPaths, UserQueryKeys } from "@/constants";
-import { useExamContext } from "@/contexts";
+import { useExamContext, useAuth } from "@/contexts";
 import { ApiError } from "@/lib/api-client";
+import { getAuthToken } from "@/lib/auth-token";
+import { PreviewLoginBanner } from "@/components/auth/PreviewLoginBanner";
 import {
   FeedbackModal,
   useFeedbackModal,
@@ -131,6 +133,7 @@ export const TestModePage = ({ subjectId, yearId }: Props) => {
   const [startTime] = useState<number>(() => Date.now());
 
   // API 호출
+  const { isAuthenticated } = useAuth();
   const { data, isLoading, isError } = useExamQuestionsQuery(
     examId ?? ""
   );
@@ -393,6 +396,8 @@ export const TestModePage = ({ subjectId, yearId }: Props) => {
   useEffect(() => {
     const questionId = currentQuestion?.id;
     if (!questionId || !isExplanationVisible || !isUnlocked) return;
+    // 해설 API는 로그인 필요
+    if (!isAuthenticated) return;
     if (resultExplanationsByQuestion[questionId] || explanationErrorByQuestion[questionId]) return;
     if (requestedExplanationIdsRef.current.has(questionId)) return;
     requestedExplanationIdsRef.current.add(questionId);
@@ -402,11 +407,13 @@ export const TestModePage = ({ subjectId, yearId }: Props) => {
       setExplanationLoadingQuestionId(questionId);
 
       try {
+        const token = getAuthToken();
         const response = await fetch(
           TutorApiPaths.explanation(questionId),
           {
             method: "GET",
             cache: "no-store",
+            headers: token ? { Authorization: `Bearer ${token}` } : undefined,
           }
         );
         if (!response.ok) throw new Error("해설 조회 실패");
@@ -434,6 +441,7 @@ export const TestModePage = ({ subjectId, yearId }: Props) => {
     currentQuestion?.id,
     isExplanationVisible,
     isUnlocked,
+    isAuthenticated,
     resultExplanationsByQuestion,
     explanationErrorByQuestion,
   ]);
@@ -725,6 +733,13 @@ export const TestModePage = ({ subjectId, yearId }: Props) => {
               onAnswerSelect={handleAnswerSelect}
               actionButtonText=""
             />
+            {data?.preview && (
+              <PreviewLoginBanner
+                className="mt-4"
+                previewCount={data.preview.limit}
+                totalQuestions={data.preview.totalQuestions}
+              />
+            )}
             <div className="mt-4">
               <ReportBugLink
                 onClick={() =>

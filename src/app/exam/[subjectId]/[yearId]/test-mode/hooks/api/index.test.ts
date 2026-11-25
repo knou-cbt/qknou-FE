@@ -40,7 +40,8 @@ describe("test-mode api", () => {
     const result = await getExamQuestions("2025");
 
     expect(global.fetch).toHaveBeenCalledWith(
-      ExamApiPaths.questions("2025", "test")
+      ExamApiPaths.questions("2025", "test"),
+      expect.objectContaining({ headers: {} })
     );
     expect(result.questions[0].text).toBe("문제");
   });
@@ -72,11 +73,70 @@ describe("test-mode api", () => {
 
     const result = await getExamQuestionsWithAnswers("2025");
 
+    // 비로그인: 목록만 요청하고 정답 API는 부르지 않는다
+    expect(global.fetch).toHaveBeenCalledTimes(1);
     expect(global.fetch).toHaveBeenCalledWith(
       ExamApiPaths.questions("2025", "study"),
-      undefined
+      expect.objectContaining({ headers: {} })
     );
     expect(result.questions[0].correctAnswers).toEqual([]);
+  });
+
+  it("merges answers from the answers API when logged in", async () => {
+    localStorage.setItem("qknou_auth_token", "token-1");
+    (global.fetch as jest.Mock).mockImplementation(async (url: string) => {
+      if (url === ExamApiPaths.answers("2025")) {
+        return {
+          ok: true,
+          status: 200,
+          text: async () =>
+            JSON.stringify({
+              success: true,
+              data: {
+                examId: 2025,
+                answers: [{ questionId: 10, number: 1, correctAnswers: [3] }],
+              },
+            }),
+        };
+      }
+      return {
+        ok: true,
+        json: async () => ({
+          success: true,
+          data: {
+            exam: {
+              id: 1,
+              subject: "교육학",
+              title: "2025",
+              totalQuestions: 1,
+              year: 2025,
+            },
+            questions: [
+              {
+                id: 10,
+                number: 1,
+                text: "문제",
+                choices: [{ id: 1, number: 1, text: "보기" }],
+              },
+            ],
+          },
+        }),
+      };
+    });
+
+    try {
+      const result = await getExamQuestionsWithAnswers("2025");
+
+      expect(global.fetch).toHaveBeenCalledWith(
+        ExamApiPaths.questions("2025", "study"),
+        expect.objectContaining({
+          headers: { Authorization: "Bearer token-1" },
+        })
+      );
+      expect(result.questions[0].correctAnswers).toEqual([3]);
+    } finally {
+      localStorage.removeItem("qknou_auth_token");
+    }
   });
 
   it("posts exam answers and normalizes missing result correct answers", async () => {

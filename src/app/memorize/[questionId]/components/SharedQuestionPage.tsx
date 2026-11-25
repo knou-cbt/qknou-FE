@@ -27,6 +27,8 @@ import {
 } from "@/lib/exam-side-ad-layout";
 import { useCopyProtection } from "@/lib/useCopyProtection";
 import { trackEvent } from "@/lib/analytics";
+import { showLoginPrompt } from "@/lib/loginPrompt";
+import { useAuth } from "@/contexts";
 
 import { useQuestionQuery } from "../hooks/service";
 
@@ -36,6 +38,7 @@ type Props = {
 
 export const SharedQuestionPage = ({ questionId }: Props) => {
   useCopyProtection();
+  const { isAuthenticated } = useAuth();
   const { data, isLoading, isError, error } = useQuestionQuery(questionId);
   const {
     feedbackModalOpen,
@@ -137,12 +140,19 @@ export const SharedQuestionPage = ({ questionId }: Props) => {
               imageUrls={data.imageUrls}
               answers={formattedAnswers}
               selectedAnswer={selectedAnswer}
-              correctAnswer={data.correctAnswers}
+              correctAnswer={data.correctAnswers ?? []}
               showResult={showResult}
               onAnswerSelect={handleAnswerSelect}
               actionButtonText="정답 확인"
               actionButtonDisabled={selectedAnswer === null}
-              onActionClick={() => setShowResult(true)}
+              onActionClick={() => {
+                // 정답·해설은 로그인 사용자에게만 내려온다
+                if (!isAuthenticated) {
+                  showLoginPrompt();
+                  return;
+                }
+                setShowResult(true);
+              }}
             />
             <div className="mt-4 flex items-center justify-between gap-2">
               <ReportBugLink

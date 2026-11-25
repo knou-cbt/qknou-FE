@@ -164,7 +164,7 @@ export const BookmarkReviewPage = () => {
                   imageUrls={question.imageUrls}
                   answers={formattedAnswers}
                   selectedAnswer={selectedAnswer}
-                  correctAnswer={question.correctAnswers}
+                  correctAnswer={question.correctAnswers ?? []}
                   showResult={showResult}
                   onAnswerSelect={handleAnswerSelect}
                   actionButtonText=""

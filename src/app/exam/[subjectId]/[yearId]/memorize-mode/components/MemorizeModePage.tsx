@@ -33,6 +33,8 @@ import {
 } from "@/components/feedback/FeedbackModal";
 import { ExplanationGate, ExplanationPlaceholder } from "@/components/ads/ExplanationGate";
 import { useExplanationUnlock } from "@/lib/explanation-unlock";
+import { showLoginPrompt } from "@/lib/loginPrompt";
+import { PreviewLoginBanner } from "@/components/auth/PreviewLoginBanner";
 
 type Props = {
   subjectId?: string;
@@ -199,14 +201,21 @@ export const MemorizeModePage = ({ subjectId, yearId }: Props) => {
     [showResult]
   );
 
+  // 정답은 로그인 사용자에게만 내려오므로, 비로그인은 정답 확인 대신 로그인 안내를 띄운다
   const handleShowAnswer = useCallback(() => {
+    if (!isAuthenticated) {
+      showLoginPrompt();
+      return;
+    }
     setShowResult(true);
-  }, []);
+  }, [isAuthenticated]);
 
   // AI 해설은 토큰 비용이 들어서, 광고 시청으로 잠금이 풀린 뒤 해설을 실제로 볼 때만 생성한다
   useEffect(() => {
     const questionId = currentQuestion?.id;
     if (!questionId || !showResult || !isExplanationVisible || !isUnlocked) return;
+    // 해설 API는 로그인 필요
+    if (!isAuthenticated) return;
     if (explanationsByQuestion[questionId] || explanationErrorByQuestion[questionId]) return;
     if (requestedExplanationIdsRef.current.has(questionId)) return;
     requestedExplanationIdsRef.current.add(questionId);
@@ -235,6 +244,7 @@ export const MemorizeModePage = ({ subjectId, yearId }: Props) => {
     showResult,
     isExplanationVisible,
     isUnlocked,
+    isAuthenticated,
     explanationsByQuestion,
     explanationErrorByQuestion,
     fetchQuestionExplanation,
@@ -408,6 +418,13 @@ export const MemorizeModePage = ({ subjectId, yearId }: Props) => {
               onAnswerSelect={handleAnswerSelect}
               actionButtonText=""
             />
+            {data?.preview && (
+              <PreviewLoginBanner
+                className="mt-4"
+                previewCount={data.preview.limit}
+                totalQuestions={data.preview.totalQuestions}
+              />
+            )}
             <div className="mt-4">
               <ReportBugLink
                 onClick={() =>
